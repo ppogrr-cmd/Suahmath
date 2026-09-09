@@ -5,52 +5,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F7F2">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>수아 오답 노트</title>
+<meta name="apple-mobile-web-app-title" content="Candy's Math">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/apple-touch-icon.png">
+<title>Candy's Math</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root{
     --paper:#F7F7F2; --grid:#E2E5DC; --ink:#23282B; --ink-soft:#6B7278;
-    --line:#D8DBD2; --wrong:#D94F45; --known:#2E8F63; --act:#2F5FD0;
-    --card:#FFFFFF; --radius:14px; --safe-b:env(safe-area-inset-bottom,0px);
+    --line:#D8DBD2; --wrong:#DE3B2F; --again:#E8931C; --known:#2E9E5B; --act:#2F5FD0;
+    --case:#213551; --pink:#FF8CB7; --card:#FFFFFF; --radius:14px; --safe-b:env(safe-area-inset-bottom,0px);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
-  body{
-    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-    color:var(--ink); background-color:var(--paper);
+  body{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    color:var(--ink);background-color:var(--paper);
     background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-    background-size:22px 22px; font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:560px;margin:0 auto;padding:16px 16px calc(96px + var(--safe-b))}
-  h1{font-size:20px;font-weight:700;margin:4px 0 2px;letter-spacing:-0.02em}
-  .sub{color:var(--ink-soft);font-size:13px;margin-bottom:16px}
+    background-size:22px 22px;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:16px 16px calc(40px + var(--safe-b))}
   button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
   .hidden{display:none !important}
 
-  .tally{display:flex;gap:10px;margin-bottom:12px}
-  .tally div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
-  .tally .n{font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1.1}
-  .tally .k{font-size:12px;color:var(--ink-soft);margin-top:2px}
-  .w{color:var(--wrong)} .kn{color:var(--known)}
+  .head{display:flex;align-items:center;gap:10px;margin:2px 0 14px}
+  .head .mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(#213551,#1B2A41);
+    color:var(--pink);font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;flex:none}
+  .head h1{font-size:19px;font-weight:700;margin:0;letter-spacing:-0.02em}
+  .head p{margin:1px 0 0;font-size:12px;color:var(--ink-soft)}
 
-  .big{display:flex;align-items:center;justify-content:space-between;width:100%;
-    background:var(--ink);color:#fff;border-radius:var(--radius);padding:18px;font-size:17px;font-weight:600;margin-bottom:10px}
+  .signal{display:flex;gap:9px;background:var(--case);border-radius:22px;padding:11px;margin-bottom:14px}
+  .lamp{flex:1;border-radius:17px;padding:15px 6px 12px;text-align:center;color:#fff;
+    background:rgba(255,255,255,.07);transition:background .18s,box-shadow .18s}
+  .lamp b{display:block;font-size:27px;font-weight:700;line-height:1.05;letter-spacing:-0.03em}
+  .lamp span{display:block;font-size:11px;margin-top:3px;opacity:.85}
+  .lamp.lit-red{background:var(--wrong)} .lamp.lit-again{background:var(--again)} .lamp.lit-green{background:var(--known)}
+  .lamp.off{color:rgba(255,255,255,.4)}
+  .lamp[aria-pressed="true"]{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--case)}
+  .w{color:var(--wrong)} .ag{color:var(--again)} .kn{color:var(--known)}
+
+  .big{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--ink);color:#fff;
+    border-radius:var(--radius);padding:18px;font-size:17px;font-weight:600;margin-bottom:10px}
   .big.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
   .big .cnt{font-size:14px;font-weight:500;opacity:.75}
   .big:disabled{opacity:.4}
 
-  .tabs{display:flex;gap:6px;margin:18px 0 10px}
-  .tabs button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;color:var(--ink-soft)}
-  .tabs button[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
   .chips button{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:14px}
   .chips button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 
-  .item{display:flex;gap:11px;align-items:stretch;width:100%;text-align:left;
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px;margin-bottom:8px}
+  .listhead{display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 10px}
+  .listhead .lt{font-weight:700;font-size:15px}
+  .listhead button{font-size:14px;color:var(--act);font-weight:600}
+
+  .item{display:flex;gap:11px;align-items:stretch;width:100%;text-align:left;background:var(--card);
+    border:1px solid var(--line);border-left-width:5px;border-radius:var(--radius);padding:10px;margin-bottom:8px}
+  .item.l-red{border-left-color:var(--wrong)} .item.l-again{border-left-color:var(--again)} .item.l-green{border-left-color:var(--known)}
   .item .no{flex:none;width:38px;height:38px;border-radius:10px;background:var(--paper);border:1px solid var(--line);
-    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--ink-soft)}
-  .item img{width:52px;height:52px;object-fit:cover;border-radius:10px;background:#EEE;flex:none}
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--ink-soft);align-self:center}
   .item .meta{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px}
   .item .top{display:flex;align-items:center;gap:6px}
   .unit{font-size:13px;font-weight:600}
@@ -64,28 +74,20 @@
   .bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
   .bar .t{font-weight:700}
   .bar button{font-size:15px;color:var(--act);font-weight:600;padding:6px 2px}
-  label.f2{display:block;font-size:13px;color:var(--ink-soft);margin:14px 0 6px}
-  input[type=text],select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-family:inherit;font-size:16px;color:var(--ink)}
-  .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
-  .thumbs figure{position:relative;margin:0}
-  .thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}
-  .thumbs button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:14px;line-height:24px;text-align:center}
-  .primary{width:100%;padding:16px;border-radius:var(--radius);background:var(--act);color:#fff;font-weight:600;margin-top:22px}
-  .primary:disabled{opacity:.4}
-  .danger{color:var(--wrong);font-weight:600;padding:12px 0;width:100%;text-align:center;margin-top:8px}
+  label.f2{display:block;font-size:13px;color:var(--ink-soft);margin:16px 0 6px}
+  input[type=text]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);
+    font-family:inherit;font-size:16px;color:var(--ink)}
 
   .progress{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:12px}
   .progress i{display:block;height:100%;background:var(--ink);transition:width .25s}
   .qwrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 15px;margin-bottom:14px}
-  .qwrap img{width:100%;border-radius:8px;display:block}
   .qmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-bottom:10px}
   .judge{display:flex;gap:10px;position:sticky;bottom:calc(10px + var(--safe-b))}
   .judge button{flex:1;padding:18px 10px;border-radius:var(--radius);font-size:17px;font-weight:700;color:#fff}
-  .judge .again{background:var(--wrong)} .judge .got{background:var(--known)}
+  .judge .again{background:var(--again)} .judge .got{background:var(--known)}
   .done{text-align:center;padding:60px 10px}
   .done .big-n{font-size:44px;font-weight:700;letter-spacing:-0.03em}
 
-  /* 문제 본문 */
   .q{font-size:17px;line-height:1.75}
   .f{display:inline-flex;flex-direction:column;vertical-align:-0.5em;text-align:center;line-height:1.1;margin:0 3px;font-size:.85em}
   .f i{font-style:normal;display:block;padding:0 3px}
@@ -93,68 +95,56 @@
   pre.v{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:16px;line-height:1.5;margin:10px 0;white-space:pre}
   .bx{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:15px;background:var(--paper)}
   .fg{margin:10px 0;padding:9px 12px;border-left:3px solid var(--act);background:var(--paper);font-size:14px;color:var(--ink-soft);line-height:1.6}
-  .ans{margin-top:12px;color:var(--ink-soft);font-size:14px}
 
-  .full img{width:100%;border-radius:12px;border:1px solid var(--line);background:#fff}
+  .reveal{display:flex;gap:8px;margin-top:14px}
+  .reveal button{flex:1;padding:14px 8px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-weight:600;font-size:15px}
+  .reveal button[aria-expanded="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .box-h,.box-a{margin-top:10px;padding:13px 15px;border-radius:12px;font-size:15px;line-height:1.7}
+  .box-h{background:#FDF4E2;border:1px solid #EEDCB4}
+  .box-a{background:#E9F5EE;border:1px solid #BFE0CC;font-weight:600}
+  .box-h b,.box-a b{display:block;font-size:12px;font-weight:600;opacity:.6;margin-bottom:4px}
+
   .row{display:flex;gap:8px;margin-top:14px}
-  .row button{flex:1;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600}
+  .row button{flex:1;padding:13px 6px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600;font-size:14px}
   .row button.on-w{background:var(--wrong);color:#fff;border-color:var(--wrong)}
+  .row button.on-ag{background:var(--again);color:#fff;border-color:var(--again)}
   .row button.on-k{background:var(--known);color:#fff;border-color:var(--known)}
   .hist{font-size:12px;color:var(--ink-soft);margin-top:14px;line-height:1.8}
-
-  .meter{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:6px 0 4px}
-  .meter i{display:block;height:100%;background:var(--act)}
   .note{font-size:13px;color:var(--ink-soft);line-height:1.7;margin-top:10px}
+  .danger{color:var(--wrong);font-weight:600;padding:12px 0;width:100%;text-align:center;margin-top:18px}
 
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + var(--safe-b));background:var(--ink);color:#fff;
     padding:11px 18px;border-radius:999px;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
   .toast.show{opacity:1}
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + var(--safe-b));background:var(--act);color:#fff;
-    padding:15px 26px;border-radius:999px;font-weight:600;box-shadow:0 6px 18px rgba(47,95,208,.3);z-index:10}
   @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
 </head>
 <body>
 
 <div class="wrap" id="home">
-  <h1>수아 오답 노트</h1>
-  <p class="sub">틀린 문제만 골라 다시 풉니다.</p>
+  <div class="head">
+    <span class="mark">C</span>
+    <div><h1>Candy's Math</h1><p>틀린 문제만 골라 다시 풀기</p></div>
+  </div>
 
-  <div class="tally">
-    <div><div class="n w" id="cw">0</div><div class="k">다시 풀 문제 △</div></div>
-    <div><div class="n kn" id="ck">0</div><div class="k">알게 된 문제 ○</div></div>
+  <div class="signal">
+    <button class="lamp" id="lampRed" data-f="red" aria-pressed="false"><b id="cw">0</b><span>틀렸어요</span></button>
+    <button class="lamp" id="lampAgain" data-f="again" aria-pressed="false"><b id="ca">0</b><span>아직 모르겠어요</span></button>
+    <button class="lamp" id="lampGreen" data-f="green" aria-pressed="false"><b id="ck">0</b><span>이제는 알아요</span></button>
   </div>
 
   <button class="big" id="btnReview">다시 풀기 시작 <span class="cnt" id="revCnt"></span></button>
-  <button class="big ghost" id="btnSettings">백업과 설정 <span class="cnt">내보내기 · 불러오기</span></button>
+  <button class="big ghost" id="btnSettings">설정 <span class="cnt" id="syncBadge">동기화 · 백업</span></button>
 
-  <div class="tabs" role="tablist">
-    <button role="tab" data-f="wrong" aria-selected="true">틀린 문제</button>
-    <button role="tab" data-f="known" aria-selected="false">알게 된 문제</button>
-    <button role="tab" data-f="all" aria-selected="false">전체</button>
-  </div>
+  <div class="listhead"><span class="lt" id="listTitle">틀렸어요</span><button id="allBtn">전체 보기</button></div>
+  <div class="chips" id="semFilter" style="margin-bottom:8px"></div>
   <div class="chips" id="unitFilter" style="margin-bottom:12px"></div>
   <div id="list"></div>
   <button class="more hidden" id="btnMore">더 보기</button>
 </div>
 
-<button class="fab" id="btnAdd">＋ 문제 찍어 올리기</button>
-<input type="file" id="filePick" accept="image/*" multiple class="hidden">
-<input type="file" id="seedPick" accept="image/*" class="hidden">
 <input type="file" id="jsonPick" accept="application/json,.json" class="hidden">
 <div class="toast" id="toast"></div>
-
-<div class="screen hidden" id="scAdd">
-  <div class="bar"><button id="addCancel">닫기</button><span class="t">문제 추가</span><span style="width:40px"></span></div>
-  <div class="thumbs" id="addThumbs"></div>
-  <button class="big ghost" id="addMore" style="margin-top:10px">사진 더 고르기 <span class="cnt">여러 장 한 번에</span></button>
-  <label class="f2">단원</label>
-  <div class="chips" id="addUnits"></div>
-  <label class="f2">메모 <span style="opacity:.7">(교재·쪽수·문제 번호)</span></label>
-  <input type="text" id="addNote" placeholder="예: 응용력 p.57 6번" enterkeyhint="done">
-  <button class="primary" id="addSave">저장</button>
-  <p class="note">사진 한 장이 문제 하나로 저장됩니다.</p>
-</div>
 
 <div class="screen hidden" id="scReview">
   <div class="bar"><button id="revQuit">그만하기</button><span class="t" id="revPos"></span><span style="width:56px"></span></div>
@@ -164,27 +154,28 @@
 
 <div class="screen hidden" id="scDetail">
   <div class="bar"><button id="detClose">닫기</button><span class="t" id="detTitle">문제</span><span style="width:40px"></span></div>
-  <div id="detBody" class="full"></div>
+  <div id="detBody"></div>
 </div>
 
 <div class="screen hidden" id="scSet">
-  <div class="bar"><button id="setClose">닫기</button><span class="t">백업과 설정</span><span style="width:40px"></span></div>
+  <div class="bar"><button id="setClose">닫기</button><span class="t">설정</span><span style="width:40px"></span></div>
+
+  <label class="f2">기기 동기화</label>
+  <div class="chips" id="syncToggle"></div>
+  <label class="f2">동기화 코드 <span style="opacity:.7">(두 기기에 같은 코드를 넣습니다)</span></label>
+  <input type="text" id="syncCode" placeholder="예: candy-2026" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <button class="big ghost" id="syncNow" style="margin-top:10px">지금 동기화 <span class="cnt" id="syncWhen"></span></button>
+  <p class="note" id="syncMsg">동기화를 켜면 푼 기록이 같은 코드를 쓰는 기기끼리 자동으로 맞춰집니다. 끄면 이 기기 안에만 저장됩니다.</p>
+
   <label class="f2">다시 풀기 순서</label>
   <div class="chips" id="orderPick"></div>
-  <label class="f2">저장 공간</label>
-  <div class="meter"><i id="meterBar"></i></div>
-  <div class="note" id="meterTxt"></div>
+
   <label class="f2">백업</label>
   <button class="big ghost" id="doExport">파일로 내보내기 <span class="cnt">.json</span></button>
   <button class="big ghost" id="doImport">파일에서 불러오기 <span class="cnt">합치기</span></button>
-  <label class="f2">사진 품질</label>
-  <select id="quality">
-    <option value="900">보통 — 가로 900px</option>
-    <option value="1200">선명 — 가로 1200px</option>
-    <option value="1600">아주 선명 — 가로 1600px</option>
-  </select>
-  <p class="note">기본 133문제는 이 파일 안에 들어 있고, 푼 기록과 찍어 올린 사진은 이 폰 안에만 저장됩니다. 파일을 새로 올려도 기록은 그대로 남습니다.</p>
-  <button class="danger" id="wipe">기록 전체 지우기</button>
+  <p class="note" id="statTxt"></p>
+
+  <button class="danger" id="wipe">푼 기록 전체 지우기</button>
 </div>
 
 <script>
@@ -358,87 +349,118 @@ var SEED=[
 {n:133,u:'그림그래프',t:'가장 큰 값과 작은 값의 차',s:'20번 (서술형)',q:`줄넘기를 가장 많이 한 학생과 가장 적게 한 학생의 줄넘기 횟수의 차는 몇 회인지 풀이 과정을 쓰고 답을 구해 보세요.<div class="bx">진호　◎ △△△ ○○○○<br>영주　◎ ○○○<br>지혜　◎ △△△△△ ○○<br><br>◎ 100회　△ 10회　○ 1회</div>`}
 ];
 
-var KEY="suah-math-v1", PROG="suah-math-prog-v1", SET="suah-math-set-v1";
-var UNITS=["곱셈","나눗셈","원","분수","들이와 무게","그림그래프","기타"];
-var PAGE=25;
+var EXTRA={"1":{"h":"곱하는 수에 0이 하나 붙으면 곱에도 0이 하나 더 붙습니다. 5×7=35를 기준으로 0의 개수만 맞춰 보세요.","a":"70, 700, 70"},"2":{"h":"곱하는 수를 두 수의 곱으로 쪼개면(15=5×3) 쉬운 곱셈 두 번으로 바뀝니다.","a":"5, 80, 240"},"3":{"h":"두 자리 수를 몇십과 몇으로 쪼개(38=30+8) 각각 곱한 뒤 더합니다.","a":"8 / 1620 + 432 / 2052"},"4":{"h":"일의 자리부터 거꾸로 맞춰 봅니다. 또는 738÷3을 계산하면 곱해지는 수가 바로 나옵니다.","a":"□=4 (246×3=738)"},"5":{"h":"10이 6개는 60, 1이 2개는 2이므로 62입니다. 자릿값을 먼저 수로 바꾸세요.","a":"2418 (62×39)"},"6":{"h":"□에 1부터 차례로 넣어 600을 넘기 직전까지 세어 봅니다. 146×4=584, 146×5=730.","a":"4개 (1, 2, 3, 4)"},"7":{"h":"□0은 몇십을 뜻합니다. 78×60=4680, 78×70=5460이므로 5000을 넘는 첫 수를 찾습니다.","a":"7"},"8":{"h":"먼저 세 수의 크기를 비교해 가장 큰 수와 가장 작은 수를 고른 뒤 곱합니다.","a":"2187 (81×27)"},"9":{"h":"곱을 크게 하려면 가장 큰 숫자를 곱하는 수(한 자리) 자리에 놓습니다.","a":"52×7=364"},"10":{"h":"큰 수 두 개를 각각 십의 자리에 놓고, 남은 두 수를 엇갈리게 넣어 두 경우를 비교합니다.","a":"83×64=5312"},"11":{"h":"빈칸의 자리가 정해져 있으므로 가능한 배치를 몇 개만 만들어 곱을 비교합니다.","a":"73×45=3285"},"12":{"h":"곱을 작게 하려면 가장 작은 숫자를 곱하는 수(한 자리) 자리에 놓습니다.","a":"59×3=177"},"13":{"h":"곱을 작게 하려면 작은 수 두 개를 각각 십의 자리에 놓고 두 경우를 비교합니다.","a":"25×47=1175"},"14":{"h":"자리가 정해진 곱셈식은 가능한 배치를 만들어 곱을 직접 비교하는 것이 빠릅니다.","a":"26×39=1014"},"15":{"h":"잘못한 식으로 어떤 수를 먼저 구합니다. □−4=102 → □=106.","a":"424 (106×4)"},"16":{"h":"약속한 기호는 순서를 바꿔 계산하라는 뜻입니다. 가♣나=나×가이므로 뒤 수를 앞에 놓습니다.","a":"1656 (72×23)"},"17":{"h":"하루에 읽는 시간 × 날수. 곱셈 문장제는 단위를 확인하고 식을 세웁니다.","a":"675분"},"18":{"h":"주를 날수로 먼저 바꿉니다. 3주=21일.","a":"945쪽"},"19":{"h":"두 곱을 각각 계산해 비교합니다. 눈으로 어림만 하면 틀리기 쉽습니다.","a":"㉡ (105 < 108)"},"20":{"h":"각각의 전체 개수를 곱셈으로 구한 뒤 빼서 차를 구합니다.","a":"귤이 14개 더 많다 (162, 176)"},"21":{"h":"담은 개수를 곱셈으로 구한 뒤 전체에서 뺍니다.","a":"28개 (210−182)"},"22":{"h":"이어 붙이면 겹친 곳은 (장수−1)군데입니다. 전체 길이 − 겹친 길이.","a":"428 cm (464−36)"},"23":{"h":"30장을 이으면 겹친 곳은 29군데입니다.","a":"906 cm (1080−174)"},"24":{"h":"같은 수를 곱하는 두 식은 (□+□)×같은 수로 묶을 수 있습니다.","a":"49 / 200 / 600"},"25":{"h":"2000÷90을 어림해 몇십인지 먼저 잡고, 그 근처를 하나씩 확인합니다.","a":"(1) 2  (2) 23"},"26":{"h":"양끝을 먼저 계산해 400 < □×72 < 567로 바꾼 뒤 □를 넣어 봅니다.","a":"6, 7"},"27":{"h":"잘못한 식으로 어떤 수를 구하고(□+17=22 → 5), 바른 값과 잘못된 값을 각각 구해 곱합니다.","a":"1870 (85×22)"},"28":{"h":"일의 자리부터 맞춰 보거나, 2848을 한 자리 수로 나누어 □56 꼴이 되는 경우를 찾습니다.","a":"356×8=2848 (□=3, 곱하는 수 8)"},"29":{"h":"3397을 두 자리 수끼리의 곱으로 가르면서 7■, ▲3 모양에 맞는 것을 찾습니다.","a":"■=9, ▲=4 (79×43)"},"30":{"h":"카드가 모두 같은 수이므로 11×1, 22×2 … 처럼 차례로 계산해 3●6 모양을 찾습니다.","a":"수 카드 6, ●=9 (66×6=396)"},"31":{"h":"연속하는 수의 합은 가운데 수 × 개수와 같습니다.","a":"100 / 500"},"32":{"h":"처음과 끝을 짝지으면 23이 11쌍 생깁니다.","a":"23×11=253"},"33":{"h":"남으면 더하고 부족하면 뺍니다. 7×38+4, 16×20−5.","a":"585명 (270+315)"},"34":{"h":"각 자리 숫자를 모두 곱하고, 그 결과로 다시 곱하기를 반복합니다.","a":"168 → 48 → 32 → 6"},"35":{"h":"각 자리 숫자의 곱이 27이 되는 세 자리 수를 모두 찾습니다. 27=1×3×9 또는 3×3×3.","a":"139, 193, 319, 391, 913, 931, 333"},"36":{"h":"반대 방향이면 한 번 만날 때마다 3분이 걸립니다. 다섯째 만남은 15분 후.","a":"1725 m ((60+55)×15)"},"37":{"h":"세로셈으로 백의 자리부터 차례로 나눕니다. 나머지는 나누는 수보다 작아야 합니다.","a":"몫 134, 나머지 1"},"38":{"h":"어느 쪽이 큰 수인지 먼저 정하고 큰 수 ÷ 작은 수로 씁니다.","a":"197"},"39":{"h":"똑같이 나누어 담는 상황은 나눗셈입니다. 84÷6.","a":"14쪽"},"40":{"h":"두 종류를 먼저 더한 뒤 한 번에 나눕니다.","a":"32상자, 8개 남음"},"41":{"h":"먼저 전체 개수를 구합니다(3×16+2=50). 그다음 새 조건으로 다시 나눕니다.","a":"6봉지, 2개 남음"},"42":{"h":"6으로 한 번에 나누는 것과 2로 나눈 뒤 3으로 나누는 것은 결과가 같습니다.","a":"12 / 36, 12"},"43":{"h":"나누어지는 수 = 나누는 수 × 몫 + 나머지. 나머지 3부터 거꾸로 올라갑니다.","a":"87÷6=14…3"},"44":{"h":"나누어떨어진다는 것은 나머지가 0이라는 뜻입니다. 하나씩 나눠 확인합니다.","a":"10, 15"},"45":{"h":"어떤 수 = 나누는 수 × 몫 + 나머지 = 6×15+4.","a":"94"},"46":{"h":"98에서 나머지 2를 먼저 빼고 몫으로 나눕니다. 96÷12.","a":"8"},"47":{"h":"몇 번 뺐는지는 나눗셈으로 구합니다. (64−2)÷3.","a":"교재 수치 확인 필요 — 62는 3으로 나누어떨어지지 않습니다"},"48":{"h":"나머지는 나누는 수보다 작아야 하므로 가장 큰 나머지는 5입니다. 6×24+5.","a":"149"},"49":{"h":"두 자리 수 중 가장 큰 99부터 내려오며 4로 나눈 나머지가 1인 수를 찾습니다.","a":"97"},"50":{"h":"5×17=85에 나머지를 더합니다. 나머지는 5보다 작아야 하므로 가장 클 때 4.","a":"89"},"51":{"h":"6으로 나눌 때 가장 큰 나머지는 5입니다. ■에 1부터 넣어 확인합니다.","a":"■ = 2, 5, 8"},"52":{"h":"7×몫+4의 꼴을 만들면서 조건에 맞는 수를 찾습니다.","a":"74, 81"},"53":{"h":"8의 배수 중 100~130인 수를 먼저 적고, 5로 나눈 나머지가 3인 것을 고릅니다.","a":"2명 (학생 128명)"},"54":{"h":"나머지는 나누는 수보다 반드시 작습니다. 나머지가 5이면 나누는 수는 6 이상.","a":"6"},"55":{"h":"같은 모양은 같은 수입니다. 먼저 ●를 구한 뒤 두 번째 식에 넣습니다.","a":"3 (●=6, 87÷6=14…3)"},"56":{"h":"두 식을 각각 계산해 ●와 ◆를 구한 뒤 큰 수에서 작은 수를 뺍니다.","a":"17 (21−4)"},"57":{"h":"몇 접시가 필요한지 먼저 나눗셈으로 구합니다. 56÷4=14.","a":"20개입 — 14접시가 필요해서 10개입으로는 모자랍니다"},"58":{"h":"몫을 크게 하려면 나누는 수를 가장 작게, 나누어지는 수를 가장 크게 만듭니다.","a":"754÷3 → 몫 251, 나머지 1"},"59":{"h":"잘못한 식으로 어떤 수를 먼저 구합니다. 6×15+3=93.","a":"몫 11, 나머지 5"},"60":{"h":"나머지를 빼고 나누면 사람 수가 나옵니다((66−3)÷9=7명). 그다음 30개를 7명에게 나눕니다.","a":"5개"},"61":{"h":"철사 전체 길이를 모양의 둘레 칸 수로 나누면 한 칸의 길이가 나옵니다.","a":"27 (■=13, ▲=14)"},"62":{"h":"정사각형의 한 변을 먼저 구하고(528÷4=132), 나눈 칸 수로 다시 나눕니다.","a":"44 cm"},"63":{"h":"가로와 세로 각각 몇 조각이 나오는지 따로 구한 뒤 곱합니다.","a":"357조각 (17×21)"},"64":{"h":"겹치지 않았을 때의 길이에서 실제 길이를 뺀 것이 겹친 길이의 합입니다. 겹친 곳은 9군데.","a":"10 cm"},"65":{"h":"먼저 노란 구슬 한 개의 무게를 구하고(39÷3), 전체에서 노란 구슬 몫을 뺍니다.","a":"15 g"},"66":{"h":"두 기계가 1분에 몇 개씩 만드는지 구해 차를 냅니다. 15−12=3.","a":"30분"},"67":{"h":"주를 날수로 바꾸고(5주=35일), 두 사람 몫을 나눈 뒤 한 사람 몫으로 다시 나눕니다.","a":"14개"},"68":{"h":"원 모양 둘레에서는 간격 수와 개수가 같습니다.","a":"16개"},"69":{"h":"먼저 둘레를 구합니다((18+12)×2=60). 둘레를 도는 경우 말뚝 수 = 간격 수.","a":"20개"},"70":{"h":"곧은 길 한쪽은 (간격 수)+1개가 필요합니다.","a":"14개"},"71":{"h":"한쪽을 먼저 구하고(39+1=40) 양쪽이므로 2배 합니다.","a":"80개"},"72":{"h":"양쪽에 20개면 한쪽은 10개, 간격은 9군데입니다.","a":"30 m"},"73":{"h":"나무 사이 간격 5군데를 먼저 구하고, 한 구간마다 말뚝 수를 구해 곱합니다.","a":"95개"},"74":{"h":"반지름은 지름의 절반입니다. 모두 지름으로 바꿔 비교하세요.","a":"㉢ (지름 12 cm)"},"75":{"h":"설명을 모두 지름으로 바꿔 비교합니다. 중심을 지나는 선분이 지름입니다.","a":"민주, 성환, 유라"},"76":{"h":"한 원에서 지름 = 반지름의 2배이고, 원 안에서 가장 긴 선분은 지름입니다.","a":"②, ⑤"},"77":{"h":"중심을 지나는 선분만 지름이고, 지름은 반지름의 2배입니다. 그림의 길이 표시를 확인하세요.","a":"교재 그림을 보고 지름·반지름을 먼저 표시한 뒤 판단"},"78":{"h":"정사각형 안에 꼭 맞는 원은 지름이 정사각형의 한 변과 같습니다.","a":"8 cm"},"79":{"h":"작은 원의 지름이 큰 원의 반지름과 같습니다.","a":"6 cm"},"80":{"h":"큰 원의 지름 안에 작은 원의 지름 2개가 들어갑니다.","a":"4 cm"},"81":{"h":"반지름이 2, 4, 6 … 으로 늘어납니다. 여섯째 원의 반지름을 구해 2배 합니다.","a":"24 cm"},"82":{"h":"조건이 참이 될 때까지 명령을 반복합니다. 8 → 13이 되어 10보다 길어집니다.","a":"26 cm"},"83":{"h":"맞닿은 두 원은 지름을 이어 붙인 것과 같습니다.","a":"26 cm (10+16)"},"84":{"h":"반지름 1 cm면 지름은 2 cm, 원 3개가 나란히 맞닿아 있습니다.","a":"6 cm"},"85":{"h":"이웃한 두 원의 중심 사이 거리는 두 반지름의 합입니다.","a":"26 cm (10+16)"},"86":{"h":"중심을 지나도록 겹치면 반지름이 하나씩 늘어납니다. 반지름 6개가 42 cm.","a":"7 cm"},"87":{"h":"큰 원의 지름에서 작은 원들의 반지름을 차례로 더하거나 빼며 따라갑니다.","a":"9 cm"},"88":{"h":"맞닿은 두 원의 중심 사이 거리는 두 반지름의 합입니다. 세 변을 각각 구해 더합니다.","a":"24 cm (9+7+8)"},"89":{"h":"겹친 부분만큼 짧아집니다. 두 반지름의 합에서 겹친 길이를 뺍니다.","a":"29 cm"},"90":{"h":"삼각형 한 변은 24÷3=8 cm이고, 그 안에 지름이 2개 들어갑니다.","a":"지름 4 cm"},"91":{"h":"가로는 지름 3개, 세로는 지름 1개입니다.","a":"48 cm (가로 18, 세로 6)"},"92":{"h":"둘레로 가로를 먼저 구한 뒤, 사분원의 반지름만큼 빼서 남은 길이를 구합니다.","a":"4 cm"},"93":{"h":"삼각형의 두 변이 반지름과 반지름 2개로 이루어집니다. 3×반지름+10=37.","a":"9 cm"},"94":{"h":"직사각형의 둘레로 반지름을 먼저 구한 뒤, 반지름 2개와 21 cm를 더합니다.","a":"교재 그림에서 원의 위치를 확인한 뒤 계산"},"95":{"h":"직사각형의 두 변을 먼저 구하고(6, 8), 선분 ㄱㅇ이 원의 반지름임을 이용합니다.","a":"40 cm (반지름 5, 지름 10)"},"96":{"h":"컴퍼스 침은 원의 중심마다 한 번씩 꽂습니다. 곡선이 몇 개의 원에서 나왔는지 세어 보세요.","a":"5군데 (그림에서 원의 중심을 표시해 확인)"},"97":{"h":"전체를 똑같이 4묶음으로 나누면 한 묶음이 1/4입니다. 24÷4=6.","a":"(1) 6  (2) 12  (3) 18"},"98":{"h":"전체가 몇 도막인지 먼저 구합니다(48÷8=6도막). 40 cm는 5도막.","a":"5/6"},"99":{"h":"단위를 먼저 바꿉니다. 1 m=100 cm, 1시간=60분.","a":"(1) 60 cm  (2) 50분"},"100":{"h":"1/4이 8이면 그런 묶음이 4개이므로 8×4입니다.","a":"(1) 32  (2) 63"},"101":{"h":"단위분수를 이용해 전체를 먼저 구합니다. 1/6이 5면 전체는 30.","a":"10"},"102":{"h":"3/7이 27이면 1/7은 9, 전체는 63입니다. 그다음 2/9를 구합니다.","a":"14"},"103":{"h":"사용한 길이를 먼저 구한 뒤 전체에서 뺍니다. 또는 남은 몫 4/6로 바로 구합니다.","a":"36 cm"},"104":{"h":"남은 쪽수를 먼저 구합니다(90−10=80). 오늘 읽은 양은 남은 쪽수의 분수만큼입니다.","a":"50쪽"},"105":{"h":"대분수를 가분수로 바꾸면 분자만 비교하면 됩니다.","a":"17/7"},"106":{"h":"모두 분모가 6인 가분수로 바꿔 분자를 비교합니다.","a":"시은, 건우, 민호"},"107":{"h":"대분수는 자연수 부분이 클수록 큽니다. 자연수에 가장 큰 수를 넣습니다.","a":"9와 4/5 = 49/5"},"108":{"h":"자연수 자리를 가장 크게 만든 뒤(86), 남은 두 수로 진분수를 만듭니다.","a":"86과 1/5"},"109":{"h":"가분수는 분자가 분모와 같거나 더 큰 분수입니다.","a":"8개 (1~8)"},"110":{"h":"모두 분모가 11인 가분수로 바꾸면 20/11 < □/11 < 29/11입니다.","a":"8개 (21~28)"},"111":{"h":"합이 11, 차가 3인 두 수를 찾습니다. 7과 4.","a":"4/7"},"112":{"h":"한 번 튀어 오를 때마다 3/4을 곱합니다. 32 → 24 → 18.","a":"18 m"},"113":{"h":"첫 번째와 두 번째 높이를 각각 구한 뒤 뺍니다. 64 → 40 → 25.","a":"15 m"},"114":{"h":"mL끼리 뺄 수 없으면 1 L를 1000 mL로 바꿔 받아내림합니다.","a":"4 L 300 mL"},"115":{"h":"일의 자리(g)부터 거꾸로 맞춥니다. 받아내림이 있었는지 확인하세요.","a":"300 / 4 (7 kg 300 g − 4 kg 400 g)"},"116":{"h":"g끼리 더해 1000이 넘으면 1 kg으로 받아올림합니다.","a":"서준 — 바르게 계산하면 6 kg 50 g"},"117":{"h":"모두 계산해 같은 단위로 만든 뒤 비교합니다.","a":"㉢ (6 kg 300 g)"},"118":{"h":"단위를 하나로 맞춰(mL) 비교합니다.","a":"1900 mL"},"119":{"h":"민주가 마신 양을 먼저 구한 뒤(3 L 800 mL) 두 사람 것을 더합니다.","a":"9 L 100 mL"},"120":{"h":"들이를 비교하려면 크기가 같은 컵으로 옮겨 담아야 합니다.","a":"없습니다 — 컵의 크기가 서로 다르기 때문"},"121":{"h":"단위로 쓰려면 개수마다 크기와 무게가 거의 같아야 합니다.","a":"마늘"},"122":{"h":"개수가 같아도 한 개의 무게가 다르면 전체 무게도 다릅니다.","a":"× — 동전의 종류가 달라 한 개의 무게가 다르기 때문"},"123":{"h":"먼저 당근 한 개의 무게를 구합니다(120÷2=60).","a":"180 g"},"124":{"h":"키위 4개의 무게를 먼저 구해 전체에서 뺍니다.","a":"780 g"},"125":{"h":"합에서 차를 뺀 뒤 반으로 나누면 가벼운 쪽이 나옵니다.","a":"7 kg"},"126":{"h":"표에서 한 말과 한 되를 찾아 그대로 더합니다.","a":"19 L 800 mL"},"127":{"h":"1 L는 1000 mL입니다. 1000÷200.","a":"5번"},"128":{"h":"두 그릇을 더하기만 하지 말고 덜어내는 방법도 생각해 봅니다.","a":"가 2번 부은 뒤 나 1번 덜어내기 (5000−1500=3500)"},"129":{"h":"반복 명령은 그 횟수만큼 더하는 것입니다. 1 L 900 mL를 2번.","a":"아니요 (3 L 800 mL로 넘치지 않음)"},"130":{"h":"상자까지 포함한 전체 무게를 먼저 구한 뒤 표의 구간을 봅니다.","a":"5000원 (2 kg 700 g → 3 kg까지)"},"131":{"h":"큰 그림은 10, 작은 그림은 1입니다. 종류별로 세어 모두 더합니다.","a":"167잔"},"132":{"h":"반별 학생 수를 모두 더한 뒤 4를 곱합니다.","a":"472개 (118명)"},"133":{"h":"가장 많은 사람과 가장 적은 사람을 먼저 찾아 각각 수로 바꿉니다.","a":"49회 (152−103)"}};
 
-var photos=jload(KEY,[]), prog=jload(PROG,{}), cfg=jload(SET,{q:1200,order:"seq"});
-var filter="wrong", unitPick="", shown=PAGE;
-var draft={imgs:[],unit:"곱셈",note:""}, rev={queue:[],i:0,got:0,again:0}, detailId=null;
+var PROG="suah-math-prog-v1", SET="suah-math-set-v1";
+var UNITS=["곱셈","나눗셈","원","분수","들이와 무게","그림그래프"];
+var SEMS=["3-1학기","3-2학기","4-1학기","4-2학기"];
+var SEED_SEM="3-2학기", PAGE=25;
+
+var prog=jload(PROG,{}), cfg=jload(SET,{order:"seq",sync:false,code:""});
+var filter="red", semPick="", unitPick="", shown=PAGE;
+var rev={queue:[],i:0,got:0,again:0}, detailId=null, pushTimer=null, pulling=false;
 
 function jload(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v==null?d:v }catch(e){ return d } }
-function savePhotos(){ try{ localStorage.setItem(KEY,JSON.stringify(photos)) }catch(e){ toast("저장 공간이 꽉 찼습니다. 백업 후 정리해 주세요.") } }
-function saveProg(){ try{ localStorage.setItem(PROG,JSON.stringify(prog)) }catch(e){ toast("기록을 저장하지 못했습니다.") } }
+function saveProg(){ try{ localStorage.setItem(PROG,JSON.stringify(prog)) }catch(e){} }
 function saveCfg(){ localStorage.setItem(SET,JSON.stringify(cfg)) }
 function $(id){ return document.getElementById(id) }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}) }
-function uid(){ return "u"+Date.now().toString(36)+Math.random().toString(36).slice(2,6) }
 var tmr; function toast(m){ var t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tmr); tmr=setTimeout(function(){t.classList.remove("show")},1900) }
 function fmt(ts){ var d=new Date(ts); return (d.getMonth()+1)+"월 "+d.getDate()+"일" }
+function clock(ts){ var d=new Date(ts); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2) }
 function show(id){ $(id).classList.remove("hidden"); document.body.style.overflow="hidden" }
 function hide(id){ $(id).classList.add("hidden"); document.body.style.overflow="" }
 
-/* 통합 목록 */
+/* 데이터 */
+function lampOf(st,ag){ return st==="known"?"green":(ag>0?"again":"red") }
+var LAMP={red:{n:"틀렸어요",c:"w"},again:{n:"아직 모르겠어요",c:"ag"},green:{n:"이제는 알아요",c:"kn"}};
 function items(){
-  var out=SEED.map(function(s){
-    var id="s"+s.n, p=prog[id]||{};
-    return {id:id,kind:"seed",n:s.n,unit:s.u,title:s.t,src:s.s,q:s.q,fig:!!s.g,
-      img:p.img||null,status:p.status||"wrong",wrongCount:p.wrongCount||1,last:p.last||0,order:s.n};
+  return SEED.map(function(s){
+    var id="s"+s.n, p=prog[id]||{}, X=EXTRA[s.n]||{}, st=p.status||"wrong", ag=p.again||0;
+    return {id:id,n:s.n,sem:SEED_SEM,unit:s.u,title:s.t,src:s.s,q:s.q,fig:!!s.g,hint:X.h||"",ans:X.a||"",
+      status:st,again:ag,lamp:lampOf(st,ag),wrongCount:p.wrongCount||1,last:p.last||0,order:s.n};
   });
-  photos.forEach(function(p,i){
-    out.push({id:p.id,kind:"photo",n:null,unit:p.unit,title:p.note||"찍어 올린 문제",src:"",q:"",fig:false,
-      img:p.img,status:p.status||"wrong",wrongCount:p.wrongCount||1,last:p.last||0,createdAt:p.createdAt,order:10000+i});
-  });
-  return out;
 }
 function byId(id){ var a=items(); for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i]; return null }
 function setState(it,patch){
-  if(it.kind==="seed"){ var p=prog[it.id]||{}; for(var k in patch) p[k]=patch[k]; prog[it.id]=p; saveProg(); }
-  else{ for(var j=0;j<photos.length;j++) if(photos[j].id===it.id){ for(var k2 in patch) photos[j][k2]=patch[k2]; } savePhotos(); }
+  var p=prog[it.id]||{}; for(var k in patch) p[k]=patch[k];
+  p.last=Date.now(); prog[it.id]=p; saveProg(); schedulePush();
 }
 
-/* 이미지 압축 */
-function compress(file){
-  return new Promise(function(res,rej){
-    var fr2=new FileReader();
-    fr2.onload=function(){
-      var img=new Image();
-      img.onload=function(){
-        var max=cfg.q||1200,w=img.width,h=img.height;
-        if(Math.max(w,h)>max){ var r=max/Math.max(w,h); w=Math.round(w*r); h=Math.round(h*r) }
-        var c=document.createElement("canvas"); c.width=w; c.height=h;
-        var x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,w,h); x.drawImage(img,0,0,w,h);
-        res(c.toDataURL("image/jpeg",0.72));
-      };
-      img.onerror=rej; img.src=fr2.result;
-    };
-    fr2.onerror=rej; fr2.readAsDataURL(file);
-  });
+/* 동기화 */
+function syncOn(){ return !!(cfg.sync && cfg.code) }
+function schedulePush(){
+  if(!syncOn()) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(pushNow,1500);
 }
+function pushNow(cb){
+  if(!syncOn()) return cb&&cb();
+  fetch("/api/sync?code="+encodeURIComponent(cfg.code),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(prog)})
+    .then(function(r){ if(!r.ok) throw 0; cfg.at=Date.now(); saveCfg(); if($("syncWhen")) $("syncWhen").textContent="방금 "+clock(cfg.at); cb&&cb() })
+    .catch(function(){ if($("syncMsg")) $("syncMsg").textContent="서버에 저장하지 못했습니다. 잠시 뒤 다시 시도합니다."; cb&&cb() });
+}
+function pullNow(cb){
+  if(!syncOn()||pulling) return cb&&cb();
+  pulling=true;
+  fetch("/api/sync?code="+encodeURIComponent(cfg.code))
+    .then(function(r){ if(!r.ok) throw 0; return r.json() })
+    .then(function(j){
+      var got=0;
+      if(j&&j.data) for(var id in j.data){
+        var r=j.data[id]||{}, l=prog[id];
+        if(!l||(r.last||0)>(l.last||0)){ prog[id]=r; got++ }
+      }
+      if(got) saveProg();
+      cfg.at=Date.now(); saveCfg(); pulling=false;
+      if($("syncWhen")) $("syncWhen").textContent="방금 "+clock(cfg.at);
+      renderHome(); cb&&cb(got);
+    })
+    .catch(function(){ pulling=false; if($("syncMsg")) $("syncMsg").textContent="서버에 연결하지 못했습니다. 코드와 인터넷 연결을 확인해 주세요."; cb&&cb(0) });
+}
+document.addEventListener("visibilitychange",function(){ if(!document.hidden) pullNow() });
 
 /* 홈 */
 function renderHome(){
-  var a=items(),w=0,k=0;
-  a.forEach(function(it){ it.status==="known"?k++:w++ });
-  $("cw").textContent=w; $("ck").textContent=k;
+  var a=items(),c={red:0,again:0,green:0};
+  a.forEach(function(it){ c[it.lamp]++ });
+  $("cw").textContent=c.red; $("ca").textContent=c.again; $("ck").textContent=c.green;
+  [["lampRed","red","lit-red"],["lampAgain","again","lit-again"],["lampGreen","green","lit-green"]].forEach(function(p){
+    var el=$(p[0]); el.className="lamp "+(c[p[1]]?p[2]:"off");
+    el.setAttribute("aria-pressed",filter===p[1]?"true":"false");
+  });
+  $("listTitle").textContent=filter==="all"?"전체 문제":LAMP[filter].n;
+  $("allBtn").textContent=filter==="all"?"신호등으로 고르기":"전체 보기";
+  $("syncBadge").textContent=syncOn()?"동기화 켜짐 · "+cfg.code:"동기화 · 백업";
   var q=queue().length;
   $("revCnt").textContent=q?q+"문제":"없음";
   $("btnReview").disabled=!q;
 
-  var used={}; a.forEach(function(it){ used[it.unit]=(used[it.unit]||0)+1 });
+  var semUsed={},unitUsed={};
+  a.forEach(function(it){
+    semUsed[it.sem]=(semUsed[it.sem]||0)+1;
+    if(semPick&&it.sem===semPick) unitUsed[it.unit]=(unitUsed[it.unit]||0)+1;
+  });
+  var sf=$("semFilter"); sf.innerHTML="";
+  sf.appendChild(chip("전체 학기","",semPick==="",pickSem));
+  SEMS.forEach(function(s){ if(semUsed[s]) sf.appendChild(chip(s+" ("+semUsed[s]+")",s,semPick===s,pickSem)) });
   var uf=$("unitFilter"); uf.innerHTML="";
-  uf.appendChild(chip("전체 단원","",unitPick===""));
-  UNITS.forEach(function(u){ if(used[u]) uf.appendChild(chip(u+" "+used[u],u,unitPick===u)) });
+  if(semPick){
+    uf.appendChild(chip("단원 전체","",unitPick==="",pickUnit));
+    UNITS.forEach(function(u){ if(unitUsed[u]) uf.appendChild(chip(u+" ("+unitUsed[u]+")",u,unitPick===u,pickUnit)) });
+  }
   renderList();
 }
-function chip(label,val,on){
+function pickSem(v){ semPick=v; unitPick=""; shown=PAGE; renderHome() }
+function pickUnit(v){ unitPick=v; shown=PAGE; renderHome() }
+function chip(label,val,on,fn){
   var b=document.createElement("button"); b.textContent=label; b.setAttribute("aria-pressed",on?"true":"false");
-  b.onclick=function(){ unitPick=val; shown=PAGE; renderHome() }; return b;
+  b.onclick=function(){ fn(val) }; return b;
 }
 function visible(){
   return items().filter(function(it){
-    if(filter==="wrong"&&it.status==="known") return false;
-    if(filter==="known"&&it.status!=="known") return false;
+    if(filter!=="all"&&it.lamp!==filter) return false;
+    if(semPick&&it.sem!==semPick) return false;
     if(unitPick&&it.unit!==unitPick) return false;
     return true;
   });
@@ -447,13 +469,12 @@ function renderList(){
   var v=visible(), el=$("list");
   if(!v.length){ el.innerHTML='<div class="empty">여기에 해당하는 문제가 없습니다.</div>'; $("btnMore").classList.add("hidden"); return }
   el.innerHTML=v.slice(0,shown).map(function(it){
-    var k=it.status==="known";
-    var lead=it.img?'<img src="'+it.img+'" alt="">':'<span class="no">'+(it.n||"＋")+'</span>';
-    return '<button class="item" data-id="'+it.id+'">'+lead+
+    var L=LAMP[it.lamp];
+    return '<button class="item l-'+it.lamp+'" data-id="'+it.id+'"><span class="no">'+it.n+'</span>'+
       '<span class="meta"><span class="top"><span class="unit">'+esc(it.unit)+'</span>'+
-      '<span class="badge '+(k?"kn":"w")+'">'+(k?"○":"△")+'</span></span>'+
+      '<span class="badge '+L.c+'">'+L.n+'</span></span>'+
       '<span class="note">'+esc(it.title)+'</span>'+
-      '<span class="date">'+(it.src?esc(it.src)+' · ':'')+'틀린 횟수 '+it.wrongCount+'회</span></span></button>';
+      '<span class="date">'+esc(it.src)+' · 틀린 횟수 '+it.wrongCount+'회</span></span></button>';
   }).join("");
   Array.prototype.forEach.call(el.querySelectorAll(".item"),function(b){ b.onclick=function(){ openDetail(b.dataset.id) } });
   var more=$("btnMore");
@@ -462,42 +483,11 @@ function renderList(){
 }
 $("btnMore").onclick=function(){ shown+=PAGE; renderList() };
 
-/* 문제 추가 */
-$("btnAdd").onclick=function(){ draft={imgs:[],unit:draft.unit||"곱셈",note:""}; $("addNote").value=""; renderAdd(); show("scAdd"); $("filePick").click() };
-function renderAdd(){
-  $("addThumbs").innerHTML=draft.imgs.map(function(src,i){
-    return '<figure><img src="'+src+'" alt=""><button data-i="'+i+'" aria-label="사진 빼기">×</button></figure>' }).join("");
-  Array.prototype.forEach.call($("addThumbs").querySelectorAll("button"),function(b){
-    b.onclick=function(){ draft.imgs.splice(+b.dataset.i,1); renderAdd() } });
-  var u=$("addUnits"); u.innerHTML="";
-  UNITS.forEach(function(name){
-    var b=document.createElement("button"); b.textContent=name;
-    b.setAttribute("aria-pressed",draft.unit===name?"true":"false");
-    b.onclick=function(){ draft.unit=name; renderAdd() }; u.appendChild(b);
-  });
-  $("addSave").disabled=!draft.imgs.length;
-  $("addSave").textContent=draft.imgs.length?draft.imgs.length+"문제 저장":"저장";
-}
-$("filePick").onchange=function(e){
-  var fs=Array.prototype.slice.call(e.target.files||[]); e.target.value="";
-  if(!fs.length) return; toast("사진 정리 중…");
-  Promise.all(fs.map(compress)).then(function(l){ draft.imgs=draft.imgs.concat(l); renderAdd() })
-    .catch(function(){ toast("사진을 읽지 못했습니다.") });
-};
-$("addMore").onclick=function(){ $("filePick").click() };
-$("addCancel").onclick=function(){ hide("scAdd") };
-$("addSave").onclick=function(){
-  var note=$("addNote").value.trim(), now=Date.now(), c=draft.imgs.length;
-  draft.imgs.forEach(function(src,i){
-    photos.push({id:uid(),img:src,unit:draft.unit,note:note,status:"wrong",wrongCount:1,createdAt:now+i});
-  });
-  savePhotos(); hide("scAdd"); shown=PAGE; renderHome(); toast(c+"문제를 담았습니다.");
-};
-
 /* 다시 풀기 */
 function queue(){
-  var q=items().filter(function(it){ return it.status!=="known" && (!unitPick||it.unit===unitPick) });
+  var q=items().filter(function(it){ return it.lamp!=="green" && (!semPick||it.sem===semPick) && (!unitPick||it.unit===unitPick) });
   if(cfg.order==="shuffle"){ for(var i=q.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=q[i]; q[i]=q[j]; q[j]=t } }
+  else q.sort(function(a,b){ return (b.lamp==="again")-(a.lamp==="again") || a.order-b.order });
   return q;
 }
 $("btnReview").onclick=function(){
@@ -509,117 +499,119 @@ function renderRev(){
   var n=rev.queue.length;
   if(rev.i>=n){
     $("revPos").textContent=""; $("revBar").style.width="100%";
-    $("revBody").innerHTML='<div class="done"><div class="big-n kn">'+rev.got+'</div><p>문제를 알게 됐습니다.</p>'+
-      '<p class="note">또 틀린 문제 '+rev.again+'개는 다음에 다시 나옵니다.</p><button class="primary" id="revEnd">끝내기</button></div>';
+    $("revBody").innerHTML='<div class="done"><div class="big-n kn">'+rev.got+'</div><p>문제를 이제는 알게 됐습니다.</p>'+
+      '<p class="note">아직 모르겠는 문제 '+rev.again+'개는 다음에 다시 나옵니다.</p><button class="big" id="revEnd" style="margin-top:20px;justify-content:center">끝내기</button></div>';
     $("revEnd").onclick=function(){ hide("scReview"); renderHome() }; return;
   }
   var it=byId(rev.queue[rev.i]); if(!it){ rev.i++; return renderRev() }
   $("revPos").textContent=(rev.i+1)+" / "+n;
   $("revBar").style.width=(rev.i/n*100)+"%";
-  $("revBody").innerHTML='<div class="qwrap"><div class="qmeta"><span>'+(it.n?it.n+'번 · ':'')+esc(it.unit)+'</span><span>틀린 횟수 '+it.wrongCount+'</span></div>'+
-    (it.q?'<div class="q">'+it.q+'</div>':'')+
-    (it.img?'<img src="'+it.img+'" alt="문제 사진" style="margin-top:10px">':'')+'</div>'+
-    '<div class="judge"><button class="again">또 틀렸어 △</button><button class="got">알겠어 ○</button></div>';
+  $("revBody").innerHTML='<div class="qwrap"><div class="qmeta"><span>'+it.n+'번 · '+esc(it.unit)+'</span>'+
+    '<span class="'+LAMP[it.lamp].c+'">'+LAMP[it.lamp].n+'</span></div><div class="q">'+it.q+'</div></div>'+
+    '<div class="judge"><button class="again">아직 모르겠어요</button><button class="got">이제는 알아요</button></div>';
   $("revBody").querySelector(".again").onclick=function(){ judge(it,false) };
   $("revBody").querySelector(".got").onclick=function(){ judge(it,true) };
   window.scrollTo(0,0);
 }
 function judge(it,ok){
-  if(ok){ setState(it,{status:"known",last:Date.now()}); rev.got++ }
-  else{ setState(it,{status:"wrong",wrongCount:it.wrongCount+1,last:Date.now()}); rev.again++ }
+  if(ok){ setState(it,{status:"known"}); rev.got++ }
+  else{ setState(it,{status:"wrong",again:it.again+1,wrongCount:it.wrongCount+1}); rev.again++ }
   rev.i++; renderRev();
 }
 
-/* 상세 */
+/* 문제 카드 */
+function toggleBox(btn,id){
+  var box=$(id), open=box.classList.contains("hidden");
+  box.classList.toggle("hidden",!open);
+  btn.setAttribute("aria-expanded",open?"true":"false");
+  btn.textContent=(id==="boxHint"?"힌트":"답")+(open?" 숨기기":" 보기");
+}
 function openDetail(id){ detailId=id; renderDetail(); show("scDetail") }
 function renderDetail(){
   var it=byId(detailId); if(!it) return hide("scDetail");
-  var k=it.status==="known";
-  $("detTitle").textContent=it.n?it.n+"번":"찍어 올린 문제";
+  $("detTitle").textContent=it.n+"번";
   $("detBody").innerHTML=
-    (it.q?'<div class="qwrap"><div class="q">'+it.q+'</div></div>':'')+
-    (it.img?'<img src="'+it.img+'" alt="문제 사진">':'')+
-    '<div class="row"><button id="dW" class="'+(k?"":"on-w")+'">△ 다시 풀기</button><button id="dK" class="'+(k?"on-k":"")+'">○ 알게 됨</button></div>'+
-    (it.kind==="seed"?'<button class="big ghost" id="dShot" style="margin-top:12px">'+(it.img?"사진 다시 찍기":"교재 사진 붙이기")+' <span class="cnt">'+(it.fig?"그림 문제":"선택")+'</span></button>':'')+
-    '<label class="f2">단원</label><div class="chips" id="dUnits"></div>'+
-    (it.kind==="photo"?'<label class="f2">메모</label><input type="text" id="dNote" value="'+esc(it.title)+'">':'')+
-    '<div class="hist">'+esc(it.unit)+(it.src?' · '+esc(it.src):'')+' · 틀린 횟수 '+it.wrongCount+'회'+(it.last?'<br>마지막으로 푼 날 '+fmt(it.last):'')+'</div>'+
-    (it.kind==="photo"?'<button class="danger" id="dDel">이 문제 삭제</button>':(it.img?'<button class="danger" id="dImgDel">붙인 사진 지우기</button>':''));
-  var u=$("dUnits");
-  UNITS.forEach(function(name){
-    var b=document.createElement("button"); b.textContent=name;
-    b.setAttribute("aria-pressed",it.unit===name?"true":"false");
-    b.onclick=function(){ setState(it,{}); if(it.kind==="photo"){ for(var j=0;j<photos.length;j++) if(photos[j].id===it.id) photos[j].unit=name; savePhotos(); renderDetail() } else toast("기본 문제의 단원은 바꿀 수 없습니다.") };
-    u.appendChild(b);
-  });
-  if($("dNote")) $("dNote").onchange=function(){ for(var j=0;j<photos.length;j++) if(photos[j].id===it.id) photos[j].note=this.value.trim(); savePhotos(); toast("메모를 저장했습니다.") };
-  $("dW").onclick=function(){ setState(it,{status:"wrong"}); renderDetail() };
+    '<div class="qwrap"><div class="q">'+it.q+'</div></div>'+
+    '<div class="reveal"><button id="btnHint" aria-expanded="false">힌트 보기</button>'+
+    '<button id="btnAns" aria-expanded="false">답 보기</button></div>'+
+    '<div id="boxHint" class="box-h hidden"><b>힌트</b>'+esc(it.hint)+'</div>'+
+    '<div id="boxAns" class="box-a hidden"><b>답</b>'+esc(it.ans)+'</div>'+
+    '<div class="row"><button id="dW" class="'+(it.lamp==="red"?"on-w":"")+'">틀렸어요</button>'+
+    '<button id="dA" class="'+(it.lamp==="again"?"on-ag":"")+'">아직 모르겠어요</button>'+
+    '<button id="dK" class="'+(it.lamp==="green"?"on-k":"")+'">이제는 알아요</button></div>'+
+    '<div class="hist">'+esc(it.sem)+' · '+esc(it.unit)+' · '+esc(it.src)+'<br>틀린 횟수 '+it.wrongCount+'회'+
+    (it.last?' · 마지막으로 푼 날 '+fmt(it.last):'')+'</div>';
+  $("btnHint").onclick=function(){ toggleBox(this,"boxHint") };
+  $("btnAns").onclick=function(){ toggleBox(this,"boxAns") };
+  $("dW").onclick=function(){ setState(it,{status:"wrong",again:0}); renderDetail() };
+  $("dA").onclick=function(){ setState(it,{status:"wrong",again:it.again||1}); renderDetail() };
   $("dK").onclick=function(){ setState(it,{status:"known"}); renderDetail() };
-  if($("dShot")) $("dShot").onclick=function(){ $("seedPick").click() };
-  if($("dImgDel")) $("dImgDel").onclick=function(){ setState(it,{img:null}); renderDetail() };
-  if($("dDel")) $("dDel").onclick=function(){
-    if(!confirm("이 문제를 삭제할까요?")) return;
-    photos=photos.filter(function(x){ return x.id!==it.id }); savePhotos(); hide("scDetail"); renderHome(); toast("삭제했습니다.");
-  };
 }
-$("seedPick").onchange=function(e){
-  var f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
-  toast("사진 정리 중…");
-  compress(f).then(function(src){ var it=byId(detailId); setState(it,{img:src}); renderDetail() })
-    .catch(function(){ toast("사진을 읽지 못했습니다.") });
-};
 $("detClose").onclick=function(){ hide("scDetail"); renderHome() };
 
 /* 설정 */
-$("btnSettings").onclick=function(){
-  var bytes=((localStorage.getItem(KEY)||"").length+(localStorage.getItem(PROG)||"").length)*2;
-  $("meterBar").style.width=Math.min(100,bytes/5242880*100).toFixed(1)+"%";
-  $("meterTxt").textContent="찍어 올린 문제 "+photos.length+"개 · 약 "+(bytes/1048576).toFixed(1)+"MB 사용 (한도 약 5MB)";
-  $("quality").value=String(cfg.q||1200);
+$("btnSettings").onclick=function(){ renderSet(); show("scSet") };
+function renderSet(){
+  var st=$("syncToggle"); st.innerHTML="";
+  [[true,"켜기"],[false,"끄기"]].forEach(function(p){
+    var b=document.createElement("button"); b.textContent=p[1];
+    b.setAttribute("aria-pressed",(!!cfg.sync)===p[0]?"true":"false");
+    b.onclick=function(){
+      if(p[0]&&!$("syncCode").value.trim()) return toast("동기화 코드를 먼저 넣어 주세요.");
+      cfg.sync=p[0]; cfg.code=$("syncCode").value.trim(); saveCfg(); renderSet(); renderHome();
+      if(p[0]) pullNow(function(){ pushNow(); toast("동기화를 켰습니다.") }); else toast("동기화를 껐습니다.");
+    };
+    st.appendChild(b);
+  });
+  $("syncCode").value=cfg.code||"";
+  $("syncWhen").textContent=cfg.at?clock(cfg.at):"";
   var o=$("orderPick"); o.innerHTML="";
   [["seq","번호 순서대로"],["shuffle","섞어서"]].forEach(function(p){
     var b=document.createElement("button"); b.textContent=p[1];
     b.setAttribute("aria-pressed",(cfg.order||"seq")===p[0]?"true":"false");
-    b.onclick=function(){ cfg.order=p[0]; saveCfg(); $("btnSettings").click() }; o.appendChild(b);
+    b.onclick=function(){ cfg.order=p[0]; saveCfg(); renderSet() }; o.appendChild(b);
   });
-  show("scSet");
+  var done=0,cnt=0; items().forEach(function(it){ if(it.lamp==="green") done++; if(it.last) cnt++ });
+  $("statTxt").textContent="문제 "+SEED.length+"개 · 푼 기록 "+cnt+"개 · 이제는 알아요 "+done+"개";
+}
+$("syncCode").onchange=function(){ if(cfg.sync){ cfg.code=this.value.trim(); saveCfg(); renderHome() } };
+$("syncNow").onclick=function(){
+  if(!syncOn()) return toast("먼저 동기화를 켜 주세요.");
+  $("syncMsg").textContent="동기화하는 중…";
+  pullNow(function(){ pushNow(function(){ $("syncMsg").textContent="맞췄습니다. 두 기기의 기록이 같아졌습니다."; renderSet() }) });
 };
 $("setClose").onclick=function(){ hide("scSet"); renderHome() };
-$("quality").onchange=function(){ cfg.q=+this.value; saveCfg(); toast("다음 사진부터 적용됩니다.") };
 $("doExport").onclick=function(){
-  var blob=new Blob([JSON.stringify({v:2,photos:photos,prog:prog})],{type:"application/json"});
+  var blob=new Blob([JSON.stringify({v:3,prog:prog})],{type:"application/json"});
   var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
-  a.download="수아오답노트_"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  a.download="CandysMath_"+new Date().toISOString().slice(0,10)+".json"; a.click();
   setTimeout(function(){ URL.revokeObjectURL(a.href) },2000);
 };
 $("doImport").onclick=function(){ $("jsonPick").click() };
 $("jsonPick").onchange=function(e){
   var f=e.target.files[0]; e.target.value=""; if(!f) return;
-  var fr3=new FileReader();
-  fr3.onload=function(){
+  var r=new FileReader();
+  r.onload=function(){
     try{
-      var d=JSON.parse(fr3.result), add=0, have={};
-      photos.forEach(function(i){ have[i.id]=1 });
-      (d.photos||d.items||[]).forEach(function(i){ if(i&&i.id&&!have[i.id]){ photos.push(i); add++ } });
-      if(d.prog) for(var k in d.prog) prog[k]=d.prog[k];
-      savePhotos(); saveProg(); renderHome(); toast("불러왔습니다. 사진 "+add+"개 추가");
+      var d=JSON.parse(r.result), src=d.prog||{}, got=0;
+      for(var id in src){ var l=prog[id]; if(!l||((src[id].last||0)>(l.last||0))){ prog[id]=src[id]; got++ } }
+      saveProg(); schedulePush(); renderSet(); renderHome(); toast(got+"개 기록을 합쳤습니다.");
     }catch(err){ toast("파일을 읽지 못했습니다.") }
   };
-  fr3.readAsText(f);
+  r.readAsText(f);
 };
 $("wipe").onclick=function(){
-  if(!confirm("푼 기록과 찍어 올린 사진을 모두 지웁니다. 되돌릴 수 없습니다.")) return;
-  photos=[]; prog={}; savePhotos(); saveProg(); hide("scSet"); renderHome(); toast("모두 지웠습니다.");
+  if(!confirm("푼 기록을 모두 지웁니다. 되돌릴 수 없습니다.")) return;
+  prog={}; saveProg(); schedulePush(); hide("scSet"); renderHome(); toast("모두 지웠습니다.");
 };
 
-Array.prototype.forEach.call(document.querySelectorAll('[role="tab"]'),function(b){
-  b.onclick=function(){
-    document.querySelectorAll('[role="tab"]').forEach(function(x){ x.setAttribute("aria-selected","false") });
-    b.setAttribute("aria-selected","true"); filter=b.dataset.f; shown=PAGE; renderList();
-  };
+Array.prototype.forEach.call(document.querySelectorAll(".lamp"),function(b){
+  b.onclick=function(){ filter=b.dataset.f; shown=PAGE; renderHome() };
 });
+$("allBtn").onclick=function(){ filter=(filter==="all"?"red":"all"); shown=PAGE; renderHome() };
 
 renderHome();
+if(syncOn()) pullNow();
 })();
 </script>
 </body>
