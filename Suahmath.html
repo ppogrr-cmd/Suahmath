@@ -72,6 +72,7 @@
   .screen{position:fixed;inset:0;background:var(--paper);z-index:20;overflow-y:auto;padding:14px 16px calc(20px + var(--safe-b))}
   .bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
   .bar .t{font-weight:700}
+  .bar .pos{font-size:13px;color:var(--ink-soft);min-width:52px;text-align:right}
   .bar button{font-size:15px;color:var(--act);font-weight:600;padding:6px 2px}
   label.f2{display:block;font-size:13px;color:var(--ink-soft);margin:16px 0 6px}
   input[type=text]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);
@@ -81,6 +82,10 @@
   .progress i{display:block;height:100%;background:var(--ink);transition:width .25s}
   .qwrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 15px;margin-bottom:14px}
   .qmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-bottom:10px}
+  .nav{display:flex;gap:8px;margin:12px 0 10px}
+  .nav button{flex:1;padding:13px 6px;border:1px solid var(--line);border-radius:12px;background:var(--card);
+    font-weight:600;font-size:14px;color:var(--ink-soft)}
+  .nav button:disabled{opacity:.35}
   .judge{display:flex;gap:10px;position:sticky;bottom:calc(10px + var(--safe-b))}
   .judge button{flex:1;padding:18px 10px;border-radius:var(--radius);font-size:17px;font-weight:700;color:#fff}
   .judge .again{background:var(--again)} .judge .got{background:var(--known)}
@@ -187,7 +192,7 @@
 </div>
 
 <div class="screen hidden" id="scDetail">
-  <div class="bar"><button id="detClose">닫기</button><span class="t" id="detTitle">문제</span><span style="width:40px"></span></div>
+  <div class="bar"><button id="detClose">닫기</button><span class="t" id="detTitle">문제</span><span class="pos" id="detPos"></span></div>
   <div id="detBody"></div>
 </div>
 
@@ -405,7 +410,7 @@ var SEED_SEM="3-2학기", PAGE=25;
 
 var prog=jload(PROG,{}), cfg=jload(SET,{order:"seq",sync:false,code:""});
 var filter="red", semPick="", unitPick="", shown=PAGE;
-var rev={queue:[],i:0,got:0,again:0}, detailId=null, pushTimer=null, pulling=false;
+var rev={queue:[],i:0,got:0,again:0,done:{}}, detailId=null, detailRing=[], pushTimer=null, pulling=false;
 
 function jload(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v==null?d:v }catch(e){ return d } }
 function saveProg(){ try{ localStorage.setItem(PROG,JSON.stringify(prog)) }catch(e){} }
@@ -538,7 +543,7 @@ function queue(){
 }
 $("btnReview").onclick=function(){
   var q=queue(); if(!q.length) return toast("다시 풀 문제가 없습니다.");
-  rev={queue:q.map(function(i){return i.id}),i:0,got:0,again:0}; show("scReview"); renderRev();
+  rev={queue:q.map(function(i){return i.id}),i:0,got:0,again:0,done:{}}; show("scReview"); renderRev();
 };
 $("revQuit").onclick=function(){ hide("scReview"); renderHome() };
 function renderRev(){
@@ -554,25 +559,41 @@ function renderRev(){
   $("revBar").style.width=(rev.i/n*100)+"%";
   $("revBody").innerHTML='<div class="qwrap"><div class="qmeta"><span>'+esc(it.unit)+'</span>'+
     '<span class="'+LAMP[it.lamp].c+'">'+LAMP[it.lamp].n+'</span></div><div class="q">'+it.q+'</div></div>'+
+    '<div class="reveal"><button id="rHint" aria-expanded="false">힌트 보기</button>'+
+    '<button id="rAns" aria-expanded="false">답 보기</button></div>'+
+    '<div id="rBoxHint" class="box-h hidden"><b>힌트</b>'+esc(it.hint)+'</div>'+
+    '<div id="rBoxAns" class="box-a hidden"><b>답</b>'+esc(it.ans)+'</div>'+
+    '<div class="nav"><button id="rPrev"'+(rev.i===0?" disabled":"")+'>← 이전 문제</button>'+
+    '<button id="rNext">다음 문제 →</button></div>'+
     '<div class="judge"><button class="again">아직 모르겠어요</button><button class="got">이제는 알아요</button></div>';
+  $("rHint").onclick=function(){ toggleBox(this,"rBoxHint","힌트") };
+  $("rAns").onclick=function(){ toggleBox(this,"rBoxAns","답") };
+  $("rPrev").onclick=function(){ if(rev.i>0){ rev.i--; renderRev() } };
+  $("rNext").onclick=function(){ rev.i++; renderRev() };
   $("revBody").querySelector(".again").onclick=function(){ judge(it,false) };
   $("revBody").querySelector(".got").onclick=function(){ judge(it,true) };
   window.scrollTo(0,0);
 }
 function judge(it,ok){
-  if(ok){ setState(it,{status:"known"}); rev.got++ }
-  else{ setState(it,{status:"wrong",again:it.again+1,wrongCount:it.wrongCount+1}); rev.again++ }
+  var first=!rev.done[it.id];
+  rev.done[it.id]=true;
+  if(ok){ setState(it,{status:"known"}); if(first) rev.got++ }
+  else{ setState(it,{status:"wrong",again:it.again+1,wrongCount:it.wrongCount+1}); if(first) rev.again++ }
   rev.i++; renderRev();
 }
 
 /* 문제 카드 */
-function toggleBox(btn,id){
+function toggleBox(btn,id,label){
   var box=$(id), open=box.classList.contains("hidden");
   box.classList.toggle("hidden",!open);
   btn.setAttribute("aria-expanded",open?"true":"false");
-  btn.textContent=(id==="boxHint"?"힌트":"답")+(open?" 숨기기":" 보기");
+  btn.textContent=label+(open?" 숨기기":" 보기");
 }
-function openDetail(id){ detailId=id; renderDetail(); show("scDetail") }
+function openDetail(id){
+  detailRing=visible().map(function(x){ return x.id });
+  if(detailRing.indexOf(id)<0) detailRing=[id];
+  detailId=id; renderDetail(); show("scDetail");
+}
 function renderDetail(){
   var it=byId(detailId); if(!it) return hide("scDetail");
   $("detTitle").textContent=it.unit;
@@ -585,10 +606,17 @@ function renderDetail(){
     '<div class="row"><button id="dW" class="'+(it.lamp==="red"?"on-w":"")+'">틀렸어요</button>'+
     '<button id="dA" class="'+(it.lamp==="again"?"on-ag":"")+'">아직 모르겠어요</button>'+
     '<button id="dK" class="'+(it.lamp==="green"?"on-k":"")+'">이제는 알아요</button></div>'+
+    '<div class="nav"><button id="dPrev">← 이전 문제</button><button id="dNext">다음 문제 →</button></div>'+
     '<div class="hist">'+esc(it.sem)+' · '+esc(it.unit)+'<br>틀린 횟수 '+it.wrongCount+'회'+
     (it.last?' · 마지막으로 푼 날 '+fmt(it.last):'')+'</div>';
-  $("btnHint").onclick=function(){ toggleBox(this,"boxHint") };
-  $("btnAns").onclick=function(){ toggleBox(this,"boxAns") };
+  var at=detailRing.indexOf(it.id);
+  $("detPos").textContent=at>=0?(at+1)+" / "+detailRing.length:"";
+  $("dPrev").disabled=(at<=0);
+  $("dNext").disabled=(at<0||at>=detailRing.length-1);
+  $("dPrev").onclick=function(){ detailId=detailRing[at-1]; renderDetail(); window.scrollTo(0,0) };
+  $("dNext").onclick=function(){ detailId=detailRing[at+1]; renderDetail(); window.scrollTo(0,0) };
+  $("btnHint").onclick=function(){ toggleBox(this,"boxHint","힌트") };
+  $("btnAns").onclick=function(){ toggleBox(this,"boxAns","답") };
   $("dW").onclick=function(){ setState(it,{status:"wrong",again:0}); renderDetail() };
   $("dA").onclick=function(){ setState(it,{status:"wrong",again:it.again||1}); renderDetail() };
   $("dK").onclick=function(){ setState(it,{status:"known"}); renderDetail() };
