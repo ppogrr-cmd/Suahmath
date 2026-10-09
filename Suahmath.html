@@ -165,7 +165,7 @@
 <div class="wrap" id="home">
   <div class="head">
     <span class="mark">박</span>
-    <div><h1>박수학</h1><p>틀린 문제만 골라 다시 풀기</p></div>
+    <div><h1>박수학</h1><p id="headSub">틀린 문제만 골라 다시 풀기</p></div>
   </div>
 
   <div class="signal">
@@ -1083,6 +1083,11 @@ function renderHome(){
     var el=$(p[0]); el.className="lamp "+(c[p[1]]?p[2]:"off");
     el.setAttribute("aria-pressed",filter===p[1]?"true":"false");
   });
+  var scope = semPick ? (unitPick ? semPick+" "+unitPick : semPick) : "";
+  var vis = visible().length;
+  $("headSub").textContent = scope
+    ? scope+" "+a.filter(function(it){ return it.sem===semPick && (!unitPick||it.unit===unitPick) }).length+"문제 · 전체 "+SEED.length+"문제"
+    : "전체 "+SEED.length+"문제 · 틀린 문제만 골라 다시 풀기";
   $("listTitle").textContent=filter==="all"?"전체 문제":LAMP[filter].n;
   $("allBtn").textContent=filter==="all"?"신호등으로 고르기":"전체 보기";
   $("printCnt").textContent=visible().length+"문제 중 고르기";
