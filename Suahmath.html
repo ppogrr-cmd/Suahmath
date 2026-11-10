@@ -1699,10 +1699,11 @@ $("allBtn").onclick=function(){ filter=(filter==="all"?"red":"all"); shown=PAGE;
 var COS=[
   {k:"casual",n:"평상복",p:0},{k:"hanbok",n:"한복",p:0},{k:"chef",n:"요리사",p:60},
   {k:"scientist",n:"과학자",p:80},{k:"detective",n:"탐정",p:100},{k:"skater",n:"피겨 스케이터",p:120},
-  {k:"princess",n:"공주",p:150},{k:"wizard",n:"마법사",star:20},{k:"astronaut",n:"우주비행사",star:40}];
+  {k:"princess",n:"공주",p:150},
+  {k:"doctor",n:"의사",p:90},{k:"nurse",n:"간호사",p:90},{k:"wizard",n:"마법사",star:20},{k:"astronaut",n:"우주비행사",star:40}];
 var COSBG={casual:"linear-gradient(180deg,#bfe3ff,#fff3fa)",hanbok:"linear-gradient(180deg,#ffe2c4,#fff7ee)",chef:"linear-gradient(180deg,#ffe9b8,#fffaf0)",
   scientist:"linear-gradient(180deg,#c8f2ea,#f2fffb)",detective:"linear-gradient(180deg,#e8dccb,#fbf7f1)",skater:"linear-gradient(180deg,#d9e9ff,#ffffff)",
-  princess:"linear-gradient(180deg,#cfe4ff,#fdf0ff)",astronaut:"linear-gradient(180deg,#1b2350,#3b3f8f)",wizard:"linear-gradient(180deg,#3a2a6b,#7a5cc9)"};
+  princess:"linear-gradient(180deg,#cfe4ff,#fdf0ff)",astronaut:"linear-gradient(180deg,#1b2350,#3b3f8f)",wizard:"linear-gradient(180deg,#3a2a6b,#7a5cc9)",doctor:"linear-gradient(180deg,#d6ecff,#f5fbff)",nurse:"linear-gradient(180deg,#ffd9e6,#fff6f9)"};
 var UNITLOOK={"곱셈":["×","#ff7aa8","#ff4f8f"],"나눗셈":["÷","#4f9dff","#3b6cf6"],"원":["○","#34c38f","#1f9d6f"],"분수":["½","#ffb347","#ff8a3d"],
   "들이와 무게":["⚖","#20c5c9","#159aa8"],"그림그래프":["▦","#f783ac","#e64980"],"큰 수":["억","#748ffc","#4c6ef5"],"각도":["∠","#9d7bff","#7048e8"],
   "곱셈과 나눗셈":["×÷","#ff8787","#f03e3e"],"평면도형의 이동":["↻","#38d9a9","#0ca678"],"막대그래프":["▥","#ffa94d","#f76707"],
