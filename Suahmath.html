@@ -177,6 +177,8 @@
   .k-av:after{content:'';position:absolute;left:18%;right:18%;bottom:6px;height:16px;border-radius:50%;background:#0000001c;z-index:-1}
   .k-toy{position:absolute;right:14px;top:62px;width:52px;height:52px;border-radius:16px;background:#fff;display:grid;place-items:center;font-size:30px;box-shadow:0 4px 12px #0002;opacity:0;transform:scale(.6);transition:.25s}
   .k-toy.on{opacity:1;transform:scale(1)}
+  .k-toy img{max-width:46px;max-height:46px}.k-toy{width:64px;height:64px}
+  .k-toys button img{max-width:46px;max-height:46px;vertical-align:middle}
   .k-toys{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding:2px 2px 6px;scrollbar-width:none}
   .k-toys::-webkit-scrollbar{display:none}
   .k-toys button{flex:none;width:58px;height:58px;border-radius:18px;background:#fff;font-size:30px;box-shadow:0 3px 10px #1f2a4d14}
@@ -1710,17 +1712,19 @@ var OLDCOS={chef:60,scientist:80,detective:100,skater:120,princess:150,doctor:90
 var SQ=["squeeze","stretch","poke","cheek","toss","hug"];
 var ICAT=[["all","전체"],["sq","말랑이"],["sl","슬라임"],["dl","인형"],["bk","책"],["fd","간식"],["mine","내 물건"]];
 var ITEMS=[
-  {k:"s1",c:"sq",n:"모찌 말랑이",e:"🍡",p:30,t:"#fff4e6"},{k:"s2",c:"sq",n:"딸기 말랑이",e:"🍓",p:40,t:"#ffe3e3"},{k:"s3",c:"sq",n:"복숭아 말랑이",e:"🍑",p:40,t:"#fff0e6"},
-  {k:"s4",c:"sq",n:"고양이 말랑이",e:"🐱",p:50,t:"#fff9db"},{k:"s5",c:"sq",n:"곰돌이 말랑이",e:"🐻",p:50,t:"#f8f0e3"},{k:"s6",c:"sq",n:"구름 말랑이",e:"☁️",p:60,t:"#e7f5ff"},
-  {k:"s7",c:"sq",n:"개구리 말랑이",e:"🐸",p:60,t:"#ebfbee"},{k:"s8",c:"sq",n:"펭귄 말랑이",e:"🐧",p:70,t:"#e7f5ff"},{k:"s9",c:"sq",n:"아보카도 말랑이",e:"🥑",p:70,t:"#f4fce3"},
-  {k:"s10",c:"sq",n:"반짝별 말랑이",e:"🌟",star:20,t:"#fff9db"},
+  {k:"s1",c:"sq",n:"찐빵 말랑이",e:"🥟",p:30,t:"#fff4e6"},{k:"s11",c:"sq",n:"식빵 말랑이",e:"🍞",p:40,t:"#fff4e6"},{k:"s12",c:"sq",n:"쭈욱 스틱 말랑이",e:"🥖",p:40,t:"#fff9db",pose:"stretch"},
+  {k:"s2",c:"sq",n:"딸기우유 말랑이",e:"🥛",p:50,t:"#fff0f6"},{k:"s3",c:"sq",n:"복숭아 말랑이",e:"🍑",p:50,t:"#fff0e6"},{k:"s4",c:"sq",n:"고양이 말랑이",e:"🐱",p:60,t:"#f3f0ff"},
+  {k:"s6",c:"sq",n:"구름 말랑이",e:"☁️",p:60,t:"#e7f5ff"},{k:"s8",c:"sq",n:"펭귄 말랑이",e:"🐧",p:70,t:"#e7f5ff"},{k:"s9",c:"sq",n:"아보카도 말랑이",e:"🥑",p:70,t:"#f4fce3"},
+  {k:"s10",c:"sq",n:"우주 행성 말랑이",e:"🪐",star:20,t:"#e5dbff"},
   {k:"l1",c:"sl",n:"하늘 슬라임",e:"🫧",p:60,t:"#e3fafc"},{k:"l2",c:"sl",n:"민트 슬라임",e:"🧪",p:70,t:"#e6fcf5"},{k:"l3",c:"sl",n:"무지개 슬라임",e:"🌈",star:30,t:"#f3f0ff"},
   {k:"d1",c:"dl",n:"곰 인형",e:"🧸",p:80,t:"#fff4e6"},{k:"d2",c:"dl",n:"토끼 인형",e:"🐰",p:80,t:"#f8f9fa"},{k:"d3",c:"dl",n:"유니콘 인형",e:"🦄",star:50,t:"#f3f0ff"},
   {k:"b1",c:"bk",n:"동화책",e:"📘",p:50,t:"#e7f5ff"},{k:"b2",c:"bk",n:"과학책",e:"📗",p:60,t:"#ebfbee"},{k:"b3",c:"bk",n:"만화책",e:"📙",p:60,t:"#fff4e6"},{k:"b4",c:"bk",n:"마법책",e:"📖",star:40,t:"#f3f0ff"},
   {k:"f1",c:"fd",n:"막대사탕",e:"🍭",p:20,t:"#fff0f6",pose:"eat"},{k:"f2",c:"fd",n:"쿠키",e:"🍪",p:25,t:"#fff4e6",pose:"eat"},{k:"f3",c:"fd",n:"아이스크림",e:"🍦",p:30,t:"#f8f9fa",pose:"eat"},
   {k:"f4",c:"fd",n:"도넛",e:"🍩",p:30,t:"#fff4e6",pose:"eat"},{k:"f5",c:"fd",n:"컵케이크",e:"🧁",p:35,t:"#f3f0ff",pose:"eat"},
   {k:"f6",c:"fd",n:"바나나우유",e:"🥛",p:25,t:"#fff9db",pose:"drink"},{k:"f7",c:"fd",n:"버블티",e:"🧋",p:35,t:"#f8f0e3",pose:"drink"},{k:"f8",c:"fd",n:"사과주스",e:"🧃",p:20,t:"#ebfbee",pose:"drink"}];
-var ITEMBY={}; ITEMS.forEach(function(x){ ITEMBY[x.k]=x });
+var ITIMG={s1:1,s2:1,s3:1,s4:1,s6:1,s8:1,s9:1,s10:1,s11:1,s12:1};
+var ITEMBY={}; ITEMS.forEach(function(x){ if(ITIMG[x.k]) x.img="it/"+x.k+".webp"; ITEMBY[x.k]=x });
+function itIcon(it){ return it.img?'<img src="'+it.img+'" alt="">':it.e }
 var SAY={squeeze:"꾹꾹~ 말랑말랑!",stretch:"쭈우욱~ 늘어난다!",poke:"콕콕! 폭신해~",cheek:"볼에 대면 시원해~",toss:"하나, 둘, 휙~!",hug:"꼬옥 안아줄래 💙",
   slime:"쭈욱~ 찰랑찰랑!",doll:"내 친구야!",read:"오늘은 이 책 읽을래 📖",eat:"냠냠, 맛있다!",drink:"쪼옥~ 시원해!",jump:"야호!",wave:"안녕~ 👋",proud:"나 잘했지? 👍",sit:"잠깐 쉬는 중~"};
 function itemPose(it){
@@ -1750,7 +1754,7 @@ Av.prototype.run=function(p,seq,ms,loop,done){
 Av.prototype.idle=function(){ this.busy=false; if(this.toy) this.toy.classList.remove("on"); this.run("idle",[0,1,2,3,2,1],320,true) };
 Av.prototype.act=function(p,item,say,bub){
   var me=this; me.busy=true;
-  if(me.toy){ if(item){ me.toy.textContent=item.e; me.toy.classList.add("on") } else me.toy.classList.remove("on") }
+  if(me.toy){ if(item){ me.toy.innerHTML=itIcon(item); me.toy.classList.add("on") } else me.toy.classList.remove("on") }
   if(bub){ bub.dataset.keep=bub.dataset.keep||bub.innerHTML; bub.innerHTML=say||SAY[p]||"";
     clearTimeout(bub._t); bub._t=setTimeout(function(){ bub.innerHTML=bub.dataset.keep; delete bub.dataset.keep },3200) }
   var seq=p==="jump"?[0,1,2,3,2,1,2,3,2,1,0]:[0,1,2,3,2,3,2,1,2,3,2,1,0];
@@ -1772,7 +1776,7 @@ function avBoot(){
   },9000);
   ["jump","wave","proud"].forEach(function(p){ avPre(p) });
 }
-function playItem(it,av,bub){ var p=itemPose(it); av.act(p,it,it.e+" "+(SAY[p]||""),bub) }
+function playItem(it,av,bub){ var p=itemPose(it); av.act(p,it,(it.img?"":it.e+" ")+(SAY[p]||""),bub) }
 var UNITLOOK={"곱셈":["×","#5c7cfa","#4263eb"],"나눗셈":["÷","#4f9dff","#3b6cf6"],"원":["○","#34c38f","#1f9d6f"],"분수":["½","#ffb347","#ff8a3d"],
   "들이와 무게":["⚖","#20c5c9","#159aa8"],"그림그래프":["▦","#69db7c","#37b24d"],"큰 수":["억","#748ffc","#4c6ef5"],"각도":["∠","#9d7bff","#7048e8"],
   "곱셈과 나눗셈":["×÷","#ff8787","#f03e3e"],"평면도형의 이동":["↻","#38d9a9","#0ca678"],"막대그래프":["▥","#ffa94d","#f76707"],
@@ -1821,7 +1825,7 @@ function renderKid(){
   avBoot();
   var ty=$("kToys"); ty.innerHTML="";
   g.inv.forEach(function(k){ var it=ITEMBY[k]; if(!it) return;
-    var b=document.createElement("button"); b.textContent=it.e; b.title=it.n; b.onclick=function(){ playItem(it,AV1,$("kBubble")) }; ty.appendChild(b) });
+    var b=document.createElement("button"); b.innerHTML=itIcon(it); b.title=it.n; b.onclick=function(){ playItem(it,AV1,$("kBubble")) }; ty.appendChild(b) });
   var mo=document.createElement("button"); mo.className="more"; mo.textContent=g.inv.length?"🛍️ 더 사기":"🛍️ 상점에서 장난감 사기"; mo.onclick=function(){ kGoTab("closet") }; ty.appendChild(mo);
   $("kStar").textContent="⭐ "+st;
   $("kLv").textContent="Lv."+(1+Math.floor(st/10));
@@ -1864,8 +1868,8 @@ function renderCloset(st){
   ITEMS.forEach(function(it){
     var own=g.inv.indexOf(it.k)>=0;
     if(kClosetTab==="mine"&&!own) return; if(kClosetTab!=="all"&&kClosetTab!=="mine"&&it.c!==kClosetTab) return;
-    var d=document.createElement("button"); d.className="k-it"+(own?"":" lock"); d.style.setProperty("--tb",it.t);
-    d.innerHTML=(it.star?'<span class="tag">특별</span>':'')+'<div class="th">'+(it.img?'<img src="'+it.img+'" alt="">':it.e)+'</div><div class="nm">'+it.n+'</div>'+
+    var d=document.createElement("button"); d.className="k-it"+(!own&&it.star&&st<it.star?" lock":""); d.style.setProperty("--tb",it.t);
+    d.innerHTML=(it.star?'<span class="tag">특별</span>':'')+'<div class="th">'+itIcon(it)+'</div><div class="nm">'+it.n+'</div>'+
       (own?'<div class="own">놀기 ▶</div>':
        it.star?'<div class="sp">🔒 ⭐'+it.star+'개 모으면<br>(지금 '+st+'개)</div>':'<div class="pr"><span class="k-coin">C</span>'+it.p+'</div>');
     d.onclick=function(){ pickItem(it,st) }; gr.appendChild(d);
