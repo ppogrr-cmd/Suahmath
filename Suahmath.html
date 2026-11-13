@@ -201,6 +201,9 @@
   .k-lv{position:absolute;right:14px;bottom:14px;background:var(--kn);color:#fff;border-radius:14px;padding:6px 10px;font-size:12px;font-weight:700}
   .k-lv b{color:var(--kp);font-size:15px}
   .k-star{position:absolute;left:14px;bottom:14px;background:#fff;border-radius:14px;padding:6px 10px;font-size:12px;font-weight:800;color:#b07800}
+  .k-sw{display:flex;background:#fff;border-radius:99px;padding:3px;box-shadow:0 2px 8px #0001;flex:none}
+  .k-sw a{color:#7a8099;text-decoration:none;font-size:13px;font-weight:700;padding:5px 10px;border-radius:99px}
+  .k-sw a.on{background:#1f2a4d;color:#fff}
   .k-hero{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:26px;padding:22px 20px 18px;color:#fff;box-shadow:0 10px 26px #1f2a4d33}
   .k-hmsg{font-family:'Jua';font-size:24px;line-height:1.35;min-height:32px}
   .k-hmsg b{color:#99e9f2 !important}
@@ -323,7 +326,7 @@
 
 <div class="kid" id="kidHome">
   <div class="k-top"><span class="mark">박</span><h1>박수학</h1>
-    <span class="k-pill fire" id="kStreak">🔥 0일</span></div>
+    <nav class="k-sw"><a class="on" href="/">수학</a><a href="/voca/">영어</a></nav><span class="k-pill fire" id="kStreak">🔥 0일</span></div>
   <div class="k-hero"><div class="k-hmsg" id="kBubble"></div>
     <div class="k-hst"><div><b id="kStar">0</b><span>⭐ 정복한 문제</span></div><div><b id="kToday">0</b><span>오늘 푼 문제</span></div><div><b id="kLv">Lv.1</b><span>수학 탐험가</span></div></div></div>
   <div class="k-card">
@@ -338,7 +341,7 @@
 </div>
 
 <div class="kid hidden" id="kidRec">
-  <div class="k-top"><span class="mark">박</span><h1>내 기록</h1><span class="k-pill fire" id="kStreak2">🔥 0일</span></div>
+  <div class="k-top"><span class="mark">박</span><h1>내 기록</h1><nav class="k-sw"><a class="on" href="/">수학</a><a href="/voca/">영어</a></nav><span class="k-pill fire" id="kStreak2">🔥 0일</span></div>
   <div class="k-sum" id="kSum"></div>
   <div class="k-card"><h2>이번 주 vs 지난주</h2><div class="k-cmp" id="kCmp"></div><div class="k-msg" id="kCmpMsg"></div></div>
   <div class="k-card"><h2>최근 7일 <small>파랑 = 맞힌 문제</small></h2><div class="k-week" id="kWeek"></div></div>

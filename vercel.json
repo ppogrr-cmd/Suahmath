@@ -1,5 +1,12 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/Suahmath.html" }
+    { "source": "/", "destination": "/Suahmath.html" },
+    { "source": "/voca", "destination": "/voca/index.html" }
+  ],
+  "headers": [
+    { "source": "/", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
+    { "source": "/Suahmath.html", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
+    { "source": "/voca/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
+    { "source": "/api/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
   ]
 }
