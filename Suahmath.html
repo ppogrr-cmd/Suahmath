@@ -175,6 +175,17 @@
   .k-stage img.pop{animation:kpop .45s}
   .k-av{position:absolute;left:50%;bottom:8px;height:330px;aspect-ratio:280/520;transform:translateX(-50%);background-size:400% 100%;background-repeat:no-repeat;filter:drop-shadow(0 10px 8px #0002);cursor:pointer;-webkit-tap-highlight-color:transparent}
   .k-av:after{content:'';position:absolute;left:18%;right:18%;bottom:6px;height:16px;border-radius:50%;background:#0000001c;z-index:-1}
+  .k-av .mv{position:absolute;inset:0;transform-origin:50% 100%}
+  .k-av .ly{position:absolute;inset:0;background-size:400% 100%;background-repeat:no-repeat;opacity:0;transition:opacity .25s ease}
+  .k-av .mv.breath{animation:kbreath 3.6s ease-in-out infinite}
+  .k-av .mv.bob{animation:kbob 1.8s ease-in-out infinite}
+  .k-av .mv.sway{animation:ksway 1.3s ease-in-out infinite alternate}
+  .k-av .mv.hop{animation:khop .8s ease-in-out 2}
+  @keyframes kbreath{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-1px) scaleY(1.006)}}
+  @keyframes kbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @keyframes ksway{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
+  @keyframes khop{0%,100%{transform:translateY(0)}35%{transform:translateY(-22px)}65%{transform:translateY(-4px)}}
+  @media (prefers-reduced-motion:reduce){.k-av .mv{animation:none !important}}
   .k-toy{position:absolute;right:14px;top:62px;width:52px;height:52px;border-radius:16px;background:#fff;display:grid;place-items:center;font-size:30px;box-shadow:0 4px 12px #0002;opacity:0;transform:scale(.6);transition:.25s}
   .k-toy.on{opacity:1;transform:scale(1)}
   .k-toy img{max-width:46px;max-height:46px}.k-toy{width:64px;height:64px}
@@ -1779,26 +1790,35 @@ function itemPose(it){
 var AVLOAD={};
 function avSrc(p){ return "av/"+p+".webp" }
 function avPre(p,cb){ if(AVLOAD[p]===true) return cb&&cb(); var im=new Image(); im.onload=function(){ AVLOAD[p]=true; cb&&cb() }; im.onerror=function(){ cb&&cb() }; im.src=avSrc(p) }
-function Av(el,toyEl){ this.el=el; this.toy=toyEl; this.t=null; this.busy=false; this.idle() }
-Av.prototype.run=function(p,seq,ms,loop,done){
-  var me=this; clearTimeout(me.t);
+/* 동작별 대표 한 장(0~2번 프레임; 3번엔 워터마크가 있어 제외) */
+var AVKEY={idle:0,jump:2,wave:1,read:1,eat:1,drink:2,squeeze:1,stretch:1,poke:1,cheek:1,toss:2,hug:1,slime:1,doll:1,sit:1,proud:1};
+var AVMOVE={jump:"hop",wave:"sway",toss:"sway",proud:"bob",sit:"",idle:"breath"};
+function Av(el,toyEl){
+  this.el=el; this.toy=toyEl; this.t=null; this.busy=false; this.cur=0;
+  el.style.backgroundImage="none";
+  el.innerHTML='<div class="mv"><div class="ly"></div><div class="ly"></div></div>';
+  this.mv=el.firstChild; this.ly=el.querySelectorAll(".ly");
+  this.show("idle",true);
+}
+Av.prototype.show=function(p,instant){
+  var me=this;
   avPre(p,function(){
-    me.el.style.backgroundImage="url("+avSrc(p)+")"; var i=0;
-    (function step(){
-      me.el.style.backgroundPosition=(seq[i]*100/3)+"% 0";
-      i++; if(i>=seq.length){ if(loop) i=0; else { me.t=setTimeout(done,ms); return } }
-      me.t=setTimeout(step,ms);
-    })();
+    var nx=me.ly[1-me.cur], cu=me.ly[me.cur];
+    nx.style.backgroundImage="url("+avSrc(p)+")"; nx.style.backgroundPosition=((AVKEY[p]||0)*100/3)+"% 0";
+    nx.style.transition="none"; nx.style.opacity=0; nx.style.zIndex=2; cu.style.zIndex=1; void nx.offsetWidth;
+    nx.style.transition=instant?"none":""; nx.style.opacity=1; me.cur=1-me.cur;
+    clearTimeout(me.ft); me.ft=setTimeout(function(){ cu.style.transition="none"; cu.style.opacity=0 },instant?0:300);
+    me.mv.className="mv "+(AVMOVE[p]===undefined?"bob":AVMOVE[p]);
   });
 };
-Av.prototype.idle=function(){ this.busy=false; if(this.toy) this.toy.classList.remove("on"); this.run("idle",[0,1,2,3,2,1],320,true) };
+Av.prototype.idle=function(){ this.busy=false; if(this.toy) this.toy.classList.remove("on"); this.show("idle") };
 Av.prototype.act=function(p,item,say,bub){
-  var me=this; me.busy=true;
+  var me=this; me.busy=true; clearTimeout(me.t);
   if(me.toy){ if(item){ me.toy.innerHTML=itIcon(item); me.toy.classList.add("on") } else me.toy.classList.remove("on") }
   if(bub){ bub.dataset.keep=bub.dataset.keep||bub.innerHTML; bub.innerHTML=say||SAY[p]||"";
     clearTimeout(bub._t); bub._t=setTimeout(function(){ bub.innerHTML=bub.dataset.keep; delete bub.dataset.keep },3200) }
-  var seq=p==="jump"?[0,1,2,3,2,1,2,3,2,1,0]:[0,1,2,3,2,3,2,1,2,3,2,1,0];
-  me.run(p,seq,p==="jump"?170:230,false,function(){ me.idle() });
+  me.show(p);
+  me.t=setTimeout(function(){ me.idle() },p==="jump"?1600:2800);
 };
 var AV1=null, AV2=null, AVC=null;
 function avBoot(){
