@@ -611,6 +611,11 @@ body{padding-bottom:0}
 <script>
 /* 예전 주소(suahvocab.vercel.app)에서 넘겨준 기기 기록을 한 번 받아 둔다 */
 (function(){
+  if(location.hostname==="suahmath.vercel.app"){
+    var o={}; try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); o[k]=localStorage.getItem(k) } }catch(e){}
+    location.replace("https://suahstudy.vercel.app/voca/#mig="+encodeURIComponent(JSON.stringify(o)));
+    return;
+  }
   var h=location.hash;
   if(h.indexOf("#mig=")!==0) return;
   try{

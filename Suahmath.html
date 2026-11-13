@@ -439,6 +439,36 @@
 </div>
 
 <script>
+/* ===== 주소 이사: suahmath.vercel.app → suahstudy.vercel.app =====
+   옛 주소로 열면 이 기기에 저장된 기록을 들고 새 주소로 넘어간다. 새 주소에서는 받아서 합친다. */
+(function(){
+  var NEW="suahstudy.vercel.app";
+  if(location.hostname==="suahmath.vercel.app"){
+    var d={}; try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); d[k]=localStorage.getItem(k) } }catch(e){}
+    location.replace("https://"+NEW+location.pathname+"#mig="+encodeURIComponent(JSON.stringify(d)));
+    return;
+  }
+  var h=location.hash; if(h.indexOf("#mig=")!==0) return;
+  try{
+    var d=JSON.parse(decodeURIComponent(h.slice(5)));
+    for(var k in d){
+      if(typeof d[k]!=="string") continue;
+      var cur=localStorage.getItem(k);
+      if(cur==null){ localStorage.setItem(k,d[k]); continue }
+      // 문제·단어 기록 묶음이면 항목별로 더 최근 것을 남긴다
+      try{ var a=JSON.parse(cur), b=JSON.parse(d[k]);
+        if(a&&b&&typeof a==="object"&&typeof b==="object"&&!Array.isArray(a)){
+          for(var id in b){ var x=a[id], y=b[id];
+            if(x==null || (y&&x&&typeof y==="object"&&(y.last||0)>(x.last||0))) a[id]=y }
+          localStorage.setItem(k,JSON.stringify(a));
+        }
+      }catch(e){}
+    }
+  }catch(e){}
+  history.replaceState(null,"",location.pathname);
+})();
+</script>
+<script>
 (function(){
 "use strict";
 function fr(a,b){return '<span class="f"><i>'+a+'</i><i>'+b+'</i></span>'}
