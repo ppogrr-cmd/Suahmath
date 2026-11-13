@@ -201,6 +201,13 @@
   .k-lv{position:absolute;right:14px;bottom:14px;background:var(--kn);color:#fff;border-radius:14px;padding:6px 10px;font-size:12px;font-weight:700}
   .k-lv b{color:var(--kp);font-size:15px}
   .k-star{position:absolute;left:14px;bottom:14px;background:#fff;border-radius:14px;padding:6px 10px;font-size:12px;font-weight:800;color:#b07800}
+  .k-hero{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:26px;padding:22px 20px 18px;color:#fff;box-shadow:0 10px 26px #1f2a4d33}
+  .k-hmsg{font-family:'Jua';font-size:24px;line-height:1.35;min-height:32px}
+  .k-hmsg b{color:#99e9f2 !important}
+  .k-hst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+  .k-hst div{background:#ffffff1a;border-radius:16px;padding:10px 8px;text-align:center}
+  .k-hst b{display:block;font-family:'Jua';font-weight:400;font-size:26px;line-height:1.2}
+  .k-hst span{font-size:11.5px;opacity:.8;font-weight:700}
   .k-card{margin-top:16px;background:#fff;border-radius:24px;padding:18px;box-shadow:0 6px 18px #1f2a4d14}
   .k-card h2{font-family:'Jua';font-weight:400;font-size:22px;margin:0;display:flex;justify-content:space-between;align-items:center}
   .k-card h2 small{font-family:"Pretendard Variable",sans-serif;font-size:13px;color:var(--km);font-weight:700}
@@ -316,27 +323,18 @@
 
 <div class="kid" id="kidHome">
   <div class="k-top"><span class="mark">박</span><h1>박수학</h1>
-    <span class="k-pill fire" id="kStreak">🔥 0일</span><span class="k-pill"><span class="k-coin">C</span><span class="kc">0</span></span></div>
-  <div class="k-stage" id="kStage"><div class="k-bubble" id="kBubble"></div><div class="k-av" id="kAv" role="img" aria-label="수아 캐릭터"></div><div class="k-toy" id="kToy"></div>
-    <div class="k-star" id="kStar">⭐ 0</div><div class="k-lv">수학 탐험가 <b id="kLv">Lv.1</b></div></div>
-  <div class="k-toys" id="kToys"></div>
+    <span class="k-pill fire" id="kStreak">🔥 0일</span></div>
+  <div class="k-hero"><div class="k-hmsg" id="kBubble"></div>
+    <div class="k-hst"><div><b id="kStar">0</b><span>⭐ 정복한 문제</span></div><div><b id="kToday">0</b><span>오늘 푼 문제</span></div><div><b id="kLv">Lv.1</b><span>수학 탐험가</span></div></div></div>
   <div class="k-card">
     <h2>오늘의 미션 <small id="kMisTxt">0 / 5</small></h2>
     <div class="k-dots" id="kDots"></div>
     <button class="k-go" id="kGo">시작하기 ▶</button>
-    <div class="k-sub" id="kMisSub">5문제를 끝까지 풀면 <b>코인 10개</b> · 7일 연속이면 <b>보너스 30개</b> 🎁</div>
+    <div class="k-sub" id="kMisSub">5문제를 끝까지 풀면 🔥 연속 기록이 하루 늘어요</div>
   </div>
   <div class="k-sec"><span>단원 탐험 지도</span><span class="k-sems" id="kSems"></span></div>
   <div class="k-units" id="kUnits"></div>
   <p class="k-note">단원을 누르면 그 단원에서 5문제가 나와요 · ⭐는 두 번 맞혀서 정복한 문제</p>
-</div>
-
-<div class="kid hidden" id="kidCloset">
-  <div class="k-top"><span class="mark">박</span><h1>상점</h1><span class="k-pill"><span class="k-coin">C</span><span class="kc">0</span></span></div>
-  <div class="k-stage" id="kStage2" style="height:330px"><div class="k-bubble" id="kBubble2">사 주면 같이 놀 수 있어!</div><div class="k-av" id="kAv2" style="height:270px"></div><div class="k-toy" id="kToy2"></div></div>
-  <div class="k-tabs" id="kTabs"></div>
-  <div class="k-grid" id="kGrid"></div>
-  <p class="k-note">✨특별 물건은 ⭐을 모으면 열려요 · 가진 물건을 누르면 같이 놀아요</p>
 </div>
 
 <div class="kid hidden" id="kidRec">
@@ -357,7 +355,7 @@
 </nav>
 
 <div class="k-mis hidden" id="kMis"><div class="in">
-  <div class="k-mtop"><button class="k-x" id="kQuit">✕</button><div class="k-prog" id="kProg"></div><span class="k-pill"><span class="k-coin">C</span><span class="kc">0</span></span></div>
+  <div class="k-mtop"><button class="k-x" id="kQuit">✕</button><div class="k-prog" id="kProg"></div></div>
   <div id="kQBody"></div>
 </div>
   <div class="k-dock"><div class="k-row" id="kStep1"><button class="k-btn hint" id="kHint">💡</button><button class="k-btn check" id="kCheck">답 확인하기</button></div>
@@ -1760,82 +1758,6 @@ $("allBtn").onclick=function(){ filter=(filter==="all"?"red":"all"); shown=PAGE;
 
 /* ===== 수아 화면: 캐릭터 · 미션 · 옷장 ===== */
 var OLDCOS={chef:60,scientist:80,detective:100,skater:120,princess:150,doctor:90,nurse:90,police:90,firefighter:100,pilot:110,attendant:90,teacher:80,painter:100,photographer:100,reporter:110,archaeologist:120,vet:110,gardener:80,baker:90,designer:120,programmer:100,soccer:100,tennis:100,ballerina:110,taekwondo:90,skier:110,fairy:160,mermaid:160,pirate:130,ninja:120};
-var SQ=["squeeze","stretch","poke","cheek","toss","hug"];
-var ICAT=[["all","전체"],["sq","말랑이"],["sl","슬라임"],["dl","인형"],["bk","책"],["fd","간식"],["mine","내 물건"]];
-var ITEMS=[
-  {k:"s1",c:"sq",n:"찐빵 말랑이",e:"🥟",p:30,t:"#fff4e6"},{k:"s11",c:"sq",n:"식빵 말랑이",e:"🍞",p:40,t:"#fff4e6"},{k:"s12",c:"sq",n:"쭈욱 스틱 말랑이",e:"🥖",p:40,t:"#fff9db",pose:"stretch"},
-  {k:"s2",c:"sq",n:"딸기우유 말랑이",e:"🥛",p:50,t:"#fff0f6"},{k:"s3",c:"sq",n:"복숭아 말랑이",e:"🍑",p:50,t:"#fff0e6"},{k:"s4",c:"sq",n:"고양이 말랑이",e:"🐱",p:60,t:"#f3f0ff"},
-  {k:"s6",c:"sq",n:"구름 말랑이",e:"☁️",p:60,t:"#e7f5ff"},{k:"s8",c:"sq",n:"펭귄 말랑이",e:"🐧",p:70,t:"#e7f5ff"},{k:"s9",c:"sq",n:"아보카도 말랑이",e:"🥑",p:70,t:"#f4fce3"},
-  {k:"s10",c:"sq",n:"우주 행성 말랑이",e:"🪐",star:20,t:"#e5dbff"},
-  {k:"l1",c:"sl",n:"하늘 슬라임",e:"🫧",p:60,t:"#e3fafc"},{k:"l2",c:"sl",n:"민트 슬라임",e:"🧪",p:70,t:"#e6fcf5"},{k:"l3",c:"sl",n:"무지개 슬라임",e:"🌈",star:30,t:"#f3f0ff"},
-  {k:"d1",c:"dl",n:"곰 인형",e:"🧸",p:80,t:"#fff4e6"},{k:"d2",c:"dl",n:"토끼 인형",e:"🐰",p:80,t:"#f8f9fa"},{k:"d3",c:"dl",n:"유니콘 인형",e:"🦄",star:50,t:"#f3f0ff"},
-  {k:"b1",c:"bk",n:"동화책",e:"📘",p:50,t:"#e7f5ff"},{k:"b2",c:"bk",n:"과학책",e:"📗",p:60,t:"#ebfbee"},{k:"b3",c:"bk",n:"만화책",e:"📙",p:60,t:"#fff4e6"},{k:"b4",c:"bk",n:"마법책",e:"📖",star:40,t:"#f3f0ff"},
-  {k:"f1",c:"fd",n:"막대사탕",e:"🍭",p:20,t:"#fff0f6",pose:"eat"},{k:"f2",c:"fd",n:"쿠키",e:"🍪",p:25,t:"#fff4e6",pose:"eat"},{k:"f3",c:"fd",n:"아이스크림",e:"🍦",p:30,t:"#f8f9fa",pose:"eat"},
-  {k:"f4",c:"fd",n:"도넛",e:"🍩",p:30,t:"#fff4e6",pose:"eat"},{k:"f5",c:"fd",n:"컵케이크",e:"🧁",p:35,t:"#f3f0ff",pose:"eat"},
-  {k:"f6",c:"fd",n:"바나나우유",e:"🥛",p:25,t:"#fff9db",pose:"drink"},{k:"f7",c:"fd",n:"버블티",e:"🧋",p:35,t:"#f8f0e3",pose:"drink"},{k:"f8",c:"fd",n:"사과주스",e:"🧃",p:20,t:"#ebfbee",pose:"drink"}];
-var ITIMG={s1:1,s2:1,s3:1,s4:1,s6:1,s8:1,s9:1,s10:1,s11:1,s12:1};
-var ITEMBY={}; ITEMS.forEach(function(x){ if(ITIMG[x.k]) x.img="it/"+x.k+".webp"; ITEMBY[x.k]=x });
-function itIcon(it){ return it.img?'<img src="'+it.img+'" alt="">':it.e }
-var SAY={squeeze:"꾹꾹~ 말랑말랑!",stretch:"쭈우욱~ 늘어난다!",poke:"콕콕! 폭신해~",cheek:"볼에 대면 시원해~",toss:"하나, 둘, 휙~!",hug:"꼬옥 안아줄래 💙",
-  slime:"쭈욱~ 찰랑찰랑!",doll:"내 친구야!",read:"오늘은 이 책 읽을래 📖",eat:"냠냠, 맛있다!",drink:"쪼옥~ 시원해!",jump:"야호!",wave:"안녕~ 👋",proud:"나 잘했지? 👍",sit:"잠깐 쉬는 중~"};
-function itemPose(it){
-  if(it.pose) return it.pose;
-  if(it.c==="sq") return SQ[Math.floor(Math.random()*SQ.length)];
-  if(it.c==="sl") return Math.random()<.7?"slime":"stretch";
-  if(it.c==="dl") return Math.random()<.6?"doll":"hug";
-  if(it.c==="bk") return "read";
-  return "wave";
-}
-/* 움직이는 아바타 (4프레임 스프라이트) */
-var AVLOAD={};
-function avSrc(p){ return "av/"+p+".webp" }
-function avPre(p,cb){ if(AVLOAD[p]===true) return cb&&cb(); var im=new Image(); im.onload=function(){ AVLOAD[p]=true; cb&&cb() }; im.onerror=function(){ cb&&cb() }; im.src=avSrc(p) }
-/* 동작별 대표 한 장(0~2번 프레임; 3번엔 워터마크가 있어 제외) */
-var AVKEY={idle:0,jump:2,wave:1,read:1,eat:1,drink:2,squeeze:1,stretch:1,poke:1,cheek:1,toss:2,hug:1,slime:1,doll:1,sit:1,proud:1};
-var AVMOVE={jump:"hop",wave:"sway",toss:"sway",proud:"bob",sit:"",idle:"breath"};
-function Av(el,toyEl){
-  this.el=el; this.toy=toyEl; this.t=null; this.busy=false; this.cur=0;
-  el.style.backgroundImage="none";
-  el.innerHTML='<div class="mv"><div class="ly"></div><div class="ly"></div></div>';
-  this.mv=el.firstChild; this.ly=el.querySelectorAll(".ly");
-  this.show("idle",true);
-}
-Av.prototype.show=function(p,instant){
-  var me=this;
-  avPre(p,function(){
-    var nx=me.ly[1-me.cur], cu=me.ly[me.cur];
-    nx.style.backgroundImage="url("+avSrc(p)+")"; nx.style.backgroundPosition=((AVKEY[p]||0)*100/3)+"% 0";
-    nx.style.transition="none"; nx.style.opacity=0; nx.style.zIndex=2; cu.style.zIndex=1; void nx.offsetWidth;
-    nx.style.transition=instant?"none":""; nx.style.opacity=1; me.cur=1-me.cur;
-    clearTimeout(me.ft); me.ft=setTimeout(function(){ cu.style.transition="none"; cu.style.opacity=0 },instant?0:300);
-    me.mv.className="mv "+(AVMOVE[p]===undefined?"bob":AVMOVE[p]);
-  });
-};
-Av.prototype.idle=function(){ this.busy=false; if(this.toy) this.toy.classList.remove("on"); this.show("idle") };
-Av.prototype.act=function(p,item,say,bub){
-  var me=this; me.busy=true; clearTimeout(me.t);
-  if(me.toy){ if(item){ me.toy.innerHTML=itIcon(item); me.toy.classList.add("on") } else me.toy.classList.remove("on") }
-  if(bub){ bub.dataset.keep=bub.dataset.keep||bub.innerHTML; bub.innerHTML=say||SAY[p]||"";
-    clearTimeout(bub._t); bub._t=setTimeout(function(){ bub.innerHTML=bub.dataset.keep; delete bub.dataset.keep },3200) }
-  me.show(p);
-  me.t=setTimeout(function(){ me.idle() },p==="jump"?1600:2800);
-};
-var AV1=null, AV2=null, AVC=null;
-function avBoot(){
-  if(AV1) return;
-  AV1=new Av($("kAv"),$("kToy")); AV2=new Av($("kAv2"),$("kToy2"));
-  $("kAv").onclick=function(){ var r=["jump","wave","proud","sit"][Math.floor(Math.random()*4)]; AV1.act(r,null,null,$("kBubble")) };
-  $("kAv2").onclick=function(){ var r=["jump","wave","proud"][Math.floor(Math.random()*3)]; AV2.act(r,null,null,$("kBubble2")) };
-  // 가끔 혼자서 가진 물건으로 놀기
-  setInterval(function(){
-    if(!AV1||AV1.busy||$("kidHome").classList.contains("hidden")||!$("kMis").classList.contains("hidden")) return;
-    if(Math.random()<.5) return;
-    var inv=(G().inv||[]).map(function(k){ return ITEMBY[k] }).filter(Boolean);
-    if(inv.length&&Math.random()<.75){ var it=inv[Math.floor(Math.random()*inv.length)]; AV1.act(itemPose(it),it,null,null) }
-    else AV1.act(Math.random()<.5?"wave":"proud",null,null,null);
-  },9000);
-  ["jump","wave","proud"].forEach(function(p){ avPre(p) });
-}
 /* ===== 기록 ===== */
 function logAdd(k,n){ var g=G(); if(!g.log) g.log={}; var d=dayStr(0), L=g.log[d]||(g.log[d]={s:0,r:0,c:0}); L[k]=(L[k]||0)+(n||1) }
 function logRange(a,b){ var g=G(), o={s:0,r:0,c:0}; for(var i=a;i<=b;i++){ var L=(g.log||{})[dayStr(i)]; if(L){ o.s+=L.s||0; o.r+=L.r||0; o.c+=L.c||0 } } return o }
@@ -1880,7 +1802,6 @@ function renderRec(){
   $("kBdg").innerHTML=bl.map(function(b){ return '<div class="'+(b[4]?"on":"")+'"><em>'+b[1]+'</em><b>'+b[2]+'</b><span>'+b[3]+'</span></div>' }).join("");
 }
 function newBadges(){ var g=G(); if(!g.bseen) g.bseen=[]; var out=[]; badgeList().forEach(function(b){ if(b[4]&&g.bseen.indexOf(b[0])<0){ g.bseen.push(b[0]); out.push(b) } }); return out }
-function playItem(it,av,bub){ var p=itemPose(it); av.act(p,it,(it.img?"":it.e+" ")+(SAY[p]||""),bub) }
 var UNITLOOK={"곱셈":["×","#5c7cfa","#4263eb"],"나눗셈":["÷","#4f9dff","#3b6cf6"],"원":["○","#34c38f","#1f9d6f"],"분수":["½","#ffb347","#ff8a3d"],
   "들이와 무게":["⚖","#20c5c9","#159aa8"],"그림그래프":["▦","#69db7c","#37b24d"],"큰 수":["억","#748ffc","#4c6ef5"],"각도":["∠","#9d7bff","#7048e8"],
   "곱셈과 나눗셈":["×÷","#ff8787","#f03e3e"],"평면도형의 이동":["↻","#38d9a9","#0ca678"],"막대그래프":["▥","#ffa94d","#f76707"],
@@ -1893,7 +1814,6 @@ function G(){
   if(g.v!==2){ // 예전 코스튬 → 코인 돌려주기
     var back=0; (g.own||[]).forEach(function(k){ back+=OLDCOS[k]||0 });
     g.coins=(g.coins||0)+back; g.inv=g.inv||[]; g.v=2; delete g.own; delete g.wear;
-    if(back) setTimeout(function(){ toast("옷장이 상점으로 바뀌었어요! 코인 "+back+"개를 돌려받았어요 🎁") },600);
   }
   if(!g.inv) g.inv=[];
   return g;
@@ -1921,26 +1841,20 @@ function ensureMission(){
 }
 
 function renderKid(){
-  if($("kidHome").classList.contains("hidden")&&$("kidCloset").classList.contains("hidden")) return;
+  if($("kidHome").classList.contains("hidden")) return;
   ensureMission();
   var g=G(), all=items(), st=stars(all);
-  Array.prototype.forEach.call(document.querySelectorAll(".kc"),function(e){ e.textContent=g.coins });
   $("kStreak").textContent="🔥 "+streakNow()+"일";
-  avBoot();
-  var ty=$("kToys"); ty.innerHTML="";
-  g.inv.forEach(function(k){ var it=ITEMBY[k]; if(!it) return;
-    var b=document.createElement("button"); b.innerHTML=itIcon(it); b.title=it.n; b.onclick=function(){ playItem(it,AV1,$("kBubble")) }; ty.appendChild(b) });
-  var mo=document.createElement("button"); mo.className="more"; mo.textContent=g.inv.length?"🛍️ 더 사기":"🛍️ 상점에서 장난감 사기"; mo.onclick=function(){ kGoTab("closet") }; ty.appendChild(mo);
-  $("kStar").textContent="⭐ "+st;
+  $("kStar").textContent=st; $("kToday").textContent=logRange(0,0).s;
   $("kLv").textContent="Lv."+(1+Math.floor(st/10));
   var done=Math.min(g.mI,g.mIds.length), tot=g.mIds.length;
   $("kMisTxt").textContent=g.mDone?"완료! 🎉":done+" / "+tot;
   $("kDots").innerHTML=g.mIds.map(function(_,i){ return '<i class="'+(i<done||g.mDone?"ok":"")+'"></i>' }).join("");
   $("kGo").textContent=g.mDone?"한 세트 더 하기 ▶":(done?"이어서 풀기 ▶":"시작하기 ▶");
   $("kGo").disabled=!tot;
-  $("kBubble").innerHTML=!tot?"풀 문제가 없어요! 대단해 ✨":g.mDone?"오늘 미션 완료! 최고야 💖":
-    (done?"미션 <b style=\"color:#3b5bdb\">"+(tot-done)+"문제</b> 남았어! 힘내 💪":"오늘 5문제 풀면 <b style=\"color:#3b5bdb\">코인 10개</b>! ✨");
-  $("kMisSub").innerHTML=g.mDone?"한 세트 더 풀어도 <b>코인 10개</b>를 받아요":"5문제를 끝까지 풀면 <b>코인 10개</b> · 7일 연속이면 <b>보너스 30개</b> 🎁";
+  $("kBubble").innerHTML=!tot?"풀 문제가 없어요! 대단해 ✨":g.mDone?"오늘 미션 완료! 최고야 👏":
+    (done?"미션 <b>"+(tot-done)+"문제</b> 남았어! 힘내 💪":"오늘의 <b>5문제</b>, 시작해 볼까? ✏️");
+  $("kMisSub").innerHTML=g.mDone?"더 풀수록 기록이 쌓여요 📊":"5문제를 끝까지 풀면 🔥 연속 기록이 하루 늘어요";
   // 학기 탭
   var semUsed={}; all.forEach(function(it){ semUsed[it.sem]=1 });
   var sm=$("kSems"); sm.innerHTML="";
@@ -1958,52 +1872,14 @@ function renderKid(){
     b.onclick=function(){ startSet(pickSet(MIS_N,u),"unit",u) };
     ue.appendChild(b);
   });
-  renderCloset(st);
-}
-
-function renderCloset(st){
-  var g=G();
-  var tb=$("kTabs"); tb.innerHTML="";
-  ICAT.forEach(function(p){
-    var b=document.createElement("button"); b.textContent=p[1]; if(kClosetTab===p[0]) b.className="on";
-    b.onclick=function(){ kClosetTab=p[0]; renderCloset(st) }; tb.appendChild(b);
-  });
-  var gr=$("kGrid"); gr.innerHTML="";
-  ITEMS.forEach(function(it){
-    var own=g.inv.indexOf(it.k)>=0;
-    if(kClosetTab==="mine"&&!own) return; if(kClosetTab!=="all"&&kClosetTab!=="mine"&&it.c!==kClosetTab) return;
-    var d=document.createElement("button"); d.className="k-it"+(!own&&it.star&&st<it.star?" lock":""); d.style.setProperty("--tb",it.t);
-    d.innerHTML=(it.star?'<span class="tag">특별</span>':'')+'<div class="th">'+itIcon(it)+'</div><div class="nm">'+it.n+'</div>'+
-      (own?'<div class="own">놀기 ▶</div>':
-       it.star?'<div class="sp">🔒 ⭐'+it.star+'개 모으면<br>(지금 '+st+'개)</div>':'<div class="pr"><span class="k-coin">C</span>'+it.p+'</div>');
-    d.onclick=function(){ pickItem(it,st) }; gr.appendChild(d);
-  });
-  if(!gr.children.length) gr.innerHTML='<p class="k-note" style="grid-column:1/-1">아직 가진 물건이 없어요. 코인으로 사 보세요!</p>';
-}
-function josa(w){ var c=w.charCodeAt(w.length-1); return (c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28)?"을":"를" }
-function pickItem(it,st){
-  var g=G(), own=g.inv.indexOf(it.k)>=0;
-  if(!own){
-    if(it.star){
-      if(st<it.star) return toast("⭐을 "+(it.star-st)+"개 더 모으면 열려요!");
-      g.inv.push(it.k); toast("✨ "+it.n+josa(it.n)+" 얻었어요!");
-    } else {
-      if(g.coins<it.p) return toast("코인이 "+(it.p-g.coins)+"개 더 필요해요");
-      if(!confirm(it.n+josa(it.n)+" 코인 "+it.p+"개로 살까요?")) return;
-      g.coins-=it.p; g.inv.push(it.k); toast("🎉 "+it.n+josa(it.n)+" 샀어요!");
-    }
-    saveG(); renderKid();
-  }
-  playItem(it,AV2,$("kBubble2"));
-  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function kGoTab(t){
   if(t==="mission"){ return $("kGo").click() }
-  if(t==="parent"){ document.body.classList.remove("kidmode"); $("kidHome").classList.add("hidden"); $("kidCloset").classList.add("hidden"); $("kidRec").classList.add("hidden"); $("kNav").classList.add("hidden"); $("home").classList.remove("hidden"); renderHome(); window.scrollTo(0,0); return }
+  if(t==="parent"){ document.body.classList.remove("kidmode"); $("kidHome").classList.add("hidden"); $("kidRec").classList.add("hidden"); $("kNav").classList.add("hidden"); $("home").classList.remove("hidden"); renderHome(); window.scrollTo(0,0); return }
   kTab=t;
   document.body.classList.add("kidmode"); $("home").classList.add("hidden"); $("kNav").classList.remove("hidden");
-  $("kidHome").classList.toggle("hidden",t!=="home"); $("kidCloset").classList.toggle("hidden",t!=="closet"); $("kidRec").classList.toggle("hidden",t!=="rec");
+  $("kidHome").classList.toggle("hidden",t!=="home"); $("kidRec").classList.toggle("hidden",t!=="rec");
   Array.prototype.forEach.call(document.querySelectorAll("#kNav button"),function(b){ b.classList.toggle("on",b.dataset.k===t) });
   renderKid(); if(t==="rec") renderRec(); window.scrollTo(0,0);
 }
@@ -2030,7 +1906,6 @@ function renderQ(){
     '<div class="q">'+it.q+'</div><div id="kH" class="k-box h hidden"><b>힌트</b>'+esc(it.hint||"힌트가 없는 문제예요.")+'</div>'+
     '<div id="kA" class="k-box a hidden"><b>정답</b>'+esc(it.ans)+'</div></div>';
   $("kStep1").classList.remove("hidden"); $("kStep2").classList.add("hidden");
-  Array.prototype.forEach.call(document.querySelectorAll(".kc"),function(e){ e.textContent=G().coins });
   $("kMis").scrollTop=0;
 }
 $("kHint").onclick=function(){ $("kH").classList.toggle("hidden") };
@@ -2064,21 +1939,20 @@ function finishSet(){
       g.mDone=true; var t=dayStr(0);
       if(g.lastDay===dayStr(-1)) g.streak=(g.streak||0)+1; else if(g.lastDay!==t) g.streak=1;
       g.lastDay=t; g.best=Math.max(g.best||0,g.streak); g.mCount=(g.mCount||0)+1;
-      if(g.streak>0&&g.streak%7===0){ bonus=30; msg="🔥 "+g.streak+"일 연속! 깜짝 보너스 +30" }
+      if(g.streak>1) msg="🔥 "+g.streak+"일 연속!"
     }
   }
   if(S.right===S.ids.length&&S.ids.length>=5) g.perfect=(g.perfect||0)+1;
   var nb=newBadges();
-  g.coins+=REWARD+bonus; saveG();
+  saveG();
   var cols=["#3bc9db","#ffbf2e","#4f9dff","#34c38f","#9d7bff"], conf="";
   for(var i=0;i<28;i++) conf+='<i class="k-conf" style="left:'+(Math.random()*100)+'%;background:'+cols[i%5]+';animation-delay:'+(Math.random()*1.5).toFixed(2)+'s"></i>';
-  $("kCBox").innerHTML=conf+'<h3 class="jua">'+(S.kind==="daily"?"미션 완료!":"세트 완료!")+'</h3><p>'+S.ids.length+'문제를 끝까지 풀었어요 · 맞힌 문제 '+S.right+'개</p>'+
-    '<div class="big2">+'+(REWARD+bonus)+' <span class="k-coin">C</span></div>'+(msg?'<p style="color:#e8590c;font-weight:800">'+msg+'</p>':'')+(nb.length?'<div class="k-newb">새 배지! '+nb.map(function(b){ return b[1]+' '+b[2] }).join(' · ')+'</div>':'')+
-    '<div class="k-av" id="kAvC"></div><button class="k-go" id="kToCloset">내 기록 보기 📊</button><button class="k-ghost" id="kToHome">홈으로</button>';
+  $("kCBox").innerHTML=conf+'<h3 class="jua">'+(S.kind==="daily"?"미션 완료!":"세트 완료!")+'</h3><p>'+S.ids.length+'문제 중 맞힌 문제</p>'+
+    '<div class="big2">'+S.right+' <span style="font-size:22px;color:#7a8099">/ '+S.ids.length+'</span></div>'+(msg?'<p style="color:#e8590c;font-weight:800">'+msg+'</p>':'')+(nb.length?'<div class="k-newb">새 배지! '+nb.map(function(b){ return b[1]+' '+b[2] }).join(' · ')+'</div>':'')+
+    '<button class="k-go" id="kToCloset">내 기록 보기 📊</button><button class="k-ghost" id="kToHome">홈으로</button>';
   $("kCele").classList.remove("hidden");
-  if(AVC) clearTimeout(AVC.t); AVC=new Av($("kAvC"),null); AVC.act("jump"); setTimeout(function(){ if($("kAvC")) AVC.act("proud") },2200);
-  $("kToCloset").onclick=function(){ clearTimeout(AVC.t); $("kCele").classList.add("hidden"); closeMis(); kGoTab("rec") };
-  $("kToHome").onclick=function(){ clearTimeout(AVC.t); $("kCele").classList.add("hidden"); closeMis(); kGoTab("home") };
+  $("kToCloset").onclick=function(){ $("kCele").classList.add("hidden"); closeMis(); kGoTab("rec") };
+  $("kToHome").onclick=function(){ $("kCele").classList.add("hidden"); closeMis(); kGoTab("home") };
 }
 
 renderHome();
