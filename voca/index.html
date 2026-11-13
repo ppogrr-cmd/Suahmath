@@ -3402,7 +3402,7 @@ const saveCities = ()=> store.set("cities", JSON.stringify([...unlocked]));
 /* ---------- 기기 간 동기화 ----------
    동기화를 켠 기기끼리만 합쳐진다. 끈 기기는 그 안에만 기록한다.
    서버가 준비되지 않았으면 조용히 기기 저장만 쓴다. */
-let syncOn = store.get("syncOn")==="1";
+let syncOn = true; // 수아 전용 — 동기화는 항상 켜 둔다
 let pendingDel = new Set(JSON.parse(store.get("pendingDel")||"[]"));
 let syncState = "";                     // 화면에 보여줄 상태 문구
 const savePendingDel = ()=> store.set("pendingDel", JSON.stringify([...pendingDel]));
@@ -3544,11 +3544,10 @@ function renderSettings(){
     </div>
 
     <div class="backup">
-      <h4>기기 간 동기화</h4>
-      <p>동기화를 켠 기기끼리 외운 단어가 자동으로 합쳐집니다.
-         꺼 두면 그 기기 안에만 기록됩니다.</p>
+      <h4>기기 간 동기화 · 항상 켜짐</h4>
+      <p>수학·영어 기록이 수아의 모든 기기에서 자동으로 맞춰져요.</p>
       <div class="bt">
-        <button id="syncBtn" aria-pressed="${syncOn}">${syncOn?"동기화 켜짐":"동기화 꺼짐"}</button>
+        <button id="syncBtn">지금 동기화</button>
       </div>
       ${syncOn&&syncState?`<p style="margin:8px 0 0">상태: ${esc(syncState)}</p>`:""}
     </div>
@@ -3595,9 +3594,8 @@ function applyCode(code){
 document.getElementById("settings").addEventListener("click", e=>{
   if(e.target.closest("#bookRow")){ booksOpen=!booksOpen; renderSettings(); return; }
   if(e.target.closest("#syncBtn")){
-    syncOn=!syncOn; store.set("syncOn", syncOn?"1":"0");
-    syncState=""; renderSettings();
-    if(syncOn){ syncPull(); syncPush(); }
+    syncState="맞추는 중…"; renderSettings();
+    syncPull(); syncPush();
     return;
   }
   if(e.target.closest("#rsDay")){

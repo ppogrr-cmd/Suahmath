@@ -423,12 +423,9 @@
 <div class="screen hidden" id="scSet">
   <div class="bar"><button id="setClose">닫기</button><span class="t">설정</span><span style="width:40px"></span></div>
 
-  <label class="f2">기기 동기화</label>
-  <div class="chips" id="syncToggle"></div>
-  <label class="f2">동기화 코드 <span style="opacity:.7">(두 기기에 같은 코드를 넣습니다)</span></label>
-  <input type="text" id="syncCode" placeholder="예: candy-2026" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <label class="f2">기기 동기화 · 항상 켜짐</label>
   <button class="big ghost" id="syncNow" style="margin-top:10px">지금 동기화 <span class="cnt" id="syncWhen"></span></button>
-  <p class="note" id="syncMsg">동기화를 켜면 푼 기록이 같은 코드를 쓰는 기기끼리 자동으로 맞춰집니다. 끄면 이 기기 안에만 저장됩니다.</p>
+  <p class="note" id="syncMsg">수학·영어 기록이 수아의 모든 기기에서 자동으로 맞춰집니다.</p>
 
   <label class="f2">다시 풀기 순서</label>
   <div class="chips" id="orderPick"></div>
@@ -1439,7 +1436,17 @@ function setState(it,patch){
 }
 
 /* 동기화 */
-function syncOn(){ return !!(cfg.sync && cfg.code) }
+var SYNC_KEY="suah"; // 수아 전용 고정 칸 — 동기화는 항상 켜 둔다
+function syncOn(){ return true }
+/* 예전에 직접 넣던 동기화 코드의 기록을 고정 칸으로 한 번 옮긴다 */
+function migrateSync(cb){
+  var old=cfg.code;
+  if(!old||old===SYNC_KEY){ cfg.code=SYNC_KEY; saveCfg(); return cb&&cb() }
+  fetch("/api/sync?code="+encodeURIComponent(old)).then(function(r){ return r.json() }).then(function(j){
+    if(j&&j.data) for(var id in j.data){ var r=j.data[id]||{}, l=prog[id]; if(!l||(r.last||0)>(l.last||0)) prog[id]=r }
+    saveProg(); cfg.oldCode=old; cfg.code=SYNC_KEY; saveCfg(); cb&&cb();
+  }).catch(function(){ cb&&cb() });
+}
 function schedulePush(){
   if(!syncOn()) return;
   clearTimeout(pushTimer);
@@ -1467,7 +1474,7 @@ function pullNow(cb){
       if($("syncWhen")) $("syncWhen").textContent="방금 "+clock(cfg.at);
       renderHome(); cb&&cb(got);
     })
-    .catch(function(){ pulling=false; if($("syncMsg")) $("syncMsg").textContent="서버에 연결하지 못했습니다. 코드와 인터넷 연결을 확인해 주세요."; cb&&cb(0) });
+    .catch(function(){ pulling=false; if($("syncMsg")) $("syncMsg").textContent="서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요."; cb&&cb(0) });
 }
 document.addEventListener("visibilitychange",function(){ if(!document.hidden) pullNow() });
 
@@ -1488,7 +1495,7 @@ function renderHome(){
   $("listTitle").textContent=filter==="all"?"전체 문제":LAMP[filter].n;
   $("allBtn").textContent=filter==="all"?"신호등으로 고르기":"전체 보기";
   $("printCnt").textContent=visible().length+"문제 중 고르기";
-  $("syncBadge").textContent=syncOn()?"동기화 켜짐 · "+cfg.code:"동기화 · 백업";
+  $("syncBadge").textContent="동기화 켜짐 · 백업";
   var q=queue().length;
   $("revCnt").textContent=q?q+"문제":"없음";
   $("btnReview").disabled=!q;
@@ -1635,18 +1642,6 @@ $("detClose").onclick=function(){ hide("scDetail"); renderHome() };
 /* 설정 */
 $("btnSettings").onclick=function(){ renderSet(); show("scSet") };
 function renderSet(){
-  var st=$("syncToggle"); st.innerHTML="";
-  [[true,"켜기"],[false,"끄기"]].forEach(function(p){
-    var b=document.createElement("button"); b.textContent=p[1];
-    b.setAttribute("aria-pressed",(!!cfg.sync)===p[0]?"true":"false");
-    b.onclick=function(){
-      if(p[0]&&!$("syncCode").value.trim()) return toast("동기화 코드를 먼저 넣어 주세요.");
-      cfg.sync=p[0]; cfg.code=$("syncCode").value.trim(); saveCfg(); renderSet(); renderHome();
-      if(p[0]) pullNow(function(){ pushNow(); toast("동기화를 켰습니다.") }); else toast("동기화를 껐습니다.");
-    };
-    st.appendChild(b);
-  });
-  $("syncCode").value=cfg.code||"";
   $("syncWhen").textContent=cfg.at?clock(cfg.at):"";
   var o=$("orderPick"); o.innerHTML="";
   [["seq","번호 순서대로"],["shuffle","섞어서"]].forEach(function(p){
@@ -1657,11 +1652,9 @@ function renderSet(){
   var g=0,d=0,cnt=0; items().forEach(function(it){ if(it.lamp==="green") g++; if(it.lamp==="done") d++; if(it.last) cnt++ });
   $("statTxt").textContent="문제 "+SEED.length+"개 · 푼 기록 "+cnt+"개 · 이제는 알아요 "+g+"개 · 틀릴 리 없어요 "+d+"개";
 }
-$("syncCode").onchange=function(){ if(cfg.sync){ cfg.code=this.value.trim(); saveCfg(); renderHome() } };
 $("syncNow").onclick=function(){
-  if(!syncOn()) return toast("먼저 동기화를 켜 주세요.");
   $("syncMsg").textContent="동기화하는 중…";
-  pullNow(function(){ pushNow(function(){ $("syncMsg").textContent="맞췄습니다. 두 기기의 기록이 같아졌습니다."; renderSet() }) });
+  pullNow(function(){ pushNow(function(){ $("syncMsg").textContent="맞췄습니다. 모든 기기의 기록이 같아졌습니다."; renderSet() }) });
 };
 $("setClose").onclick=function(){ hide("scSet"); renderHome() };
 $("doExport").onclick=function(){
@@ -1960,7 +1953,7 @@ function finishSet(){
 
 renderHome();
 kGoTab("home");
-if(syncOn()) pullNow();
+migrateSync(function(){ pullNow(function(){ pushNow() }) });
 })();
 </script>
 </body>
