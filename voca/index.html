@@ -8,9 +8,9 @@
 <link rel="icon" href="/apple-touch-icon.png?v=4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Study">
 <title>Study</title>
+<script src="/nav.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -501,16 +501,16 @@ header{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:0 0 26px
 #mToday::before{content:"🏠"}#mList::before{content:"📒"}#mPrac::before{content:"✏️"}#mRead::before{content:"📖"}#mSet::before{content:"⚙️"}
 .bar button[aria-pressed="true"]{background:#ffffff18;color:#fff;font-weight:700}
 body{padding-bottom:0}
+.subjbar{flex:0 0 auto;width:100%;max-width:560px;margin:0 auto;padding:14px 16px 10px;display:flex;align-items:center}
+header{padding:18px 20px 16px !important;width:calc(100% - 32px);max-width:528px;margin:0 auto;border-radius:26px !important}
+.hello{margin-top:0}
 </style>
 </head>
 <body>
 
+<div class="subjbar"><nav data-subjects></nav></div>
 <header>
-  <div class="brand">
-    <span class="mk">C</span><h1>Candy’s Voca</h1>
-    <span class="count" id="count"></span>
-    <nav class="appsw"><a href="/">수학</a><a class="on" href="/voca/">영어</a></nav>
-  </div>
+  <span class="count" id="count" hidden></span>
   <div class="hello" id="hello" hidden>
     <div class="hi"><b id="helloMsg"></b><span id="helloDate"></span></div>
     <div class="mascot" id="helloPic"></div>
