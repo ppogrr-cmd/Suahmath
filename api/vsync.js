@@ -62,6 +62,15 @@ function mergeSrs(a = {}, b = {}, del) {
   if (del) for (const k of del) delete out[k];
   return out;
 }
+/* 오늘의 미션 진행: 더 최근 날짜 → 같은 날이면 칸마다 큰 값 (수학과 같은 규칙) */
+function mergeDaily(a, b) {
+  if (!a || !a.d) return b || null;
+  if (!b || !b.d) return a;
+  if (a.d !== b.d) return b.d > a.d ? b : a;
+  const u = (x, y) => [...new Set([...(x || []), ...(y || [])])];
+  return { d: a.d, nw: Math.max(a.nw || 0, b.nw || 0), qz: Math.max(a.qz || 0, b.qz || 0), sp: Math.max(a.sp || 0, b.sp || 0),
+           stamp: !!(a.stamp || b.stamp), ids: u(a.ids, b.ids), sids: u(a.sids, b.sids) };
+}
 function mergeStreak(a = {}, b = {}) {
   const days = [...new Set([...(a.days || []), ...(b.days || [])])].sort().slice(-120);
   const later = (b.last || "") > (a.last || "") ? b : a;
@@ -103,6 +112,7 @@ export default async function handler(req, res) {
         sk: replace
           ? body.sk || { n: 0, best: 0, last: "", days: [] }
           : mergeStreak(cur.sk, body.sk),
+        dy: replace ? body.dy || null : mergeDaily(cur.dy, body.dy),
       };
 
       await kv(`set/${KEY}`, {
