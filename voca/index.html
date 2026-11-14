@@ -522,6 +522,22 @@ body.makemode .tools{display:none}
 .ch-t span{font-size:12px;opacity:.95}
 .ch-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.35);margin-top:6px;overflow:hidden}
 .ch-bar i{display:block;height:100%;background:#fff;border-radius:3px}
+.vm-w.spell .lt{color:#d5dcea;transition:color .15s}
+.vm-w.spell .lt.on{color:#1f2a4d}
+.vm-card:has(.spell){position:relative;min-height:250px}
+.vm-cue{position:absolute;left:0;right:0;top:150px;opacity:0;pointer-events:none;font-family:"Jua";font-size:26px;color:#e8590c;transition:opacity .3s}
+.vm-cue.show{opacity:1;animation:cuePulse 1s ease-in-out infinite}
+@keyframes cuePulse{50%{transform:scale(1.12)}}
+.vm-s.kara{opacity:0;transform:translateY(10px);transition:all .45s;font-size:21px}
+.vm-s.kara.show{opacity:1;transform:none}
+.kw{color:#b4bccf;transition:color .12s;border-radius:4px}
+.kw.on{color:#1f2a4d}
+.kw.now{color:var(--subj);text-decoration:underline;text-underline-offset:4px}
+.kw.tg{background:#fff3bf;padding:0 2px}
+.vm-tools{display:flex;gap:8px;justify-content:center;margin-top:14px;opacity:0;transition:opacity .3s}
+.vm-tools.show{opacity:1}
+.vm-tools button{border:0;border-radius:99px;padding:9px 14px;font-size:14px;font-weight:800;background:#e7f5ff;color:#1c7ed6}
+.vm-btns.lock button{opacity:.35;filter:grayscale(.6)}
 .vm-opts button.en{font-family:"Newsreader",Georgia,serif;font-size:22px}
 .vm-play{width:96px;height:96px;border-radius:50%;border:0;background:#e7f5ff;font-size:44px}
 .vm-tip{color:#6b7394;margin-top:8px;font-size:14px}
@@ -3866,7 +3882,7 @@ function vBar(){
   return h;
 }
 function openVMis(){ rollDay(); vq=null; vx = daily.stamp ? {nw:0,qz:0,ids:[],round:1} : null; document.getElementById("vMis").hidden=false; document.body.style.overflow="hidden"; renderVMis(); }
-function closeVMis(){ document.getElementById("vMis").hidden=true; document.body.style.overflow=""; vq=null; vx=null; vc=null; setMode("today"); }
+function closeVMis(){ vcTok++; speechSynthesis&&speechSynthesis.cancel(); document.getElementById("vMis").hidden=true; document.body.style.overflow=""; vq=null; vx=null; vc=null; setMode("today"); }
 function vQHTML(q, chip, last){
     const opts=q.opts.map(o=>{
       let c=q.en?"en":""; if(q.pick!=null){ if(o===q.ans) c+=" ok"; else if(o===q.pick) c+=" no"; }
@@ -3920,6 +3936,69 @@ function renderChap(el){
     ${vc.wrong.length?`<div class="vm-why">${[...new Map(vc.wrong.map(d=>[d.id,d])).values()].map(d=>`<div><b>${esc(d.w)}</b> — ${esc(d.m)}</div>`).join("")}</div>`:""}
     <div class="vm-btns"><button class="sub" data-vm="close">홈으로</button><button class="main" data-vm="chapAgain">다시 풀기 ▶</button></div></div>`;
 }
+/* ---------- 미션 카드 세 박자 ---------- */
+let vcTok=0;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+/* 읽어 주고, 끝나면 돌아온다. 끝 신호가 안 와도 예상 시간이 지나면 넘어간다. */
+function speakP(text, rate, onb){
+  return new Promise(res=>{
+    if(!("speechSynthesis" in window)){ setTimeout(res, 600+text.length*70/rate); return; }
+    const u=new SpeechSynthesisUtterance(text); u.lang="en-US";
+    const v=kidVoice(); if(v) u.voice=v; u.pitch=1.6; u.rate=rate;
+    let done=false; const t0=Date.now(), minT=400+text.length*55/rate;
+    const fin=()=>{ if(done) return; done=true; setTimeout(res, Math.max(0, minT-(Date.now()-t0))); };   // 소리가 안 나는 기기에서도 너무 빨리 넘어가지 않게
+    u.onend=fin; u.onerror=fin; if(onb) u.onboundary=onb;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    setTimeout(fin, 2500+text.length*110/rate);
+  });
+}
+function karaHTML(mk){
+  const out=[]; const re=/\S+/g; let m;
+  while((m=re.exec(mk.plain))){
+    const a=m.index, b=a+m[0].length, tg=mk.spans.some(([x,y])=>a<y && b>x);
+    out.push(`<span class="kw ${tg?"tg":""}" data-a="${a}">${esc(m[0])}</span>`);
+  }
+  return out.join(" ");
+}
+/* 예문을 천천히 읽으며 노래방 자막처럼 한 단어씩 칠한다.
+   기기가 '지금 읽는 단어' 신호를 주면 그걸 따르고, 없으면 글자 수로 시간을 나눠 칠한다. */
+async function karaoke(mk, rate, tok){
+  const ws=[...document.querySelectorAll("#vcSent .kw")]; if(!ws.length) return;
+  ws.forEach(w=>w.classList.remove("on","now"));
+  const upto=i=>ws.forEach((w,j)=>{ w.classList.toggle("on", j<=i); w.classList.toggle("now", j===i); });
+  let byEvent=false, timers=[];
+  const total=mk.plain.length*75/rate; let t=0;
+  ws.forEach((w,i)=>{ timers.push(setTimeout(()=>{ if(!byEvent && tok===vcTok) upto(i); }, t)); t+= (w.textContent.length+1)/mk.plain.length*total; });
+  await Promise.all([wait(total*0.9), speakP(mk.plain, rate, e=>{
+    if(e.name && e.name!=="word") return; byEvent=true;
+    let i=0; ws.forEach((w,j)=>{ if(+w.dataset.a<=e.charIndex) i=j; }); if(tok===vcTok) upto(i);
+  })]);
+  timers.forEach(clearTimeout);
+  if(tok===vcTok){ upto(ws.length-1); ws[ws.length-1].classList.remove("now"); }
+}
+async function runCard(d, mk){
+  const tok=++vcTok, alive=()=>tok===vcTok && !document.getElementById("vMis").hidden;
+  const $=id=>document.getElementById(id);
+  // 1박: 글자를 하나씩 켜서 눈으로 따라 쓰게 → 듣기 → 따라 말하기 → 다시 듣기
+  await wait(300);
+  const lts=[...document.querySelectorAll(".vm-w.spell .lt")];
+  const step=Math.max(90, Math.min(220, 1500/lts.length));
+  for(const l of lts){ if(!alive()) return; l.classList.add("on"); await wait(step); }
+  if(!alive()) return; $("vcDo").textContent="잘 듣고, 따라 말해 보세요";
+  await speakP(d.w, 0.8); if(!alive()) return;
+  $("vcCue").classList.add("show"); await wait(2200); if(!alive()) return;
+  $("vcCue").classList.remove("show");
+  await speakP(d.w, 0.8); if(!alive()) return;
+  // 2박: 예문 노래방 자막
+  if(mk){
+    $("vcDo").textContent="예문을 눈으로 따라 읽어 보세요";
+    $("vcSent").classList.add("show"); await wait(500); if(!alive()) return;
+    await karaoke(mk, 0.7, tok); if(!alive()) return;
+  }
+  // 3박: 버튼 열기
+  $("vcDo").textContent="외웠나요?";
+  $("vcBtns").classList.remove("lock"); $("vcTools").classList.add("show");
+}
 function renderVMis(){
   if(vc) return renderChap(document.getElementById("vMisIn"));
   const el=document.getElementById("vMisIn"), C=VC();
@@ -3927,17 +4006,19 @@ function renderVMis(){
   if(C.nw<G_NEW){
     const d=vNewWord();
     if(!d){ C.nw=G_NEW; if(!vx) saveDaily(); return renderVMis(); }
+    const mk=d.s?marksOf(d.s):null;
     el.innerHTML=top+`
       <span class="vm-chip nw">단어 ${C.nw+1} / ${G_NEW}</span>
-      <div class="vm-do">${stageOf(d.id)===1?"헷갈렸던 단어예요. ":""}듣고, 소리 내어 읽어 보세요</div>
+      <div class="vm-do" id="vcDo">${stageOf(d.id)===1?"헷갈렸던 단어예요. ":""}글자를 눈으로 따라가 보세요</div>
       <div class="vm-card">
-        <div class="vm-w">${esc(d.w)}</div>
+        <div class="vm-w spell">${[...d.w].map(ch=>`<span class="lt">${ch===" "?"&nbsp;":esc(ch)}</span>`).join("")}</div>
         <div class="vm-m">${esc(d.m)}</div>
-        ${d.s?`<div class="vm-s">${mark(d.s)}</div>`:""}
-        <button class="vm-say" data-vm="say" data-w="${esc(d.w)}">🔊 다시 듣기</button>
+        <div class="vm-cue" id="vcCue">🗣️ 따라 말해 봐요!</div>
+        ${mk?`<div class="vm-s kara" id="vcSent">${karaHTML(mk)}</div>`:""}
+        <div class="vm-tools" id="vcTools"><button data-vm="replay">🔁 처음부터</button>${mk?`<button data-vm="slow">🐢 예문 천천히</button>`:""}</div>
       </div>
-      <div class="vm-btns"><button class="sub" data-vm="later" data-id="${d.id}">아직 헷갈려요</button><button class="main" data-vm="know" data-id="${d.id}">외웠어요 ✓</button></div>`;
-    setTimeout(()=>say(d.w),250);
+      <div class="vm-btns lock" id="vcBtns"><button class="sub" data-vm="later" data-id="${d.id}">아직 헷갈려요</button><button class="main" data-vm="know" data-id="${d.id}">외웠어요 ✓</button></div>`;
+    runCard(d, mk);
     return;
   }
   if(C.qz<G_QZ || (vq && vq.pick!=null)){
@@ -3963,9 +4044,13 @@ document.getElementById("vMis").addEventListener("click",e=>{
   const a=b.dataset.vm;
   if(a==="close") return closeVMis();
   if(a==="say") return say(b.dataset.w);
+  if(a==="replay") return renderVMis();
+  if(a==="slow"){ const w=VC(), id=document.querySelector("#vcBtns [data-id]").dataset.id, d=WORDS.find(x=>x.id===id);
+    const tok=++vcTok; return karaoke(marksOf(d.s), 0.6, tok); }
   if(a==="chapAgain"){ return openChap(vc.b, vc.l); }
   if(a==="again"){ vq=null; vx={nw:0,qz:0,ids:[],round:(vx?vx.round:0)+1}; return renderVMis(); }
-  if(a==="know"||a==="later"){
+  if((a==="know"||a==="later") && b.closest(".lock")) return;
+  if(a==="know"||a==="later"){ vcTok++;
     const id=b.dataset.id;
     if(a==="know"){ setStage(id,2); schedule(id,true); } else touch(id);
     if(vx){ vx.ids.push(id); vx.nw++; } else bump("nw", id);   // 어느 쪽이든 한 칸
