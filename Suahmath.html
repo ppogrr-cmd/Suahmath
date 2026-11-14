@@ -1615,6 +1615,30 @@ function pushNow(cb){
     .then(function(r){ if(!r.ok) throw 0; cfg.at=Date.now(); saveCfg(); if($("syncWhen")) $("syncWhen").textContent="방금 "+clock(cfg.at); cb&&cb() })
     .catch(function(){ if($("syncMsg")) $("syncMsg").textContent="서버에 저장하지 못했습니다. 잠시 뒤 다시 시도합니다."; cb&&cb() });
 }
+/* 미션·연속·하루 기록 묶음(_g) 합치기 — 앱과 서버가 같은 규칙을 쓴다.
+   덮어쓰기 대신 "진행이 더 된 쪽"을 남긴다. */
+function mergeG(a,b){
+  if(!a) return b; if(!b) return a;
+  function dnum(s){ if(!s) return 0; var p=String(s).split("-"); return (+p[0])*10000+(+p[1])*100+(+p[2]) }
+  var base=(a.last||0)>=(b.last||0)?a:b, o={}, k;
+  for(k in base) o[k]=base[k];
+  // 오늘의 미션: 더 최근 날짜 → 같은 날이면 끝낸 쪽 → 더 많이 푼 쪽
+  var ma=dnum(a.mDay), mb=dnum(b.mDay), win;
+  if(ma!==mb) win=ma>mb?a:b;
+  else if(!!a.mDone!==!!b.mDone) win=a.mDone?a:b;
+  else win=(a.mI||0)>=(b.mI||0)?a:b;
+  o.mDay=win.mDay; o.mIds=win.mIds; o.mI=win.mI; o.mDone=win.mDone;
+  // 연속 기록: 더 최근에 미션을 끝낸 쪽
+  var la=dnum(a.lastDay), lb=dnum(b.lastDay);
+  if(la!==lb){ var w=la>lb?a:b; o.lastDay=w.lastDay; o.streak=w.streak||0 }
+  else { o.lastDay=a.lastDay||b.lastDay||""; o.streak=Math.max(a.streak||0,b.streak||0) }
+  ["best","mCount","perfect","comeback","coins"].forEach(function(f){ if(a[f]!=null||b[f]!=null) o[f]=Math.max(a[f]||0,b[f]||0) });
+  // 하루 기록: 날짜별로 항목마다 큰 값
+  if(a.log||b.log){ o.log={}; [a.log||{},b.log||{}].forEach(function(L){ for(var d in L){ var x=o.log[d]||(o.log[d]={}); for(var f in L[d]) x[f]=Math.max(x[f]||0,L[d][f]||0) } }) }
+  if(a.bseen||b.bseen){ var s={}; (a.bseen||[]).concat(b.bseen||[]).forEach(function(x){ s[x]=1 }); o.bseen=Object.keys(s) }
+  o.last=Math.max(a.last||0,b.last||0);
+  return o;
+}
 function pullNow(cb){
   if(!syncOn()||pulling) return cb&&cb();
   pulling=true;
@@ -1624,6 +1648,7 @@ function pullNow(cb){
       var got=0;
       if(j&&j.data) for(var id in j.data){
         var r=j.data[id]||{}, l=prog[id];
+        if(id==="_g"){ var mg=mergeG(l,r); if(JSON.stringify(mg)!==JSON.stringify(l)){ prog._g=mg; got++ } continue }
         if(!l||(r.last||0)>(l.last||0)){ prog[id]=r; got++ }
       }
       if(got) saveProg();
@@ -2072,7 +2097,7 @@ function pickSet(n,unit,avoid){
 function ensureMission(){
   var g=G();
   if(g.mDay!==dayStr(0)||!g.mIds||!g.mIds.length){
-    g.mDay=dayStr(0); g.mIds=pickSet(MIS_N); g.mI=0; g.mDone=false; saveG();
+    g.mDay=dayStr(0); g.mIds=pickSet(MIS_N); g.mI=0; g.mDone=false; saveProg();
   }
 }
 
