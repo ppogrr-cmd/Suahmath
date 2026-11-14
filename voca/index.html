@@ -3741,6 +3741,11 @@ let streak = (()=>{ try{ return JSON.parse(store.get("streak")||"null"); }catch(
           || {n:0, best:0, last:"", days:[]};
 if(!streak.days) streak.days=[];
 const saveStreak = ()=> store.set("streak", JSON.stringify(streak));
+/* 부모 요청으로 그날의 영어 미션을 한 번 비운다 (기기마다 한 번만) */
+const RESET_DAYS=["2026-11-14"];
+if(RESET_DAYS.includes(ymd()) && store.get("resetDone")!==ymd()){
+  resetDay(); store.set("resetDone", ymd());
+}
 
 /* ===== 오늘의 미션: 새 단어 5 → 퀴즈 5 → 말하기 3 (13단계, 이어서 하기) ===== */
 const STEP_N = G_NEW+G_QZ+G_SPK;
