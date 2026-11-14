@@ -433,7 +433,6 @@
   <div class="k-sec" style="margin-top:6px"><span>내 기록</span></div>
   <div class="k-sum" id="kSum"></div>
   <div class="k-card" id="kCMapCard"><h2>개념 지도 <small>1~6학년 447개념</small></h2>
-    <div class="cm-tabs" id="kCMode"></div>
     <div class="cm-map" id="kCMap"></div>
     <div class="cm-leg" id="kCLeg"></div>
     <div class="cm-det" id="kCDet"></div>
@@ -1958,41 +1957,27 @@ function renderRec(){
 }
 
 /* ===== 개념 지도 ===== */
-var CMODE="me", CSEL=null, COPEN=null;
+/* 맞힌 문제 기록: [개념 코드, 맞힌 문제 수, 날짜, 출처] — 사진을 받을 때마다 추가 */
+var CORRECT=[
+  ["4-1-2:AG2",1,"2026-11-14","각도 16쪽 3번"],["4-1-2:AG6",1,"2026-11-14","각도 17쪽 13번"],["4-1-2:AG5",1,"2026-11-14","각도 12번"],
+  ["4-1-3:MD1",2,"2026-11-14","곱셈과 나눗셈 2번·9번"],["4-1-3:MD6",1,"2026-11-14","곱셈과 나눗셈 27쪽 10번"],["4-1-3:MD5",2,"2026-11-14","곱셈과 나눗셈 27쪽 12번·15번"]
+];
+var CSEL=null, COPEN=null;
 var HEATN=["틀린 채로 남음","노력 중","좋아지는 중","정복"], HEATC=["#ef8354","#f5c26b","#a6d98d","#3fae72"];
 var LAMPC={red:"#ef8354",again:"#f5c26b",green:"#a6d98d",done:"#3fae72"};
 function conStats(){
-  var m={}; items().forEach(function(it){ var c=CMAP[it.n]; if(!c) return;
-    var o=m[c]||(m[c]={t:0,red:0,again:0,green:0,done:0,list:[]}); o.t++; o[it.lamp]++; o.list.push(it) }); return m;
+  var m={};
+  function O(c){ return m[c]||(m[c]={t:0,red:0,again:0,green:0,done:0,ok:0,list:[],recs:[]}) }
+  items().forEach(function(it){ var c=CMAP[it.n]; if(!c) return; var o=O(c); o.t++; o[it.lamp]++; o.list.push(it) });
+  CORRECT.forEach(function(r){ var o=O(r[0]); o.ok+=r[1]; o.recs.push(r) });
+  return m;
 }
-function conScore(o){ return Math.round((o.done+o.green*0.6+o.again*0.2)/o.t*100) }
+function conScore(o){ return Math.round((o.done+o.green*0.6+o.again*0.2+o.ok)/(o.t+o.ok)*100) }
 function heatIdx(sc){ return sc>=80?3:sc>=50?2:sc>=25?1:0 }
-function conSnap(st){
-  var g=G(); if(!g.cs) g.cs={}; var d=dayStr(0), o={};
-  for(var c in st) o[c]=conScore(st[c]);
-  if(JSON.stringify(g.cs[d])!==JSON.stringify(o)){
-    g.cs[d]=o; var ks=Object.keys(g.cs).sort(); while(ks.length>45) delete g.cs[ks.shift()]; saveG();
-  }
-}
-function conPast(){
-  var g=G(), ks=Object.keys(g.cs||{}).sort(), lim=dayStr(-14), t=dayStr(0), best=null;
-  ks.forEach(function(k){ if(k<=lim) best=k }); if(!best) ks.forEach(function(k){ if(!best&&k<t) best=k });
-  return best?{d:best,v:g.cs[best]}:null;
-}
-function conColor(code,st,past){
-  var o=st[code];
-  if(!o) return "#e5ebe8";
-  var sc=conScore(o);
-  if(CMODE==="chg"){ if(!past||past.v[code]==null) return "#d6dcea"; var dl=sc-past.v[code]; return dl>=5?"#3fae72":dl<=-5?"#ef8354":"#b8c4dc" }
-  return HEATC[heatIdx(sc)];
-}
+function conColor(code,st){ var o=st[code]; return o?HEATC[heatIdx(conScore(o))]:"#e5ebe8" }
 function renderCMap(){
   if(!$("kCMap")) return;
-  var st=conStats(); conSnap(st); var past=conPast();
-  var mt=$("kCMode"); mt.innerHTML="";
-  [["me","수아 기록"],["chg","2주 변화"]].forEach(function(p){
-    var b=document.createElement("button"); b.textContent=p[1]; if(CMODE===p[0]) b.className="on";
-    b.onclick=function(){ CMODE=p[0]; renderCMap() }; mt.appendChild(b) });
+  var st=conStats();
   var byU={}; CONCEPTS.forEach(function(u){ byU[u[0]]=u });
   if(!CSEL){ var bestU=null,bw=-1; CONCEPTS.forEach(function(u){ var w=0; u[2].forEach(function(c){ var o=st[u[0]+":"+c[0]]; if(o) w+=o.red*2+o.again }); if(w>bw){ bw=w; bestU=u[0] } }); CSEL=bestU||"4-1-2" }
   var h='<span></span>';
@@ -2003,35 +1988,33 @@ function renderCMap(){
     for(var gg=1;gg<=6;gg++) for(var ss=1;ss<=2;ss++){
       var uid=gg+"-"+ss+"-"+r, u=byU[uid];
       if(!u){ h+='<div></div>'; continue }
-      var has=false, cells=u[2].map(function(c){ var code=uid+":"+c[0]; if(st[code]) has=true; return '<i style="background:'+conColor(code,st,past)+'"></i>' }).join("");
+      var has=false, cells=u[2].map(function(c){ var code=uid+":"+c[0]; if(st[code]) has=true; return '<i style="background:'+conColor(code,st)+'"></i>' }).join("");
       h+='<div class="cm-u'+(has?' has':'')+(CSEL===uid?' sel':'')+'" data-u="'+uid+'" title="'+esc(u[1])+'">'+cells+'</div>';
     }
   }
   $("kCMap").innerHTML=h;
   Array.prototype.forEach.call($("kCMap").querySelectorAll(".cm-u"),function(el){ el.onclick=function(){ CSEL=el.dataset.u; COPEN=null; renderCMap(); $("kCDet").scrollIntoView({behavior:"smooth",block:"nearest"}) } });
-  var leg="";
-  if(CMODE==="chg") leg='<span><i style="background:#3fae72"></i>좋아짐</span><span><i style="background:#b8c4dc"></i>비슷함</span><span><i style="background:#ef8354"></i>내려감</span><span><i style="background:#e5ebe8"></i>기록 없음</span><div class="cm-note" style="width:100%">'+(past?past.d.replace(/^\d+-/,"").replace("-","월 ")+'일 기록과 비교해요.':'비교할 예전 기록이 아직 없어요. 오늘부터 하루씩 쌓여요.')+'</div>';
-  else leg=HEATN.map(function(n,i){ return '<span><i style="background:'+HEATC[i]+'"></i>'+n+'</span>' }).join("")+'<span><i style="background:#e5ebe8"></i>기록 없음</span>';
-  $("kCLeg").innerHTML=leg;
-  // 단원 상세
+  $("kCLeg").innerHTML=HEATN.map(function(n,i){ return '<span><i style="background:'+HEATC[i]+'"></i>'+n+'</span>' }).join("")+'<span><i style="background:#e5ebe8"></i>기록 없음</span>'+
+    '<div class="cm-note" style="width:100%">틀린 문제와 맞힌 문제를 합쳐서 칠해요.</div>';
   var u=byU[CSEL]; if(!u){ $("kCDet").innerHTML=""; return }
   var pr=CSEL.split("-");
   var dh='<h3>'+esc(u[1])+'<small>'+pr[0]+'학년 '+pr[1]+'학기 '+pr[2]+'단원</small></h3>';
   u[2].forEach(function(c){
-    var code=CSEL+":"+c[0], o=st[code], col=conColor(code,st,past), sub;
+    var code=CSEL+":"+c[0], o=st[code], col=conColor(code,st), sub;
     if(!o) sub="기록 없음";
-    else { sub=(o.red+o.again?'남은 오답 '+(o.red+o.again):'')+(o.green+o.done?(o.red+o.again?' · ':'')+'알아요 '+(o.green+o.done):'');
-      if(past&&past.v[code]!=null){ var dl=conScore(o)-past.v[code]; if(dl>=5) sub+=' <b class="up">▲</b>'; else if(dl<=-5) sub+=' <b class="dn">▼</b>' } }
+    else { var bits=[]; if(o.red+o.again) bits.push('남은 오답 '+(o.red+o.again)); if(o.green+o.done) bits.push('알아요 '+(o.green+o.done)); if(o.ok) bits.push('맞힘 '+o.ok); sub=bits.join(' · ') }
     dh+='<div class="cm-c"><button data-c="'+code+'"><i style="background:'+col+'"></i><span>'+esc(c[1])+'</span><em>'+sub+'</em></button>';
     if(COPEN===code){
       dh+='<div class="cm-x">';
       if(c[2]) dh+='<div>먼저 알아야 할 개념: '+esc(c[2])+'</div>';
       if(c[3]) dh+='<div>확인 질문: '+esc(c[3])+'</div>';
-      if(o){
+      if(o&&o.list.length){
         dh+='<ul>'+o.list.slice(0,12).map(function(it){ return '<li><i style="background:'+LAMPC[it.lamp]+'"></i>'+esc(it.title)+'</li>' }).join("")+(o.list.length>12?'<li>… 외 '+(o.list.length-12)+'문제</li>':'')+'</ul>';
-        var todo=o.list.filter(function(it){ return it.lamp!=="done" });
-        if(todo.length) dh+='<button class="go" data-go="'+code+'">이 개념 문제 풀기 ('+Math.min(todo.length,MIS_N)+'문제) ▶</button>';
-      } else dh+='<div style="margin-top:6px">아직 이 개념의 오답 문제가 없어요.</div>';
+      }
+      if(o&&o.recs.length) dh+='<div>맞힌 기록: '+o.recs.map(function(r){ return esc(r[3])+' ('+r[2].slice(5).replace("-","/")+')' }).join(', ')+'</div>';
+      var todo=o?o.list.filter(function(it){ return it.lamp!=="done" }):[];
+      if(todo.length) dh+='<button class="go" data-go="'+code+'">이 개념 문제 풀기 ('+Math.min(todo.length,MIS_N)+'문제) ▶</button>';
+      else if(!o) dh+='<div style="margin-top:6px">아직 이 개념을 푼 기록이 없어요.</div>';
       dh+='</div>';
     }
     dh+='</div>';
