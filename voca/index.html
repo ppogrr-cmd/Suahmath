@@ -4204,7 +4204,9 @@ function distract(d, f, n){
 function makeQ(d){
   const types = ["meaning","word","listen"];
   const mk = marksOf(d.s);
-  if(mk.spans.length && mk.plain.split(/\s+/).length<=18) types.push("blank","blank");
+  const nw = mk.plain.trim().split(/\s+/).length;
+  /* 제목처럼 짧은 구절은 빈칸 문제로 내지 않는다: 문장부호로 끝나는 3~18단어 문장만 */
+  if(mk.spans.length && nw>=3 && nw<=18 && /[.?!"”’']$/.test(mk.plain.trim())) types.push("blank","blank");
   const t = types[Math.floor(Math.random()*types.length)];
   if(t==="meaning") return {d,t, sub:"무슨 뜻일까?", ask:d.w,
                             opts:shuffle([d.m, ...distract(d,"m",3)]), ans:d.m};
