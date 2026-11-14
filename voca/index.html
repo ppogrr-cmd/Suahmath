@@ -3,27 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f2a4d">
+<meta name="theme-color" content="#dff4ff">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
 <link rel="icon" href="/apple-touch-icon.png?v=4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Study">
 <title>Study</title>
-<script src="/nav.js" defer></script>
+<script src="/nav.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Baloo+2:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
+:root{--subj:#3b5bdb;--subj-d:#1f2a4d;--subj-l:#4f8cff;--subj-s:#2b44a8}
 :root{
   --paper:#ffffff;
   --bg:#eef4ff;          /* 얕은 물 */
   --ink:#1f2a4d;         /* 깊은 바다 */
   --ink-soft:#7a8099;
   --rule:#e3e8f3;
-  --accent:#3b5bdb;      /* 물빛 */
+  --accent:var(--subj);      /* 물빛 */
   --deep:#1f2a4d;
   --mark:#FFE49C;        /* 형광펜 */
   /* 오늘의 미션 세 칸 — 칸마다 제 색을 갖는다 */
@@ -129,7 +130,7 @@ main{padding:12px 12px 26px;max-width:640px;margin:0 auto}
 }
 .mini:active{transform:scale(.92)}
 .mini.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.mini.on.s3{background:#2b44a8;border-color:#2b44a8}
+.mini.on.s3{background:var(--subj-s);border-color:var(--subj-s)}
 .mini svg{width:17px;height:17px;display:block}
 .m{grid-column:1;font-size:16px;color:var(--ink);margin-top:3px}
 .s{grid-column:1;font-size:14.5px;color:var(--ink-soft);margin-top:6px;line-height:1.55}
@@ -239,7 +240,7 @@ main{padding:12px 12px 26px;max-width:640px;margin:0 auto}
 .bar button:active{transform:scale(.94)}
 .bar .dot{margin-left:2px}
 .bar button[aria-pressed="true"]{
-  background:linear-gradient(180deg,#4f8cff,#3b5bdb);color:#fff;border-color:transparent;font-weight:600}
+  background:linear-gradient(180deg,var(--subj-l),var(--subj));color:#fff;border-color:transparent;font-weight:600}
 body.makemode .tools,body.makemode .chips{display:none}
 
 /* ---------- 교재 몰아보기 ---------- */
@@ -315,17 +316,17 @@ body.makemode .tools{display:none}
   border-radius:15px;padding:12px 3px;font-size:12.5px;font-weight:600;letter-spacing:-.04em;
   transition:transform .12s}
 .go3 button:active{transform:scale(.95)}
-.go3 button:first-child{background:linear-gradient(180deg,#4f8cff,#3b5bdb);color:#fff;border-color:transparent}
+.go3 button:first-child{background:linear-gradient(180deg,var(--subj-l),var(--subj));color:#fff;border-color:transparent}
 
 .ptot{font-size:13.5px;color:var(--ink-soft);margin-bottom:9px}
 .ptot b{color:var(--ink);font-family:var(--round);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
 .pbar{position:relative;height:12px;border-radius:99px;background:#e7ecf7;overflow:hidden}
 .pbar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;transition:width .5s ease}
-.pbar i.k{background:#a5d8ff}
+.pbar i.k{background:color-mix(in srgb,var(--subj) 35%,#fff)}
 .pbar i.s{background:var(--accent)}
 .plegend{display:flex;flex-wrap:wrap;gap:4px 13px;margin-top:9px;font-size:11.5px;color:var(--ink-soft)}
 .plegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
-.plegend .lk{background:#a5d8ff}
+.plegend .lk{background:color-mix(in srgb,var(--subj) 35%,#fff)}
 .plegend .ls{background:var(--accent)}
 .fold2{width:100%;margin-top:12px;border:0;background:#eef3ff;
   border-radius:14px;padding:10px;font-size:12.5px;color:var(--ink-soft)}
@@ -343,7 +344,7 @@ body.makemode .tools{display:none}
 .pracnav button{flex:1;border:1px solid var(--rule);background:#fff;border-radius:14px;
   padding:9px 0;font-size:12.5px;color:var(--ink)}
 .pracnav button[aria-pressed="true"]{
-  background:linear-gradient(180deg,#4f8cff,#3b5bdb);color:#fff;border-color:transparent;font-weight:600}
+  background:linear-gradient(180deg,var(--subj-l),var(--subj));color:#fff;border-color:transparent;font-weight:600}
 
 /* 퀴즈 */
 .qtop{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-soft);margin:0 2px 10px}
@@ -380,7 +381,7 @@ body.makemode .tools{display:none}
   stroke-dasharray:25;stroke-dashoffset:25;animation:draw .4s .08s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 .qnext{width:100%;margin-top:13px;border:0;border-radius:16px;
-  background:linear-gradient(180deg,#4f8cff,#3b5bdb);
+  background:linear-gradient(180deg,var(--subj-l),var(--subj));
   color:#fff;padding:15px;font-size:15px;font-weight:600}
 .qwhy{margin-top:11px;background:var(--paper);border:1px solid var(--rule);
   border-radius:11px;padding:12px 14px;font-size:14px;line-height:1.6;color:var(--ink-soft)}
@@ -414,7 +415,7 @@ body.makemode .tools{display:none}
   transition:transform .12s}
 .sprow button:active{transform:scale(.96)}
 .sprow button svg{width:18px;height:18px}
-.sprow .mic{background:linear-gradient(180deg,#4f8cff,#3b5bdb);border-color:transparent;
+.sprow .mic{background:linear-gradient(180deg,var(--subj-l),var(--subj));border-color:transparent;
   color:#fff;font-weight:600;flex:1.5}
 .sprow .mic.rec{background:#C0392B;border-color:#C0392B;animation:pulse 1.1s ease-in-out infinite}
 .spscore{margin-top:16px;text-align:center}
@@ -473,9 +474,9 @@ body.makemode .tools{display:none}
 
 /* ===== 박수학과 같은 모양 ===== */
 body{background:linear-gradient(180deg,#dff4ff 0%,#e9f0ff 55%,#f4f7ff 100%)}
-header{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:0 0 26px 26px;box-shadow:0 10px 26px rgba(31,42,77,.2)}
+header{background:linear-gradient(135deg,var(--subj-d),var(--subj));border-radius:0 0 26px 26px;box-shadow:0 10px 26px rgba(31,42,77,.2)}
 .brand{align-items:center}
-.brand .mk{width:34px;height:34px;border-radius:11px;background:#fff;color:#3b5bdb;font-family:"Jua";font-size:20px;display:grid;place-items:center;flex:none}
+.brand .mk{width:34px;height:34px;border-radius:11px;background:#fff;color:var(--subj);font-family:"Jua";font-size:20px;display:grid;place-items:center;flex:none}
 .brand h1{font-family:"Jua",var(--round);font-weight:400;font-size:24px}
 .brand .count{display:none}
 .appsw{margin-left:auto;display:flex;background:rgba(255,255,255,.14);border-radius:99px;padding:3px;flex:none}
@@ -489,8 +490,8 @@ header{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:0 0 26px
 .nav .primary,#mkGo,.rd-tip{background:#1f2a4d}
 .chip[aria-pressed="true"],.iconbtn[aria-pressed="true"]{background:#fff;border-color:#fff;color:#1f2a4d}
 #q:focus{outline-color:#99e9f2}
-.qnext,.go3 button:first-child{box-shadow:0 5px 0 #2b44a8;border-radius:18px;font-family:"Jua";font-weight:400;font-size:18px}
-.qnext:active,.go3 button:first-child:active{transform:translateY(3px);box-shadow:0 2px 0 #2b44a8}
+.qnext,.go3 button:first-child{box-shadow:0 5px 0 var(--subj-s);border-radius:18px;font-family:"Jua";font-weight:400;font-size:18px}
+.qnext:active,.go3 button:first-child:active{transform:translateY(3px);box-shadow:0 2px 0 var(--subj-s)}
 /* 하단 메뉴: 남색 알약 */
 .bar{background:#1f2a4d;border:0;border-radius:24px;width:auto;max-width:528px;margin:0 16px calc(10px + env(safe-area-inset-bottom));
   padding:8px;gap:2px;box-shadow:0 8px 24px rgba(31,42,77,.27);backdrop-filter:none}

@@ -3,16 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F7F7F2">
+<meta name="theme-color" content="#dff4ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Study">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
 <link rel="icon" href="/apple-touch-icon.png?v=4">
 <title>Study</title>
-<script src="/nav.js" defer></script>
+<script src="/nav.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
 <style>
+:root{--subj:#3b5bdb;--subj-d:#1f2a4d;--subj-l:#4f8cff;--subj-s:#2b44a8}
   :root{
     --paper:#F7F7F2; --grid:#E2E5DC; --ink:#23282B; --ink-soft:#6B7278;
     --line:#D8DBD2; --wrong:#DE3B2F; --again:#E8931C; --known:#2E9E5B; --done:#161A1D; --act:#2F5FD0;
@@ -195,7 +196,7 @@
   .k-toys::-webkit-scrollbar{display:none}
   .k-toys button{flex:none;width:58px;height:58px;border-radius:18px;background:#fff;font-size:30px;box-shadow:0 3px 10px #1f2a4d14}
   .k-toys button:active{transform:scale(.92)}
-  .k-toys .more{width:auto;padding:0 14px;font-size:14px;font-weight:800;color:#3b5bdb}
+  .k-toys .more{width:auto;padding:0 14px;font-size:14px;font-weight:800;color:var(--subj)}
   @keyframes kpop{0%{transform:translateX(-50%) scale(.9)}60%{transform:translateX(-50%) scale(1.05)}100%{transform:translateX(-50%) scale(1)}}
   .k-bubble{position:absolute;top:14px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;border-radius:18px;padding:9px 14px;font-weight:700;font-size:15px;box-shadow:0 4px 12px #0001}
   .k-bubble:after{content:'';position:absolute;bottom:-8px;left:50%;margin-left:-8px;border:8px solid transparent;border-top-color:#fff;border-bottom:0}
@@ -205,7 +206,7 @@
   .k-sw{display:flex;background:#fff;border-radius:99px;padding:3px;box-shadow:0 2px 8px #0001;flex:none}
   .k-sw a{color:#7a8099;text-decoration:none;font-size:13px;font-weight:700;padding:5px 10px;border-radius:99px}
   .k-sw a.on{background:#1f2a4d;color:#fff}
-  .k-hero{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:26px;padding:22px 20px 18px;color:#fff;box-shadow:0 10px 26px #1f2a4d33}
+  .k-hero{background:linear-gradient(135deg,var(--subj-d),var(--subj));border-radius:26px;padding:22px 20px 18px;color:#fff;box-shadow:0 10px 26px #1f2a4d33}
   .k-hmsg{font-family:'Jua';font-size:24px;line-height:1.35;min-height:32px}
   .k-hmsg b{color:#99e9f2 !important}
   .k-hst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
@@ -214,8 +215,8 @@
   .k-hst span{font-size:11.5px;opacity:.8;font-weight:700}
 
   /* ===== 영어 화면과 같은 '오늘' 구성 ===== */
-  #kidHome{--paper:#fff;--ink:#1f2a4d;--ink-soft:#7a8099;--rule:#e3e8f3;--accent:#3b5bdb;--round:"Jua","Pretendard Variable",sans-serif;--c1:#1E9179;--c1b:#E4F7F2;--c1e:#7FD9C3;--c2:#C8762F;--c2b:#FFF1E2;--c2e:#FFBE88;--c3:#6B5BC4;--c3b:#EFEBFC;--c3e:#B6A9EE}
-  .m-hero{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:26px;padding:18px 20px 16px;color:#fff;box-shadow:0 10px 26px rgba(31,42,77,.2);margin-bottom:11px}
+  #kidHome{--paper:#fff;--ink:#1f2a4d;--ink-soft:#7a8099;--rule:#e3e8f3;--accent:var(--subj);--round:"Jua","Pretendard Variable",sans-serif;--c1:#1E9179;--c1b:#E4F7F2;--c1e:#7FD9C3;--c2:#C8762F;--c2b:#FFF1E2;--c2e:#FFBE88;--c3:#6B5BC4;--c3b:#EFEBFC;--c3e:#B6A9EE}
+  .m-hero{background:linear-gradient(135deg,var(--subj-d),var(--subj));border-radius:26px;padding:18px 20px 16px;color:#fff;box-shadow:0 10px 26px rgba(31,42,77,.2);margin-bottom:11px}
   .m-hero b{display:block;font-family:"Jua";font-weight:400;font-size:21px;line-height:1.35;letter-spacing:-.02em}
   .m-hero span{display:block;font-size:12.5px;color:#c5d4ff;margin-top:3px}
   #kidHome .streak .wk i{width:13px;height:13px;border-radius:50%;background:#dbe4f3;display:block}
@@ -250,28 +251,28 @@
   border-radius:15px;padding:12px 3px;font-size:12.5px;font-weight:600;letter-spacing:-.04em;
   transition:transform .12s}
   #kidHome .go3 button:active{transform:scale(.95)}
-  #kidHome .go3 button:first-child{background:linear-gradient(180deg,#4f8cff,#3b5bdb);color:#fff;border-color:transparent}
+  #kidHome .go3 button:first-child{background:linear-gradient(180deg,var(--subj-l),var(--subj));color:#fff;border-color:transparent}
   #kidHome .ptot{font-size:13.5px;color:var(--ink-soft);margin-bottom:9px}
   #kidHome .ptot b{color:var(--ink);font-family:var(--round);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
   #kidHome .pbar{position:relative;height:12px;border-radius:99px;background:#e7ecf7;overflow:hidden}
   #kidHome .pbar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;transition:width .5s ease}
-  #kidHome .pbar i.k{background:#a5d8ff}
+  #kidHome .pbar i.k{background:color-mix(in srgb,var(--subj) 35%,#fff)}
   #kidHome .pbar i.s{background:var(--accent)}
   #kidHome .plegend{display:flex;flex-wrap:wrap;gap:4px 13px;margin-top:9px;font-size:11.5px;color:var(--ink-soft)}
   #kidHome .plegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
-  #kidHome .plegend .lk{background:#a5d8ff}
+  #kidHome .plegend .lk{background:color-mix(in srgb,var(--subj) 35%,#fff)}
   #kidHome .plegend .ls{background:var(--accent)}
   #kidHome .tcard{border-color:transparent !important;box-shadow:0 6px 18px rgba(31,42,77,.08) !important;border-radius:24px}
   #kidHome .tcard h3{font-family:"Jua";font-weight:400;font-size:21px}
-  #kidHome .go3 button:first-child{box-shadow:0 5px 0 #2b44a8;border-radius:18px;font-family:"Jua";font-weight:400;font-size:18px}
+  #kidHome .go3 button:first-child{box-shadow:0 5px 0 var(--subj-s);border-radius:18px;font-family:"Jua";font-weight:400;font-size:18px}
   .k-card{margin-top:16px;background:#fff;border-radius:24px;padding:18px;box-shadow:0 6px 18px #1f2a4d14}
   .k-card h2{font-family:'Jua';font-weight:400;font-size:22px;margin:0;display:flex;justify-content:space-between;align-items:center}
   .k-card h2 small{font-family:"Pretendard Variable",sans-serif;font-size:13px;color:var(--km);font-weight:700}
   .k-dots{display:flex;gap:8px;margin:14px 0}
   .k-dots i{flex:1;height:12px;border-radius:99px;background:#eef0f6}
-  .k-dots i.ok{background:linear-gradient(90deg,#4dd4e6,#3b82f6)}
-  .k-go{width:100%;border-radius:18px;padding:17px;font-family:'Jua';font-size:24px;color:#fff;background:linear-gradient(180deg,#4f8cff,#3b5bdb);box-shadow:0 6px 0 #2b44a8}
-  .k-go:active{transform:translateY(4px);box-shadow:0 2px 0 #2b44a8}
+  .k-dots i.ok{background:linear-gradient(90deg,var(--subj-l),var(--subj))}
+  .k-go{width:100%;border-radius:18px;padding:17px;font-family:'Jua';font-size:24px;color:#fff;background:linear-gradient(180deg,var(--subj-l),var(--subj));box-shadow:0 6px 0 var(--subj-s)}
+  .k-go:active{transform:translateY(4px);box-shadow:0 2px 0 var(--subj-s)}
   .k-go:disabled{opacity:.45}
   .k-sub{font-size:13px;color:var(--km);margin-top:12px;text-align:center}
   .k-sec{margin:20px 2px 10px;font-family:'Jua';font-size:20px;display:flex;justify-content:space-between;align-items:center}
@@ -312,9 +313,9 @@
   .k-week{display:flex;gap:6px;align-items:flex-end;height:110px;margin-top:14px}
   .k-week div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--km);font-weight:700}
   .k-week .wb{width:70%;border-radius:8px;background:#e7ecf7;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;min-height:4px}
-  .k-week .wb i{display:block;background:linear-gradient(180deg,#4dd4e6,#3b82f6)}
+  .k-week .wb i{display:block;background:linear-gradient(180deg,var(--subj-l),var(--subj))}
   .k-week .n{font-size:12px;color:var(--kn);margin-bottom:3px}
-  .k-week .td{color:#3b5bdb}
+  .k-week .td{color:var(--subj)}
   .k-ul{display:flex;flex-direction:column;gap:10px;margin-top:12px}
   .k-ul .r{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700}
   .k-ul .r .nm{width:118px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -340,7 +341,7 @@
   .k-mis .in{max-width:560px;margin:0 auto}
   .k-mtop{display:flex;align-items:center;gap:10px;margin-bottom:12px}
   .k-x{background:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;flex:none;box-shadow:0 2px 6px #0001}
-  .k-prog{flex:1;display:flex;gap:6px}.k-prog i{flex:1;height:10px;border-radius:9px;background:#fff}.k-prog i.ok{background:#3b82f6}.k-prog i.now{background:#a5d8ff}
+  .k-prog{flex:1;display:flex;gap:6px}.k-prog i{flex:1;height:10px;border-radius:9px;background:#fff}.k-prog i.ok{background:var(--subj)}.k-prog i.now{background:#a5d8ff}
   .k-q{background:#fff;border-radius:24px;padding:20px 18px;box-shadow:0 6px 18px #1f2a4d14}
   .k-qm{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.k-qm span{font-size:12px;font-weight:700;border-radius:8px;padding:3px 8px;background:#e9f3ff;color:#2b6cb0}
   .k-qm span.re{background:#fff0e6;color:#d9681f}
@@ -362,7 +363,7 @@
   /* 축하 */
   .k-cele{position:fixed;inset:0;background:#1f2a4dcc;display:grid;place-items:center;z-index:50;padding:16px}
   .k-cbox{background:#fff;border-radius:28px;width:min(360px,100%);padding:24px 20px;text-align:center;position:relative;overflow:hidden}
-  .k-cbox h3{font-family:'Jua';font-weight:400;font-size:30px;color:#3b5bdb;margin:0}
+  .k-cbox h3{font-family:'Jua';font-weight:400;font-size:30px;color:var(--subj);margin:0}
   .k-cbox p{color:#7a8099;margin:4px 0 0;font-size:14px}
   .k-cbox .big2{font-family:'Jua';font-size:40px;margin:10px 0;display:flex;justify-content:center;align-items:center;gap:8px}
   .k-cbox .big2 .k-coin{width:38px;height:38px;font-size:18px}
@@ -1870,9 +1871,9 @@ function renderRec(){
     '<div><span>지금까지 푼 문제</span><b>'+totalSolved()+'</b><span>맞힌 비율 '+(function(){ var a=logRange(-3650,0); return a.s?Math.round(a.r/a.s*100):0 })()+'%</span></div>';
   var mx=Math.max(tw.s,lw.s,1);
   function col(lbl,o,c){ return '<div><b>'+o.s+'</b>문제<i style="height:'+Math.max(4,o.s/mx*80)+'px;background:'+c+'"></i>'+lbl+'<br>맞힘 '+o.r+' · ⭐'+o.c+'</div>' }
-  $("kCmp").innerHTML=col("지난주",lw,"#ced4da")+col("이번 주",tw,"linear-gradient(180deg,#4dd4e6,#3b82f6)");
+  $("kCmp").innerHTML=col("지난주",lw,"#ced4da")+col("이번 주",tw,"linear-gradient(180deg,var(--subj-l),var(--subj))");
   var df=tw.s-lw.s;
-  $("kCmpMsg").innerHTML=!lw.s&&!tw.s?"이번 주 첫 문제를 풀어 봐요!":!lw.s?"이번 주 <b style=\"color:#3b5bdb\">"+tw.s+"문제</b> 풀었어요!":
+  $("kCmpMsg").innerHTML=!lw.s&&!tw.s?"이번 주 첫 문제를 풀어 봐요!":!lw.s?"이번 주 <b style=\"color:var(--subj)\">"+tw.s+"문제</b> 풀었어요!":
     df>0?"지난주보다 <b style=\"color:#2f9e44\">"+df+"문제 더</b> 풀었어요! 📈":df===0?"지난주랑 똑같아요. 하나만 더 풀면 기록 돌파! 💪":"지난주 기록까지 <b style=\"color:#e8590c\">"+(-df)+"문제</b> 남았어요!";
   var days=[], wm=1, nm=["일","월","화","수","목","금","토"];
   for(var i=-6;i<=0;i++){ var L=(g.log||{})[dayStr(i)]||{}; days.push([i,L.s||0,L.r||0]); wm=Math.max(wm,L.s||0) }
