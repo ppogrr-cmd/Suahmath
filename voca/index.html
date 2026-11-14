@@ -312,10 +312,11 @@ body.makemode .tools{display:none}
 .streak .wk i.on{background:radial-gradient(circle at 33% 30%,#99e9f2,var(--accent))}
 
 .go3{display:flex;gap:8px;margin-top:14px}
-.steps13{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;margin:8px 0 4px}
+.steps13{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:8px 0 4px}
 .steps13 i{height:14px;border-radius:7px;background:#e7ecf7;display:block}
 .steps13 i.nw.on{background:var(--c1)}.steps13 i.qz.on{background:var(--c2)}.steps13 i.sp.on{background:var(--c3)}
 .steps13 i.now{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--subj)}
+.steplb.two{grid-template-columns:1fr 1fr}
 .steplb{display:grid;grid-template-columns:5fr 5fr 3fr;gap:4px;font-size:12px;font-weight:700;color:var(--ink-soft);text-align:center;margin-bottom:2px}
 .steplb span b{font-weight:800}
 .go1{margin-top:14px}
@@ -485,6 +486,39 @@ body.makemode .tools{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 
+
+/* ===== 영어 미션 화면 (수학 미션과 같은 방식) ===== */
+#vMis{position:fixed;inset:0;z-index:80;background:linear-gradient(180deg,#e6fcf5,#f4f7ff);overflow:auto;
+  padding:calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+#vMis[hidden]{display:none}
+.vm-in{max-width:528px;margin:0 auto}
+.vm-top{display:flex;align-items:center;gap:10px}
+.vm-x{width:40px;height:40px;border-radius:50%;border:0;background:#fff;font-size:18px;box-shadow:0 2px 8px #0001;flex:none}
+.vm-bar{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.vm-bar i{height:12px;border-radius:6px;background:#dde4f0;display:block}
+.vm-bar i.nw.on{background:var(--c1)}.vm-bar i.qz.on{background:var(--c2)}
+.vm-bar i.now{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--subj)}
+.vm-chip{display:inline-block;margin:18px 0 6px;padding:6px 14px;border-radius:99px;font-weight:800;font-size:14px;color:#fff}
+.vm-chip.nw{background:var(--c1)}.vm-chip.qz{background:var(--c2)}
+.vm-do{font-family:"Jua";font-size:23px;color:#1f2a4d;margin:4px 0 14px;line-height:1.35}
+.vm-card{background:#fff;border-radius:26px;padding:26px 20px;box-shadow:0 8px 24px rgba(31,42,77,.08);text-align:center}
+.vm-w{font-family:"Newsreader",Georgia,serif;font-size:46px;font-weight:600;color:#1f2a4d;line-height:1.15;word-break:break-word}
+.vm-m{font-family:"Jua";font-size:26px;color:var(--subj);margin-top:10px}
+.vm-s{font-family:"Newsreader",Georgia,serif;font-size:18px;color:#4a5170;margin-top:16px;line-height:1.5}
+.vm-s mark{background:#fff3bf;color:inherit;padding:0 2px;border-radius:3px}
+.vm-say{margin-top:16px;border:0;border-radius:99px;padding:12px 22px;font-size:17px;font-weight:800;background:#e7f5ff;color:#1c7ed6}
+.vm-opts{display:grid;gap:10px;margin-top:14px}
+.vm-opts button{border:2px solid #e3e8f3;background:#fff;border-radius:18px;padding:16px;font-size:20px;font-weight:700;color:#1f2a4d;text-align:left}
+.vm-opts button.ok{border-color:#2f9e44;background:#ebfbee}
+.vm-opts button.no{border-color:#e8590c;background:#fff4e6}
+.vm-msg{text-align:center;font-family:"Jua";font-size:22px;margin-top:14px}
+.vm-btns{display:flex;gap:10px;margin-top:18px}
+.vm-btns button{flex:1;border:0;border-radius:18px;padding:17px 10px;font-family:"Jua";font-size:20px}
+.vm-btns .main{color:#fff;background:linear-gradient(180deg,var(--subj-l),var(--subj));box-shadow:0 5px 0 var(--subj-s)}
+.vm-btns .sub{background:#fff;color:#4a5170;box-shadow:0 3px 0 #dde4f0}
+.vm-done{text-align:center;padding-top:40px}
+.vm-done .big{font-size:70px}
+.vm-done h2{font-family:"Jua";font-size:30px;margin:10px 0}
 /* ===== 박수학과 같은 모양 ===== */
 body{background:linear-gradient(180deg,#dff4ff 0%,#e9f0ff 55%,#f4f7ff 100%)}
 header{background:linear-gradient(135deg,var(--subj-d),var(--subj));border-radius:0 0 26px 26px;box-shadow:0 10px 26px rgba(31,42,77,.2)}
@@ -524,6 +558,7 @@ header{padding:18px 20px 16px !important;width:calc(100% - 32px);max-width:528px
 </head>
 <body>
 
+<div id="vMis" hidden><div class="vm-in" id="vMisIn"></div></div>
 <div class="subjbar"><nav data-subjects></nav><span style="flex:1"></span><span class="k-pill fire" id="vStreak">🔥 0일</span></div>
 <header>
   <span class="count" id="count" hidden></span>
@@ -570,7 +605,7 @@ header{padding:18px 20px 16px !important;width:calc(100% - 32px);max-width:528px
 <div class="pracnav" id="pracnav" hidden>
   <button data-prac="card"  aria-pressed="true">카드</button>
   <button data-prac="quiz"  aria-pressed="false">퀴즈</button>
-  <button data-prac="speak" aria-pressed="false">말하기</button>
+  <button data-prac="speak" aria-pressed="false" hidden>말하기</button>
   <button data-prac="make"  aria-pressed="false">문장</button>
 </div>
 
@@ -3734,7 +3769,7 @@ const saveSpoken = ()=> store.set("spoken", JSON.stringify(spoken));
 
 /* ---------- 오늘의 미션 ---------- */
 /* 한 판(12문제)에서 두 개까지 틀려도 하루치가 채워지도록 목표는 10 */
-const QUIZ_N=5, G_NEW=5, G_QZ=5, G_SPK=3;
+const QUIZ_N=5, G_NEW=5, G_QZ=5, G_SPK=0;   // 말하기는 검증이 어려워 미션에서 뺐다
 const freshDaily = ()=>({d:ymd(), nw:0, qz:0, sp:0, stamp:false, ids:[], sids:[]});
 let daily = (()=>{ try{ return JSON.parse(store.get("daily")||"null"); }catch(e){ return null; } })();
 if(!daily || daily.d!==ymd()) daily = freshDaily();
@@ -3759,7 +3794,92 @@ if(RESET_DAYS.includes(ymd()) && store.get("resetDone")!==ymd()){
   resetDay(); store.set("resetDone", ymd());
 }
 
-/* ===== 오늘의 미션: 새 단어 5 → 퀴즈 5 → 말하기 3 (13단계, 이어서 하기) ===== */
+
+/* ===== 영어 미션 화면: 새 단어 5 → 퀴즈 5 (한 화면에 하나씩) ===== */
+let vq = null;   // 지금 퀴즈 문제 {d, opts, ans, pick}
+function vNewWord(){
+  /* 아직 안 배운 단어를 책 순서대로 */
+  return WORDS.find(d=>stageOf(d.id)===0 && !daily.ids.includes(d.id)) || WORDS.find(d=>stageOf(d.id)<2 && !daily.ids.includes(d.id));
+}
+function vQuizWords(){
+  const byId={}; WORDS.forEach(d=>byId[d.id]=d);
+  const out=daily.ids.map(id=>byId[id]).filter(Boolean);
+  if(out.length<G_QZ) quizPool(G_QZ).forEach(d=>{ if(out.length<G_QZ && !out.includes(d)) out.push(d); });
+  return out;
+}
+function vBar(){
+  let h="", step=stepsDone();
+  for(let i=0;i<G_NEW;i++) h+=`<i class="nw ${i<daily.nw?"on":""} ${i===step?"now":""}"></i>`;
+  for(let i=0;i<G_QZ;i++) h+=`<i class="qz ${i<daily.qz?"on":""} ${G_NEW+i===step?"now":""}"></i>`;
+  return h;
+}
+function openVMis(){ rollDay(); vq=null; document.getElementById("vMis").hidden=false; document.body.style.overflow="hidden"; renderVMis(); }
+function closeVMis(){ document.getElementById("vMis").hidden=true; document.body.style.overflow=""; vq=null; setMode("today"); }
+function renderVMis(){
+  const el=document.getElementById("vMisIn");
+  const top=`<div class="vm-top"><button class="vm-x" data-vm="close" aria-label="닫기">✕</button><div class="vm-bar">${vBar()}</div></div>`;
+  if(daily.nw<G_NEW){
+    const d=vNewWord();
+    if(!d){ daily.nw=G_NEW; saveDaily(); return renderVMis(); }
+    el.innerHTML=top+`
+      <span class="vm-chip nw">새 단어 ${daily.nw+1} / ${G_NEW}</span>
+      <div class="vm-do">듣고, 소리 내어 읽어 보세요</div>
+      <div class="vm-card">
+        <div class="vm-w">${esc(d.w)}</div>
+        <div class="vm-m">${esc(d.m)}</div>
+        ${d.s?`<div class="vm-s">${mark(d.s)}</div>`:""}
+        <button class="vm-say" data-vm="say" data-w="${esc(d.w)}">🔊 다시 듣기</button>
+      </div>
+      <div class="vm-btns"><button class="sub" data-vm="later" data-id="${d.id}">아직 헷갈려요</button><button class="main" data-vm="know" data-id="${d.id}">외웠어요 ✓</button></div>`;
+    setTimeout(()=>say(d.w),250);
+    return;
+  }
+  if(daily.qz<G_QZ || (vq && vq.pick!=null)){
+    if(!vq){
+      const ws=vQuizWords(), d=ws[daily.qz % Math.max(ws.length,1)];
+      if(!d){ daily.qz=G_QZ; saveDaily(); return renderVMis(); }
+      vq={d, opts:shuffle([d.m, ...distract(d,"m",3)]), ans:d.m, pick:null};
+      setTimeout(()=>say(d.w),250);
+    }
+    const q=vq;
+    const opts=q.opts.map(o=>{
+      let c=""; if(q.pick!=null){ if(o===q.ans) c="ok"; else if(o===q.pick) c="no"; }
+      return `<button class="${c}" data-vm="pick" data-o="${esc(o)}">${esc(o)}</button>`; }).join("");
+    el.innerHTML=top+`
+      <span class="vm-chip qz">퀴즈 ${Math.min(daily.qz+(q.pick==null?1:0),G_QZ)} / ${G_QZ}</span>
+      <div class="vm-do">이 단어의 뜻을 골라 보세요</div>
+      <div class="vm-card"><div class="vm-w">${esc(q.d.w)}</div>
+        <button class="vm-say" data-vm="say" data-w="${esc(q.d.w)}">🔊 듣기</button></div>
+      <div class="vm-opts">${opts}</div>
+      ${q.pick==null?"":`<div class="vm-msg">${q.pick===q.ans?"🎉 정답!":"괜찮아요! 정답은 <b>"+esc(q.ans)+"</b>"}</div>
+        <div class="vm-btns"><button class="main" data-vm="next">${daily.qz>=G_QZ?"끝내기":"다음 ▶"}</button></div>`}`;
+    return;
+  }
+  el.innerHTML=top+`<div class="vm-done"><div class="big">🎉</div><h2>오늘 영어 미션 끝!</h2>
+    <p>새 단어 ${G_NEW}개, 퀴즈 ${G_QZ}문제를 마쳤어요.<br>🔥 ${streak.n}일 연속</p>
+    <div class="vm-btns"><button class="main" data-vm="close">홈으로</button></div></div>`;
+}
+document.getElementById("vMis").addEventListener("click",e=>{
+  const b=e.target.closest("[data-vm]"); if(!b) return;
+  const a=b.dataset.vm;
+  if(a==="close") return closeVMis();
+  if(a==="say") return say(b.dataset.w);
+  if(a==="know"||a==="later"){
+    const id=b.dataset.id;
+    if(a==="know"){ setStage(id,2); schedule(id,true); } else touch(id);
+    bump("nw", id);   // 어느 쪽이든 한 칸
+    syncPush(); return renderVMis();
+  }
+  if(a==="pick" && vq && vq.pick==null){
+    const o=b.dataset.o; vq.pick=o; const ok=(o===vq.ans);
+    touch(vq.d.id);
+    if(stageOf(vq.d.id)>=2) schedule(vq.d.id, ok);
+    bump("qz");       // 맞든 틀리든 한 칸
+    syncPush(); return renderVMis();
+  }
+  if(a==="next"){ vq=null; return renderVMis(); }
+});
+/* ===== 오늘의 미션: 진행 칸 계산 ===== */
 const STEP_N = G_NEW+G_QZ+G_SPK;
 let missionRun = false;
 function stepsDone(){ return Math.min(daily.nw,G_NEW)+Math.min(daily.qz,G_QZ)+Math.min(daily.sp,G_SPK); }
@@ -3790,6 +3910,7 @@ function drawMsn(){
   el.innerHTML=`<b>미션 ${stepsDone()}/${STEP_N}</b>${nm}<span>✕</span>`;
 }
 function missionStep(k){
+  return;   // 새 미션 화면(vMis)이 진행을 맡는다
   if(!missionRun) return;
   drawMsn();
   const goal={nw:G_NEW,qz:G_QZ,sp:G_SPK}[k];
@@ -3823,7 +3944,7 @@ function checkStamp(){
   streak.last = t;
   streak.best = Math.max(streak.best||0, streak.n);
   saveDaily(); saveStreak(); syncPush();
-  party("오늘 미션 완료!", `${streak.n}일 연속 · 최고 ${streak.best}일`);
+  if(document.getElementById("vMis").hidden) party("오늘 미션 완료!", `${streak.n}일 연속 · 최고 ${streak.best}일`);
 }
 function party(title, sub){
   const el = document.createElement("div");
@@ -3894,7 +4015,7 @@ function renderToday(){
   document.getElementById("today").innerHTML = `
     <div class="tcard hero">
       <h3>오늘의 미션${daily.stamp?` <em class="stamp">완료 ✓</em>`:""}</h3>
-      <div class="steplb"><span>새 단어 <b>${Math.min(daily.nw,G_NEW)}/${G_NEW}</b></span><span>퀴즈 <b>${Math.min(daily.qz,G_QZ)}/${G_QZ}</b></span><span>말하기 <b>${Math.min(daily.sp,G_SPK)}/${G_SPK}</b></span></div>
+      <div class="steplb two"><span>새 단어 <b>${Math.min(daily.nw,G_NEW)}/${G_NEW}</b></span><span>퀴즈 <b>${Math.min(daily.qz,G_QZ)}/${G_QZ}</b></span></div>
       <div class="steps13">${steps13()}</div>
       <div class="streak"><b><em>${streak.n}</em>일 연속</b><span>최고 ${streak.best||0}일</span><span class="wk">${wk}</span></div>
       <div class="go1"><button data-go="mission">${daily.stamp?"한 번 더 연습하기":stepsDone()?`이어서 하기 ▶ (${stepsDone()}/${STEP_N})`:"시작하기 ▶"}</button></div>
@@ -3902,29 +4023,19 @@ function renderToday(){
 
     <div class="tcard">
       <h3>진도</h3>
-      <div class="ptot"><b>${kn}</b> / ${tot} 외움 &nbsp;·&nbsp; <b>${sk}</b>개는 말할 수 있어요</div>
+      <div class="ptot"><b>${kn}</b> / ${tot} 외움</div>
       ${barHTML(tot,kn,sk)}
-      <div class="plegend"><span><i class="lk"></i>외움</span><span><i class="ls"></i>말함</span>
+      <div class="plegend"><span><i class="lk"></i>외움</span>
         <span>복습할 때가 된 단어 ${due>999?"999+":due}개</span></div>
       <button class="fold2" data-fold="prog">교재별 진도 ${bs.length}권 <i>${progOpen?"▾":"▸"}</i></button>
       ${progOpen ? bs.map(x=>`<div class="prow"><span>${esc(x.b)}</span>
         <b>${Math.round(x.k/x.n*100)}%</b>${barHTML(x.n,x.k,x.s)}</div>`).join("") : ""}
-    </div>
-
-    <div class="tcard">
-      <h3>내가 말할 수 있는 문장</h3>
-      <div class="ptot"><b>${Object.keys(spoken).length}</b>문장</div>
-      ${said.length
-        ? `<button class="fold2" data-fold="said">모아 보기 <i>${saidOpen?"▾":"▸"}</i></button>
-           ${saidOpen ? `<div class="slist">${said.map(d=>
-               `<p><b>${spoken[d.id]}점</b>${esc(marksOf(d.s).plain)}</p>`).join("")}</div>` : ""}`
-        : `<p class="spnote" style="text-align:left;margin:2px 0 0">따라 말하기에서 80점을 넘으면 여기에 쌓여요.</p>`}
     </div>`;
   popCell = null;                            // 튀어오르기는 한 번만
 }
 document.getElementById("today").addEventListener("click", e=>{
   const g = e.target.closest("[data-go]");
-  if(g){ if(g.dataset.go==="mission") startMission(); else setMode(g.dataset.go); return; }
+  if(g){ if(g.dataset.go==="mission") openVMis(); else setMode(g.dataset.go); return; }
   const f = e.target.closest("[data-fold]");
   if(f){ if(f.dataset.fold==="prog") progOpen=!progOpen; else saidOpen=!saidOpen; renderToday(); }
 });
