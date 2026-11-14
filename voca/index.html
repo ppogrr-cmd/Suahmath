@@ -3222,10 +3222,22 @@ document.getElementById("list").addEventListener("click", e=>{
   if(sy) say(sy.dataset.say);
 });
 
+/* 기기에 아이 목소리는 따로 없어서, 밝은 여자 목소리를 골라 높게 낸다 */
+let _kv=null;
+function kidVoice(){
+  if(_kv) return _kv;
+  const vs=speechSynthesis.getVoices().filter(v=>/^en[-_]US/i.test(v.lang));
+  const pref=["Samantha","Ava","Allison","Susan","Nicky","Google US English","Microsoft Ana","Microsoft Jenny","Microsoft Aria","Microsoft Zira"];
+  for(const p of pref){ const v=vs.find(v=>v.name.includes(p)); if(v) return _kv=v; }
+  return _kv = vs.find(v=>/female|woman/i.test(v.name)) || vs[0] || null;
+}
+if("speechSynthesis" in window) speechSynthesis.addEventListener?.("voiceschanged",()=>{ _kv=null; });
 function say(w){
   if(!("speechSynthesis" in window)) return;
   const u=new SpeechSynthesisUtterance(w); u.lang="en-US";
-  u.rate = w.trim().includes(" ") ? 0.9 : 0.8;   // 문장은 조금 덜 느리게
+  const v=kidVoice(); if(v) u.voice=v;
+  u.pitch = 1.6;                                  // 목소리를 높여 또래 여자아이처럼
+  u.rate = w.trim().includes(" ") ? 0.95 : 0.85;  // 문장은 조금 덜 느리게
   speechSynthesis.cancel(); speechSynthesis.speak(u);
 }
 
