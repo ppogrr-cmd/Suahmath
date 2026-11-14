@@ -1970,14 +1970,17 @@ function conStats(){
   function O(c){ return m[c]||(m[c]={t:0,red:0,again:0,green:0,done:0,ok:0,list:[],recs:[]}) }
   items().forEach(function(it){ var c=CMAP[it.n]; if(!c) return; var o=O(c); o.t++; o[it.lamp]++; o.list.push(it) });
   CORRECT.forEach(function(r){ var o=O(r[0]); o.ok+=r[1]; o.recs.push(r) });
-  // 배운 단원: 오답이나 맞힌 기록이 하나라도 있는 단원. 그 단원의 나머지 개념은 다 맞힌 것으로 본다.
-  var su={}; for(var c in m) su[c.split(":")[0]]=1; m._studied=su;
+  // 3학년 2학기까지는 틀린 문제만 올렸으므로, 오답이 없는 개념은 다 맞힌 것으로 본다.
+  // 4학년 1학기부터는 맞힌 문제까지 올리므로 실제 기록만 쓴다.
+  m._studied={}; CONCEPTS.forEach(function(u){ if(conAssume(u[0])) m._studied[u[0]]=1 });
   return m;
 }
+function conAssume(uid){ var p=uid.split("-"); return +p[0]<4 }
 function conLeft(o){ return o?o.red+o.again:0 }
 function conLevel(code,st){   // -1 기록 없음, 0 많이 어려워함, 1 조금, 2 좋아지는 중, 3 정복
   var o=st[code], studied=st._studied[code.split(":")[0]];
-  if(!o||!o.t){ return studied?3:-1 }
+  if(!o||(!o.t&&!o.ok)){ return studied?3:-1 }
+  if(!o.t) return 3;
   var left=conLeft(o); if(left>=5) return 0; if(left>0) return 1;
   return o.green>0?2:3;
 }
@@ -1995,14 +1998,14 @@ function renderCMap(){
     for(var gg=1;gg<=6;gg++) for(var ss=1;ss<=2;ss++){
       var uid=gg+"-"+ss+"-"+r, u=byU[uid];
       if(!u){ h+='<div></div>'; continue }
-      var has=false, cells=u[2].map(function(c){ var code=uid+":"+c[0]; if(st._studied[uid]) has=true; return '<i style="background:'+conColor(code,st)+'"></i>' }).join("");
+      var has=false, cells=u[2].map(function(c){ var code=uid+":"+c[0]; if(st[code]) has=true; return '<i style="background:'+conColor(code,st)+'"></i>' }).join("");
       h+='<div class="cm-u'+(has?' has':'')+(CSEL===uid?' sel':'')+'" data-u="'+uid+'" title="'+esc(u[1])+'">'+cells+'</div>';
     }
   }
   $("kCMap").innerHTML=h;
   Array.prototype.forEach.call($("kCMap").querySelectorAll(".cm-u"),function(el){ el.onclick=function(){ CSEL=el.dataset.u; COPEN=null; renderCMap(); $("kCDet").scrollIntoView({behavior:"smooth",block:"nearest"}) } });
   $("kCLeg").innerHTML=HEATN.map(function(n,i){ return '<span><i style="background:'+HEATC[i]+'"></i>'+n+'</span>' }).join("")+'<span><i style="background:#e5ebe8"></i>기록 없음</span>'+
-    '<div class="cm-note" style="width:100%">틀린 문제만 올리니까, 배운 단원에서 오답이 없는 개념은 다 맞힌 것(정복)으로 봐요.</div>';
+    '<div class="cm-note" style="width:100%">3학년 2학기까지는 오답이 없는 개념을 정복으로 봐요. 4학년 1학기부터는 틀린 문제와 맞힌 문제 기록으로 칠해요.</div>';
   var u=byU[CSEL]; if(!u){ $("kCDet").innerHTML=""; return }
   var pr=CSEL.split("-");
   var dh='<h3>'+esc(u[1])+'<small>'+pr[0]+'학년 '+pr[1]+'학기 '+pr[2]+'단원</small></h3>';
