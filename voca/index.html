@@ -3789,40 +3789,46 @@ let streak = (()=>{ try{ return JSON.parse(store.get("streak")||"null"); }catch(
 if(!streak.days) streak.days=[];
 const saveStreak = ()=> store.set("streak", JSON.stringify(streak));
 /* 부모 요청으로 그날의 영어 미션을 한 번 비운다 (기기마다 한 번만) */
-const RESET_DAYS=["2026-11-14"];
+const RESET_DAYS=["2026-11-14","2026-11-15"];
 if(RESET_DAYS.includes(ymd()) && store.get("resetDone")!==ymd()){
+  if(daily.d===ymd()){                         // 테스트로 '외웠어요' 표시한 단어도 처음 상태로
+    (daily.ids||[]).forEach(id=>{ delete stageMap[id]; delete srs[id]; });
+    saveStage(); saveSrs();
+  }
   resetDay(); store.set("resetDone", ymd());
 }
 
 
 /* ===== 영어 미션 화면: 새 단어 5 → 퀴즈 5 (한 화면에 하나씩) ===== */
 let vq = null;   // 지금 퀴즈 문제 {d, opts, ans, pick}
+let vx = null;   // 미션을 마친 뒤 '한 번 더' 판 {nw,qz,ids} — 오늘 미션 칸은 건드리지 않는다
+const VC = ()=> vx || daily;
 function vNewWord(){
   /* 아직 안 배운 단어를 책 순서대로 */
-  return WORDS.find(d=>stageOf(d.id)===0 && !daily.ids.includes(d.id)) || WORDS.find(d=>stageOf(d.id)<2 && !daily.ids.includes(d.id));
+  return WORDS.find(d=>stageOf(d.id)===0 && !daily.ids.includes(d.id) && !VC().ids.includes(d.id)) || WORDS.find(d=>stageOf(d.id)<2 && !daily.ids.includes(d.id) && !VC().ids.includes(d.id));
 }
 function vQuizWords(){
   const byId={}; WORDS.forEach(d=>byId[d.id]=d);
-  const out=daily.ids.map(id=>byId[id]).filter(Boolean);
+  const out=VC().ids.map(id=>byId[id]).filter(Boolean);
   if(out.length<G_QZ) quizPool(G_QZ).forEach(d=>{ if(out.length<G_QZ && !out.includes(d)) out.push(d); });
   return out;
 }
 function vBar(){
-  let h="", step=stepsDone();
-  for(let i=0;i<G_NEW;i++) h+=`<i class="nw ${i<daily.nw?"on":""} ${i===step?"now":""}"></i>`;
-  for(let i=0;i<G_QZ;i++) h+=`<i class="qz ${i<daily.qz?"on":""} ${G_NEW+i===step?"now":""}"></i>`;
+  const C=VC(); let h="", step=Math.min(C.nw,G_NEW)+Math.min(C.qz,G_QZ);
+  for(let i=0;i<G_NEW;i++) h+=`<i class="nw ${i<C.nw?"on":""} ${i===step?"now":""}"></i>`;
+  for(let i=0;i<G_QZ;i++) h+=`<i class="qz ${i<C.qz?"on":""} ${G_NEW+i===step?"now":""}"></i>`;
   return h;
 }
-function openVMis(){ rollDay(); vq=null; document.getElementById("vMis").hidden=false; document.body.style.overflow="hidden"; renderVMis(); }
-function closeVMis(){ document.getElementById("vMis").hidden=true; document.body.style.overflow=""; vq=null; setMode("today"); }
+function openVMis(){ rollDay(); vq=null; vx = daily.stamp ? {nw:0,qz:0,ids:[]} : null; document.getElementById("vMis").hidden=false; document.body.style.overflow="hidden"; renderVMis(); }
+function closeVMis(){ document.getElementById("vMis").hidden=true; document.body.style.overflow=""; vq=null; vx=null; setMode("today"); }
 function renderVMis(){
-  const el=document.getElementById("vMisIn");
+  const el=document.getElementById("vMisIn"), C=VC();
   const top=`<div class="vm-top"><button class="vm-x" data-vm="close" aria-label="닫기">✕</button><div class="vm-bar">${vBar()}</div></div>`;
-  if(daily.nw<G_NEW){
+  if(C.nw<G_NEW){
     const d=vNewWord();
-    if(!d){ daily.nw=G_NEW; saveDaily(); return renderVMis(); }
+    if(!d){ C.nw=G_NEW; if(!vx) saveDaily(); return renderVMis(); }
     el.innerHTML=top+`
-      <span class="vm-chip nw">새 단어 ${daily.nw+1} / ${G_NEW}</span>
+      <span class="vm-chip nw">새 단어 ${C.nw+1} / ${G_NEW}</span>
       <div class="vm-do">듣고, 소리 내어 읽어 보세요</div>
       <div class="vm-card">
         <div class="vm-w">${esc(d.w)}</div>
@@ -3834,10 +3840,10 @@ function renderVMis(){
     setTimeout(()=>say(d.w),250);
     return;
   }
-  if(daily.qz<G_QZ || (vq && vq.pick!=null)){
+  if(C.qz<G_QZ || (vq && vq.pick!=null)){
     if(!vq){
-      const ws=vQuizWords(), d=ws[daily.qz % Math.max(ws.length,1)];
-      if(!d){ daily.qz=G_QZ; saveDaily(); return renderVMis(); }
+      const ws=vQuizWords(), d=ws[C.qz % Math.max(ws.length,1)];
+      if(!d){ C.qz=G_QZ; if(!vx) saveDaily(); return renderVMis(); }
       vq={d, opts:shuffle([d.m, ...distract(d,"m",3)]), ans:d.m, pick:null};
       setTimeout(()=>say(d.w),250);
     }
@@ -3846,35 +3852,39 @@ function renderVMis(){
       let c=""; if(q.pick!=null){ if(o===q.ans) c="ok"; else if(o===q.pick) c="no"; }
       return `<button class="${c}" data-vm="pick" data-o="${esc(o)}">${esc(o)}</button>`; }).join("");
     el.innerHTML=top+`
-      <span class="vm-chip qz">퀴즈 ${Math.min(daily.qz+(q.pick==null?1:0),G_QZ)} / ${G_QZ}</span>
+      <span class="vm-chip qz">퀴즈 ${Math.min(C.qz+(q.pick==null?1:0),G_QZ)} / ${G_QZ}</span>
       <div class="vm-do">이 단어의 뜻을 골라 보세요</div>
       <div class="vm-card"><div class="vm-w">${esc(q.d.w)}</div>
         <button class="vm-say" data-vm="say" data-w="${esc(q.d.w)}">🔊 듣기</button></div>
       <div class="vm-opts">${opts}</div>
       ${q.pick==null?"":`<div class="vm-msg">${q.pick===q.ans?"🎉 정답!":"괜찮아요! 정답은 <b>"+esc(q.ans)+"</b>"}</div>
-        <div class="vm-btns"><button class="main" data-vm="next">${daily.qz>=G_QZ?"끝내기":"다음 ▶"}</button></div>`}`;
+        <div class="vm-btns"><button class="main" data-vm="next">${C.qz>=G_QZ?"끝내기":"다음 ▶"}</button></div>`}`;
     return;
   }
+  if(vx){ el.innerHTML=top+`<div class="vm-done"><div class="big">⭐</div><h2>한 번 더 연습 끝!</h2>
+    <p>새 단어 ${G_NEW}개, 퀴즈 ${G_QZ}문제를 더 했어요.</p>
+    <div class="vm-btns"><button class="sub" data-vm="close">홈으로</button><button class="main" data-vm="again">한 번 더 ▶</button></div></div>`; return; }
   el.innerHTML=top+`<div class="vm-done"><div class="big">🎉</div><h2>오늘 영어 미션 끝!</h2>
     <p>새 단어 ${G_NEW}개, 퀴즈 ${G_QZ}문제를 마쳤어요.<br>🔥 ${streak.n}일 연속</p>
-    <div class="vm-btns"><button class="main" data-vm="close">홈으로</button></div></div>`;
+    <div class="vm-btns"><button class="sub" data-vm="close">홈으로</button><button class="main" data-vm="again">한 번 더 ▶</button></div></div>`;
 }
 document.getElementById("vMis").addEventListener("click",e=>{
   const b=e.target.closest("[data-vm]"); if(!b) return;
   const a=b.dataset.vm;
   if(a==="close") return closeVMis();
   if(a==="say") return say(b.dataset.w);
+  if(a==="again"){ vq=null; vx={nw:0,qz:0,ids:[]}; return renderVMis(); }
   if(a==="know"||a==="later"){
     const id=b.dataset.id;
     if(a==="know"){ setStage(id,2); schedule(id,true); } else touch(id);
-    bump("nw", id);   // 어느 쪽이든 한 칸
+    if(vx){ vx.ids.push(id); vx.nw++; } else bump("nw", id);   // 어느 쪽이든 한 칸
     syncPush(); return renderVMis();
   }
   if(a==="pick" && vq && vq.pick==null){
     const o=b.dataset.o; vq.pick=o; const ok=(o===vq.ans);
     touch(vq.d.id);
     if(stageOf(vq.d.id)>=2) schedule(vq.d.id, ok);
-    bump("qz");       // 맞든 틀리든 한 칸
+    if(vx) vx.qz++; else bump("qz");       // 맞든 틀리든 한 칸
     syncPush(); return renderVMis();
   }
   if(a==="next"){ vq=null; return renderVMis(); }
