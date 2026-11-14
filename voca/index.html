@@ -3979,21 +3979,27 @@ async function karaoke(mk, rate, tok){
 async function runCard(d, mk){
   const tok=++vcTok, alive=()=>tok===vcTok && !document.getElementById("vMis").hidden;
   const $=id=>document.getElementById(id);
-  // 1박: 글자를 하나씩 켜서 눈으로 따라 쓰게 → 듣기 → 따라 말하기 → 다시 듣기
+  // 1박: 단어를 세 번 — 매번 글자를 하나씩 켜서 눈으로 따라 쓰고, 이어서 소리로 듣는다
   await wait(300);
   const lts=[...document.querySelectorAll(".vm-w.spell .lt")];
   const step=Math.max(90, Math.min(220, 1500/lts.length));
-  for(const l of lts){ if(!alive()) return; l.classList.add("on"); await wait(step); }
-  if(!alive()) return; $("vcDo").textContent="잘 듣고, 따라 말해 보세요";
-  await speakP(d.w, 0.8); if(!alive()) return;
-  $("vcCue").classList.add("show"); await wait(2200); if(!alive()) return;
-  $("vcCue").classList.remove("show");
-  await speakP(d.w, 0.8); if(!alive()) return;
-  // 2박: 예문 노래방 자막
+  for(let r=0;r<3;r++){
+    if(!alive()) return;
+    $("vcDo").textContent=`글자를 눈으로 따라 써 보세요 (${r+1}/3)`;
+    if(r) { lts.forEach(l=>l.classList.remove("on")); await wait(250); }
+    for(const l of lts){ if(!alive()) return; l.classList.add("on"); await wait(step); }
+    await speakP(d.w, 0.8); if(!alive()) return;
+    await wait(400);
+  }
+  // 2박: 예문 두 번, 노래방 자막
   if(mk){
-    $("vcDo").textContent="예문을 눈으로 따라 읽어 보세요";
-    $("vcSent").classList.add("show"); await wait(500); if(!alive()) return;
-    await karaoke(mk, 0.7, tok); if(!alive()) return;
+    $("vcSent").classList.add("show"); await wait(500);
+    for(let r=0;r<2;r++){
+      if(!alive()) return;
+      $("vcDo").textContent=`예문을 눈으로 따라 읽어 보세요 (${r+1}/2)`;
+      await karaoke(mk, 0.7, tok); if(!alive()) return;
+      await wait(500);
+    }
   }
   // 3박: 버튼 열기
   $("vcDo").textContent="외웠나요?";
@@ -4009,11 +4015,10 @@ function renderVMis(){
     const mk=d.s?marksOf(d.s):null;
     el.innerHTML=top+`
       <span class="vm-chip nw">단어 ${C.nw+1} / ${G_NEW}</span>
-      <div class="vm-do" id="vcDo">${stageOf(d.id)===1?"헷갈렸던 단어예요. ":""}글자를 눈으로 따라가 보세요</div>
+      <div class="vm-do" id="vcDo">${stageOf(d.id)===1?"헷갈렸던 단어예요. ":""}글자를 눈으로 따라 써 보세요</div>
       <div class="vm-card">
         <div class="vm-w spell">${[...d.w].map(ch=>`<span class="lt">${ch===" "?"&nbsp;":esc(ch)}</span>`).join("")}</div>
         <div class="vm-m">${esc(d.m)}</div>
-        <div class="vm-cue" id="vcCue">🗣️ 따라 말해 봐요!</div>
         ${mk?`<div class="vm-s kara" id="vcSent">${karaHTML(mk)}</div>`:""}
         <div class="vm-tools" id="vcTools"><button data-vm="replay">🔁 처음부터</button>${mk?`<button data-vm="slow">🐢 예문 천천히</button>`:""}</div>
       </div>
