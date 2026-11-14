@@ -3722,7 +3722,7 @@ const saveSpoken = ()=> store.set("spoken", JSON.stringify(spoken));
 
 /* ---------- 오늘의 미션 ---------- */
 /* 한 판(12문제)에서 두 개까지 틀려도 하루치가 채워지도록 목표는 10 */
-const QUIZ_N=6, G_NEW=5, G_QZ=5, G_SPK=3;
+const QUIZ_N=5, G_NEW=5, G_QZ=5, G_SPK=3;
 const freshDaily = ()=>({d:ymd(), nw:0, qz:0, sp:0, stamp:false, ids:[], sids:[]});
 let daily = (()=>{ try{ return JSON.parse(store.get("daily")||"null"); }catch(e){ return null; } })();
 if(!daily || daily.d!==ymd()) daily = freshDaily();
@@ -3753,11 +3753,15 @@ function steps13(){
     for(let i=0;i<g;i++) h+=`<i class="${k} ${i<v?"on":""}"></i>`; });
   return h.replace(/<i class="(\w+) "><\/i>/, (m,k)=> d<STEP_N?`<i class="${k} now"></i>`:m);
 }
+function goAct(a){
+  setMode(a);
+  if(a==="quiz") setTimeout(()=>{ const b=document.querySelector('[data-q="start"]'); if(b) b.click(); }, 30);
+}
 function startMission(){
   rollDay();
   const a = nextAct();
   if(!a){ missionRun=false; setMode("quiz"); return; }   // 다 했으면 자유 연습
-  missionRun = true; setMode(a);
+  missionRun = true; goAct(a);
 }
 function drawMsn(){
   let el=document.getElementById("msnBar");
@@ -3776,7 +3780,7 @@ function missionStep(k){
   setTimeout(()=>{
     if(!missionRun) return;
     const a=nextAct();
-    if(a) setMode(a); else { missionRun=false; setMode("today"); }
+    if(a) goAct(a); else { missionRun=false; setMode("today"); }
   }, 1200);
 }
 function rollDay(){ if(daily.d!==ymd()){ daily = freshDaily(); saveDaily(); } }
@@ -3967,7 +3971,8 @@ function answerQ(o){
   const ok = (o===q.ans);
   touch(q.d.id);
   if(stageOf(q.d.id)>=2) schedule(q.d.id, ok);   // 외운 단어만 복습 일정을 움직인다
-  if(ok){ quiz.right++; bump("qz"); } else quiz.wrong.push(q.d);
+  if(ok) quiz.right++; else quiz.wrong.push(q.d);
+  bump("qz");   // 맞든 틀리든 풀면 한 칸
   syncPush();
   renderQuiz();
 }
@@ -4096,6 +4101,7 @@ function spJudge(text){
   spk.heard = String(text).trim(); spk.res = r; spk.err = null;
   touch(d.id);
   if(r.score>=80) spPass(d, r.score);
+  else bump("sp", d.id);   // 점수가 낮아도 말해 보면 한 칸
   renderSpeak();
 }
 function spPass(d, score){
