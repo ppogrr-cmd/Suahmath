@@ -312,6 +312,19 @@ body.makemode .tools{display:none}
 .streak .wk i.on{background:radial-gradient(circle at 33% 30%,#99e9f2,var(--accent))}
 
 .go3{display:flex;gap:8px;margin-top:14px}
+.steps13{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;margin:8px 0 4px}
+.steps13 i{height:14px;border-radius:7px;background:#e7ecf7;display:block}
+.steps13 i.nw.on{background:var(--c1)}.steps13 i.qz.on{background:var(--c2)}.steps13 i.sp.on{background:var(--c3)}
+.steps13 i.now{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--subj)}
+.steplb{display:grid;grid-template-columns:5fr 5fr 3fr;gap:4px;font-size:12px;font-weight:700;color:var(--ink-soft);text-align:center;margin-bottom:2px}
+.steplb span b{font-weight:800}
+.go1{margin-top:14px}
+.go1 button{width:100%;border:0;border-radius:18px;padding:15px;color:#fff;background:linear-gradient(180deg,var(--subj-l),var(--subj));
+  box-shadow:0 5px 0 var(--subj-s);font-family:"Jua";font-size:20px}
+.go1 button:active{transform:translateY(3px);box-shadow:0 2px 0 var(--subj-s)}
+#msnBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom));white-space:nowrap;z-index:60;border:0;border-radius:99px;
+  background:#1f2a4d;color:#fff;padding:8px 14px;font-size:13px;font-weight:700;box-shadow:0 6px 18px rgba(31,42,77,.3);display:flex;gap:8px;align-items:center}
+#msnBar b{color:#99e9f2}#msnBar span{opacity:.6}
 .go3 button{flex:1;border:1px solid var(--rule);background:#fff;color:var(--ink);
   border-radius:15px;padding:12px 3px;font-size:12.5px;font-weight:600;letter-spacing:-.04em;
   transition:transform .12s}
@@ -3211,6 +3224,7 @@ function setMode(m){
   document.querySelectorAll("#pracnav button").forEach(b=>
     b.setAttribute("aria-pressed", b.dataset.prac===m));
   render();
+  if(typeof drawMsn==="function") drawMsn();
 }
 const hideBtn=document.getElementById("mHide");
 hideBtn.addEventListener("click", ()=>{
@@ -3708,7 +3722,7 @@ const saveSpoken = ()=> store.set("spoken", JSON.stringify(spoken));
 
 /* ---------- 오늘의 미션 ---------- */
 /* 한 판(12문제)에서 두 개까지 틀려도 하루치가 채워지도록 목표는 10 */
-const QUIZ_N=12, G_NEW=10, G_QZ=10, G_SPK=3;
+const QUIZ_N=6, G_NEW=5, G_QZ=5, G_SPK=3;
 const freshDaily = ()=>({d:ymd(), nw:0, qz:0, sp:0, stamp:false, ids:[], sids:[]});
 let daily = (()=>{ try{ return JSON.parse(store.get("daily")||"null"); }catch(e){ return null; } })();
 if(!daily || daily.d!==ymd()) daily = freshDaily();
@@ -3728,6 +3742,43 @@ let streak = (()=>{ try{ return JSON.parse(store.get("streak")||"null"); }catch(
 if(!streak.days) streak.days=[];
 const saveStreak = ()=> store.set("streak", JSON.stringify(streak));
 
+/* ===== 오늘의 미션: 새 단어 5 → 퀴즈 5 → 말하기 3 (13단계, 이어서 하기) ===== */
+const STEP_N = G_NEW+G_QZ+G_SPK;
+let missionRun = false;
+function stepsDone(){ return Math.min(daily.nw,G_NEW)+Math.min(daily.qz,G_QZ)+Math.min(daily.sp,G_SPK); }
+function nextAct(){ if(daily.nw<G_NEW) return "card"; if(daily.qz<G_QZ) return "quiz"; if(daily.sp<G_SPK) return "speak"; return null; }
+function steps13(){
+  const d=stepsDone(); let h="";
+  [["nw",G_NEW,daily.nw],["qz",G_QZ,daily.qz],["sp",G_SPK,daily.sp]].forEach(([k,g,v])=>{
+    for(let i=0;i<g;i++) h+=`<i class="${k} ${i<v?"on":""}"></i>`; });
+  return h.replace(/<i class="(\w+) "><\/i>/, (m,k)=> d<STEP_N?`<i class="${k} now"></i>`:m);
+}
+function startMission(){
+  rollDay();
+  const a = nextAct();
+  if(!a){ missionRun=false; setMode("quiz"); return; }   // 다 했으면 자유 연습
+  missionRun = true; setMode(a);
+}
+function drawMsn(){
+  let el=document.getElementById("msnBar");
+  if(missionRun && !["card","quiz","speak"].includes(mode)) missionRun=false;
+  if(!missionRun){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement("button"); el.id="msnBar";
+    el.onclick=()=>{ missionRun=false; setMode("today"); }; document.body.appendChild(el); }
+  const nm={card:"새 단어 · 외운 단어에 ✓",quiz:"퀴즈",speak:"따라 말하기"}[mode]||"";
+  el.innerHTML=`<b>미션 ${stepsDone()}/${STEP_N}</b>${nm}<span>✕</span>`;
+}
+function missionStep(k){
+  if(!missionRun) return;
+  drawMsn();
+  const goal={nw:G_NEW,qz:G_QZ,sp:G_SPK}[k];
+  if(daily[k]!==goal) return;
+  setTimeout(()=>{
+    if(!missionRun) return;
+    const a=nextAct();
+    if(a) setMode(a); else { missionRun=false; setMode("today"); }
+  }, 1200);
+}
 function rollDay(){ if(daily.d!==ymd()){ daily = freshDaily(); saveDaily(); } }
 function bump(k, id){
   rollDay();
@@ -3737,6 +3788,7 @@ function bump(k, id){
   const goal = {nw:G_NEW, qz:G_QZ, sp:G_SPK}[k];
   if(daily[k]===goal) popCell = k;          // 칸이 막 채워졌다 → 한 번 튀어오르게
   checkStamp();
+  missionStep(k);
 }
 function checkStamp(){
   if(daily.stamp) return;
@@ -3787,8 +3839,8 @@ let popCell = null;        // 방금 채워진 미션 칸 (한 번만 튀어오�
 function helloText(){
   const left = (G_NEW-daily.nw>0?1:0) + (G_QZ-daily.qz>0?1:0) + (G_SPK-daily.sp>0?1:0);
   if(daily.stamp) return "오늘 미션 끝! 멋지다";
-  if(left===1)    return "한 칸만 더 채우면 끝이야!";
-  if(daily.nw||daily.qz||daily.sp) return `조금만 더, ${left}칸 남았어`;
+  if(STEP_N-stepsDone()===1) return "한 단계만 더 하면 끝이야!";
+  if(daily.nw||daily.qz||daily.sp) return `조금만 더, ${STEP_N-stepsDone()}단계 남았어`;
   if(streak.n>=2) return `${streak.n}일째 이어 오고 있어`;
   return "수아야, 오늘도 해볼까?";
 }
@@ -3820,13 +3872,10 @@ function renderToday(){
   document.getElementById("today").innerHTML = `
     <div class="tcard hero">
       <h3>오늘의 미션${daily.stamp?` <em class="stamp">완료 ✓</em>`:""}</h3>
-      <div class="miss3">${ms("nw","새 단어",daily.nw,G_NEW)}${ms("qz","퀴즈",daily.qz,G_QZ)}${ms("sp","말하기",daily.sp,G_SPK)}</div>
+      <div class="steplb"><span>새 단어 <b>${Math.min(daily.nw,G_NEW)}/${G_NEW}</b></span><span>퀴즈 <b>${Math.min(daily.qz,G_QZ)}/${G_QZ}</b></span><span>말하기 <b>${Math.min(daily.sp,G_SPK)}/${G_SPK}</b></span></div>
+      <div class="steps13">${steps13()}</div>
       <div class="streak"><b><em>${streak.n}</em>일 연속</b><span>최고 ${streak.best||0}일</span><span class="wk">${wk}</span></div>
-      <div class="go3">
-        <button data-go="quiz">퀴즈 풀기</button>
-        <button data-go="speak">따라 말하기</button>
-        <button data-go="card">카드 넘기기</button>
-      </div>
+      <div class="go1"><button data-go="mission">${daily.stamp?"한 번 더 연습하기":stepsDone()?`이어서 하기 ▶ (${stepsDone()}/${STEP_N})`:"시작하기 ▶"}</button></div>
     </div>
 
     <div class="tcard">
@@ -3853,7 +3902,7 @@ function renderToday(){
 }
 document.getElementById("today").addEventListener("click", e=>{
   const g = e.target.closest("[data-go]");
-  if(g){ setMode(g.dataset.go); return; }
+  if(g){ if(g.dataset.go==="mission") startMission(); else setMode(g.dataset.go); return; }
   const f = e.target.closest("[data-fold]");
   if(f){ if(f.dataset.fold==="prog") progOpen=!progOpen; else saidOpen=!saidOpen; renderToday(); }
 });
