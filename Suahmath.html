@@ -212,6 +212,58 @@
   .k-hst div{background:#ffffff1a;border-radius:16px;padding:10px 8px;text-align:center}
   .k-hst b{display:block;font-family:'Jua';font-weight:400;font-size:26px;line-height:1.2}
   .k-hst span{font-size:11.5px;opacity:.8;font-weight:700}
+
+  /* ===== 영어 화면과 같은 '오늘' 구성 ===== */
+  #kidHome{--paper:#fff;--ink:#1f2a4d;--ink-soft:#7a8099;--rule:#e3e8f3;--accent:#3b5bdb;--round:"Jua","Pretendard Variable",sans-serif;--c1:#1E9179;--c1b:#E4F7F2;--c1e:#7FD9C3;--c2:#C8762F;--c2b:#FFF1E2;--c2e:#FFBE88;--c3:#6B5BC4;--c3b:#EFEBFC;--c3e:#B6A9EE}
+  .m-hero{background:linear-gradient(135deg,#1f2a4d,#3b5bdb);border-radius:26px;padding:18px 20px 16px;color:#fff;box-shadow:0 10px 26px rgba(31,42,77,.2);margin-bottom:11px}
+  .m-hero b{display:block;font-family:"Jua";font-weight:400;font-size:21px;line-height:1.35;letter-spacing:-.02em}
+  .m-hero span{display:block;font-size:12.5px;color:#c5d4ff;margin-top:3px}
+  #kidHome .streak .wk i{width:13px;height:13px;border-radius:50%;background:#dbe4f3;display:block}
+  #kidHome .tcard{background:var(--paper);border:1px solid #e3e8f3;border-radius:22px;padding:15px;
+  margin-bottom:11px;box-shadow:0 3px 14px rgba(31,42,77,.07)}
+  #kidHome .tcard h3{margin:0 0 12px;font-size:15px;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+  #kidHome .tcard h3 .stamp{font-style:normal;font-size:11.5px;background:var(--accent);color:#fff;
+  border-radius:999px;padding:3px 10px;font-weight:600}
+  #kidHome .tcard.hero{padding:17px 16px 18px;border-radius:26px;box-shadow:0 5px 20px rgba(31,42,77,.10)}
+  #kidHome .miss3{display:flex;gap:8px}
+  #kidHome .ms{flex:1;border:1.5px solid transparent;border-radius:18px;padding:14px 5px 12px;text-align:center}
+  #kidHome .ms:nth-child(1){background:var(--c1b);color:var(--c1)}
+  #kidHome .ms:nth-child(2){background:var(--c2b);color:var(--c2)}
+  #kidHome .ms:nth-child(3){background:var(--c3b);color:var(--c3)}
+  #kidHome .ms:nth-child(1).ok{border-color:var(--c1e)}
+  #kidHome .ms:nth-child(2).ok{border-color:var(--c2e)}
+  #kidHome .ms:nth-child(3).ok{border-color:var(--c3e)}
+  #kidHome .ms .n{font-family:var(--round);font-size:30px;font-weight:700;
+  font-variant-numeric:tabular-nums;line-height:1.05;color:inherit}
+  #kidHome .ms .n span{font-size:13px;font-weight:600;opacity:.55}
+  #kidHome .ms .lb{font-size:11.5px;color:var(--ink-soft);margin-top:4px;font-weight:500}
+  #kidHome .ms.pop{animation:popin .42s cubic-bezier(.3,1.5,.5,1)}
+  @keyframes popin{0%{transform:scale(.84)}55%{transform:scale(1.09)}100%{transform:scale(1)}}
+  #kidHome .streak{display:flex;align-items:center;gap:9px;margin-top:14px;font-size:12.5px;color:var(--ink-soft)}
+  #kidHome .streak b{font-size:14px;color:var(--ink);font-weight:600}
+  #kidHome .streak b em{font-family:var(--round);font-style:normal;font-size:17px;font-weight:700;margin-right:1px}
+  #kidHome .streak .wk{display:flex;gap:5px;margin-left:auto}
+  #kidHome .streak .wk i{width:13px;height:13px;border-radius:50%;background:#dbe4f3;display:block}
+  #kidHome .streak .wk i.on{background:radial-gradient(circle at 33% 30%,#99e9f2,var(--accent))}
+  #kidHome .go3{display:flex;gap:8px;margin-top:14px}
+  #kidHome .go3 button{flex:1;border:1px solid var(--rule);background:#fff;color:var(--ink);
+  border-radius:15px;padding:12px 3px;font-size:12.5px;font-weight:600;letter-spacing:-.04em;
+  transition:transform .12s}
+  #kidHome .go3 button:active{transform:scale(.95)}
+  #kidHome .go3 button:first-child{background:linear-gradient(180deg,#4f8cff,#3b5bdb);color:#fff;border-color:transparent}
+  #kidHome .ptot{font-size:13.5px;color:var(--ink-soft);margin-bottom:9px}
+  #kidHome .ptot b{color:var(--ink);font-family:var(--round);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+  #kidHome .pbar{position:relative;height:12px;border-radius:99px;background:#e7ecf7;overflow:hidden}
+  #kidHome .pbar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;transition:width .5s ease}
+  #kidHome .pbar i.k{background:#a5d8ff}
+  #kidHome .pbar i.s{background:var(--accent)}
+  #kidHome .plegend{display:flex;flex-wrap:wrap;gap:4px 13px;margin-top:9px;font-size:11.5px;color:var(--ink-soft)}
+  #kidHome .plegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+  #kidHome .plegend .lk{background:#a5d8ff}
+  #kidHome .plegend .ls{background:var(--accent)}
+  #kidHome .tcard{border-color:transparent !important;box-shadow:0 6px 18px rgba(31,42,77,.08) !important;border-radius:24px}
+  #kidHome .tcard h3{font-family:"Jua";font-weight:400;font-size:21px}
+  #kidHome .go3 button:first-child{box-shadow:0 5px 0 #2b44a8;border-radius:18px;font-family:"Jua";font-weight:400;font-size:18px}
   .k-card{margin-top:16px;background:#fff;border-radius:24px;padding:18px;box-shadow:0 6px 18px #1f2a4d14}
   .k-card h2{font-family:'Jua';font-weight:400;font-size:22px;margin:0;display:flex;justify-content:space-between;align-items:center}
   .k-card h2 small{font-family:"Pretendard Variable",sans-serif;font-size:13px;color:var(--km);font-weight:700}
@@ -328,15 +380,20 @@
 <div class="kid" id="kidHome">
   <div class="k-top"><nav data-subjects></nav><span style="flex:1"></span>
     <span class="k-pill fire" id="kStreak">🔥 0일</span></div>
-  <div class="k-hero"><div class="k-hmsg" id="kBubble"></div>
-    <div class="k-hst"><div><b id="kStar">0</b><span>⭐ 정복한 문제</span></div><div><b id="kToday">0</b><span>오늘 푼 문제</span></div><div><b id="kLv">Lv.1</b><span>수학 탐험가</span></div></div></div>
-  <div class="k-card">
-    <h2>오늘의 미션 <small id="kMisTxt">0 / 5</small></h2>
-    <div class="k-dots" id="kDots"></div>
-    <button class="k-go" id="kGo">시작하기 ▶</button>
-    <div class="k-sub" id="kMisSub">5문제를 끝까지 풀면 🔥 연속 기록이 하루 늘어요</div>
+  <div class="m-hero"><b id="kBubble"></b><span id="kDate"></span></div>
+  <div class="tcard hero">
+    <h3>오늘의 미션<em class="stamp" id="kStamp" hidden>완료 ✓</em></h3>
+    <div class="miss3" id="kMiss"></div>
+    <div class="streak" id="kStk"></div>
+    <div class="go3"><button id="kGo">미션 시작</button><button id="kAgain">다시 도전</button><button id="kPick">단원 고르기</button></div>
   </div>
-  <div class="k-sec"><span>단원 탐험 지도</span><span class="k-sems" id="kSems"></span></div>
+  <div class="tcard">
+    <h3>진도</h3>
+    <div class="ptot" id="kPtot"></div>
+    <div class="pbar" id="kPbar"></div>
+    <div class="plegend"><span><i class="lk"></i>이제는 알아요</span><span><i class="ls"></i>⭐ 정복</span><span id="kLv"></span></div>
+  </div>
+  <div class="k-sec" id="kSec"><span>단원 탐험 지도</span><span class="k-sems" id="kSems"></span></div>
   <div class="k-units" id="kUnits"></div>
   <p class="k-note">단원을 누르면 그 단원에서 5문제가 나와요 · ⭐는 두 번 맞혀서 정복한 문제</p>
 </div>
@@ -1873,16 +1930,22 @@ function renderKid(){
   ensureMission();
   var g=G(), all=items(), st=stars(all);
   $("kStreak").textContent="🔥 "+streakNow()+"일";
-  $("kStar").textContent=st; $("kToday").textContent=logRange(0,0).s;
-  $("kLv").textContent="Lv."+(1+Math.floor(st/10));
-  var done=Math.min(g.mI,g.mIds.length), tot=g.mIds.length;
-  $("kMisTxt").textContent=g.mDone?"완료! 🎉":done+" / "+tot;
-  $("kDots").innerHTML=g.mIds.map(function(_,i){ return '<i class="'+(i<done||g.mDone?"ok":"")+'"></i>' }).join("");
-  $("kGo").textContent=g.mDone?"한 세트 더 하기 ▶":(done?"이어서 풀기 ▶":"시작하기 ▶");
+  var done=Math.min(g.mI,g.mIds.length), tot=g.mIds.length, md=g.mDone?MIS_N:done, td=logRange(0,0);
+  var sn=streakNow(), wd=["일","월","화","수","목","금","토"], d0=new Date();
+  $("kBubble").textContent=!tot?"풀 문제가 없어요! 대단해 ✨":g.mDone?"오늘 미션 끝! 멋지다":
+    (done===MIS_N-1?"한 문제만 더 풀면 끝이야!":done?"조금만 더, "+(tot-done)+"문제 남았어":sn>=2?sn+"일째 이어 오고 있어":"수아야, 오늘도 해볼까?");
+  $("kDate").textContent=(d0.getMonth()+1)+"월 "+d0.getDate()+"일 "+wd[d0.getDay()]+"요일";
+  $("kStamp").hidden=!g.mDone;
+  function ms(lb,v,gl){ return '<div class="ms '+(v>=gl?"ok":"")+'"><div class="n">'+Math.min(v,gl)+'<span>/'+gl+'</span></div><div class="lb">'+lb+'</div></div>' }
+  $("kMiss").innerHTML=ms("미션 문제",md,MIS_N)+ms("맞힌 문제",td.r||0,MIS_N)+ms("⭐ 정복",td.c||0,1);
+  var wk=""; for(var i=-6;i<=0;i++){ var L=(g.log||{})[dayStr(i)]; wk+='<i class="'+(L&&L.s?"on":"")+'"></i>' }
+  $("kStk").innerHTML='<b><em>'+sn+'</em>일 연속</b><span>최고 '+Math.max(g.best||0,sn)+'일</span><span class="wk">'+wk+'</span>';
+  $("kGo").textContent=g.mDone?"한 세트 더":(done?"이어서 풀기":"미션 시작");
   $("kGo").disabled=!tot;
-  $("kBubble").innerHTML=!tot?"풀 문제가 없어요! 대단해 ✨":g.mDone?"오늘 미션 완료! 최고야 👏":
-    (done?"미션 <b>"+(tot-done)+"문제</b> 남았어! 힘내 💪":"오늘의 <b>5문제</b>, 시작해 볼까? ✏️");
-  $("kMisSub").innerHTML=g.mDone?"더 풀수록 기록이 쌓여요 📊":"5문제를 끝까지 풀면 🔥 연속 기록이 하루 늘어요";
+  var gr=all.filter(function(it){ return it.lamp==="green" }).length, totAll=all.length;
+  $("kPtot").innerHTML='<b>'+st+'</b> / '+totAll+' 정복 &nbsp;·&nbsp; <b>'+gr+'</b>개는 이제 알아요';
+  $("kPbar").innerHTML='<i class="k" style="width:'+((st+gr)/Math.max(totAll,1)*100)+'%"></i><i class="s" style="width:'+(st/Math.max(totAll,1)*100)+'%"></i>';
+  $("kLv").textContent="수학 탐험가 Lv."+(1+Math.floor(st/10));
   // 학기 탭
   var semUsed={}; all.forEach(function(it){ semUsed[it.sem]=1 });
   var sm=$("kSems"); sm.innerHTML="";
@@ -1921,6 +1984,14 @@ $("kGo").onclick=function(){
   if(!g.mIds.length) return toast("풀 문제가 없어요!");
   startSet(g.mIds,"daily");
 };
+$("kAgain").onclick=function(){
+  var a=items().filter(function(it){ return (!kSem()||it.sem===kSem()) && it.lamp==="again" });
+  if(!a.length) a=items().filter(function(it){ return (!kSem()||it.sem===kSem()) && it.lamp==="red" });
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t }
+  if(!a.length) return toast("다시 도전할 문제가 없어요! 👏");
+  startSet(a.slice(0,MIS_N).map(function(it){ return it.id }),"extra");
+};
+$("kPick").onclick=function(){ $("kSec").scrollIntoView({behavior:"smooth",block:"start"}) };
 function startSet(ids,kind,unit){
   if(!ids.length) return toast("이 단원은 풀 문제가 없어요!");
   S={ids:ids,i:kind==="daily"?Math.min(G().mI,ids.length-1):0,kind:kind,unit:unit,right:0};
