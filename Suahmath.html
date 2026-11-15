@@ -313,7 +313,7 @@
   .k-unit .ic{position:absolute;right:-4px;top:-12px;font-size:58px;opacity:.25;font-weight:900}
   .k-unit b{font-family:'Jua';font-weight:400;font-size:19px;display:block;line-height:1.3}
   .k-unit span{font-size:12px;opacity:.95}
-  .k-bar{height:7px;border-radius:9px;background:#ffffff55;margin-top:10px}.k-bar i{display:block;height:100%;border-radius:9px;background:#fff}
+  .k-bar{position:relative;height:7px;border-radius:9px;background:#ffffff55;margin-top:10px}.k-bar i{position:absolute;left:0;top:0;display:block;height:100%;border-radius:9px;background:#fff}.k-bar i.kn{background:#ffffff99}
   .k-tabs{display:flex;gap:8px;margin:14px 0 10px;overflow-x:auto;scrollbar-width:none}.k-tabs::-webkit-scrollbar{display:none}
   .k-tabs button{flex:none;border-radius:99px;padding:8px 14px;background:#fff;font-weight:700;color:var(--km);font-size:14px}
   .k-tabs button.on{background:var(--kn);color:#fff}
@@ -348,8 +348,8 @@
   .k-ul{display:flex;flex-direction:column;gap:10px;margin-top:12px}
   .k-ul .r{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700}
   .k-ul .r .nm{width:118px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .k-ul .r .tr{flex:1;height:12px;border-radius:9px;background:#eef0f6;overflow:hidden}
-  .k-ul .r .tr i{display:block;height:100%;border-radius:9px}
+  .k-ul .r .tr{position:relative;flex:1;height:12px;border-radius:9px;background:#eef0f6;overflow:hidden}
+  .k-ul .r .tr i{position:absolute;left:0;top:0;display:block;height:100%;border-radius:9px}
   .k-ul .r .pc{width:44px;text-align:right;font-size:13px;color:var(--km)}
   .k-bdg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
   .k-bdg div{border-radius:18px;padding:12px 6px;text-align:center;background:#f4f6fb}
@@ -1972,10 +1972,10 @@ function renderRec(){
   for(var i=-6;i<=0;i++){ var L=(g.log||{})[dayStr(i)]||{}; days.push([i,L.s||0,L.r||0]); wm=Math.max(wm,L.s||0) }
   $("kWeek").innerHTML=days.map(function(d){ var dt=new Date(); dt.setDate(dt.getDate()+d[0]);
     return '<div><span class="n">'+(d[1]||"")+'</span><span class="wb" style="height:'+Math.max(4,d[1]/wm*80)+'px"><i style="height:'+(d[1]?d[2]/d[1]*100:0)+'%"></i></span><span class="'+(d[0]===0?"td":"")+'">'+(d[0]===0?"오늘":nm[dt.getDay()])+'</span></div>' }).join("");
-  var uc={}; all.forEach(function(it){ if(kSem()&&it.sem!==kSem()) return; var u=uc[it.unit]||(uc[it.unit]={t:0,s:0}); u.t++; if(it.lamp==="done") u.s++ });
+  var uc={}; all.forEach(function(it){ if(kSem()&&it.sem!==kSem()) return; var u=uc[it.unit]||(uc[it.unit]={t:0,s:0,k:0}); u.t++; if(it.lamp==="done") u.s++; else if(it.lamp==="green") u.k++ });
   $("kUSem").textContent=kSem()||"전체 학기";
-  $("kUL").innerHTML=UNITS.filter(function(u){ return uc[u] }).map(function(u){ var L=UNITLOOK[u]||["","#adb5bd","#868e96"], pc=Math.round(uc[u].s/uc[u].t*100);
-    return '<div class="r"><span class="nm">'+esc(u)+'</span><span class="tr"><i style="width:'+Math.max(pc,2)+'%;background:linear-gradient(90deg,'+L[1]+','+L[2]+')"></i></span><span class="pc">'+(pc===100?"👑":pc+"%")+'</span></div>' }).join("");
+  $("kUL").innerHTML=UNITS.filter(function(u){ return uc[u] }).map(function(u){ var L=UNITLOOK[u]||["","#adb5bd","#868e96"], pc=Math.round(uc[u].s/uc[u].t*100), pk=Math.round((uc[u].s+uc[u].k)/uc[u].t*100);
+    return '<div class="r"><span class="nm">'+esc(u)+'</span><span class="tr">'+(uc[u].k?'<i style="width:'+pk+'%;background:'+L[1]+';opacity:.3"></i>':'')+'<i style="width:'+Math.max(pc,2)+'%;background:linear-gradient(90deg,'+L[1]+','+L[2]+')"></i></span><span class="pc">'+(pc===100?"👑":pc+"%")+'</span></div>' }).join("");
   var bl=badgeList(), on=bl.filter(function(b){ return b[4] }).length;
   $("kBCnt").textContent=on+" / "+bl.length;
   $("kBdg").innerHTML=bl.map(function(b){ return '<div class="'+(b[4]?"on":"")+'"><em>'+b[1]+'</em><b>'+b[2]+'</b><span>'+b[3]+'</span></div>' }).join("");
@@ -2130,12 +2130,12 @@ function renderKid(){
     b.onclick=function(){ cfg.kSem=p[0]; saveCfg(); renderKid() }; sm.appendChild(b);
   });
   // 단원 타일
-  var uc={}; all.forEach(function(it){ if(kSem()&&it.sem!==kSem()) return; var u=uc[it.unit]||(uc[it.unit]={t:0,s:0}); u.t++; if(it.lamp==="done") u.s++ });
+  var uc={}; all.forEach(function(it){ if(kSem()&&it.sem!==kSem()) return; var u=uc[it.unit]||(uc[it.unit]={t:0,s:0,k:0}); u.t++; if(it.lamp==="done") u.s++; else if(it.lamp==="green") u.k++ });
   var ue=$("kUnits"); ue.innerHTML="";
   UNITS.forEach(function(u){
-    if(!uc[u]) return; var L=UNITLOOK[u]||["?","#adb5bd","#868e96"], pc=Math.round(uc[u].s/uc[u].t*100);
+    if(!uc[u]) return; var L=UNITLOOK[u]||["?","#adb5bd","#868e96"], pc=Math.round(uc[u].s/uc[u].t*100), pk=Math.round((uc[u].s+uc[u].k)/uc[u].t*100);
     var b=document.createElement("button"); b.className="k-unit"; b.style.background="linear-gradient(135deg,"+L[1]+","+L[2]+")";
-    b.innerHTML='<span class="ic">'+L[0]+'</span><b>'+esc(u)+'</b><span>⭐ '+uc[u].s+' / '+uc[u].t+'</span><div class="k-bar"><i style="width:'+Math.max(pc,2)+'%"></i></div>';
+    b.innerHTML='<span class="ic">'+L[0]+'</span><b>'+esc(u)+'</b><span>⭐ '+uc[u].s+' / '+uc[u].t+(uc[u].k?' &nbsp;·&nbsp; 알아요 '+uc[u].k:'')+'</span><div class="k-bar">'+(uc[u].k?'<i class="kn" style="width:'+pk+'%"></i>':'')+'<i style="width:'+Math.max(pc,2)+'%"></i></div>';
     b.onclick=function(){ startSet(pickSet(MIS_N,u),"unit",u) };
     ue.appendChild(b);
   });
