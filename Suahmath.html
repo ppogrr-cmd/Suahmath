@@ -246,7 +246,9 @@
   #kidHome .streak .wk{display:flex;gap:5px;margin-left:auto}
   #kidHome .streak .wk i{width:13px;height:13px;border-radius:50%;background:#dbe4f3;display:block}
   #kidHome .streak .wk i.on{background:radial-gradient(circle at 33% 30%,#99e9f2,var(--accent))}
-  #kidHome .go3{display:flex;gap:8px;margin-top:14px}
+  #kidHome .go3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+  #kidHome .go3 button:first-child{grid-column:1/-1}
+  #kidHome .go3 button{word-break:keep-all;line-height:1.25}
   #kidHome .go3 button{flex:1;border:1px solid var(--rule);background:#fff;color:var(--ink);
   border-radius:15px;padding:12px 3px;font-size:12.5px;font-weight:600;letter-spacing:-.04em;
   transition:transform .12s}
@@ -415,7 +417,7 @@
     <h3>오늘의 미션<em class="stamp" id="kStamp" hidden>완료 ✓</em></h3>
     <div class="miss3" id="kMiss"></div>
     <div class="streak" id="kStk"></div>
-    <div class="go3"><button id="kGo">미션 시작</button><button id="kAgain">다시 도전</button><button id="kPick">단원 고르기</button></div>
+    <div class="go3"><button id="kGo">미션 시작</button><button id="kAgain">다시 도전</button><button id="kPick">단원 고르기</button><button id="kRev">⭐ 정복 다시 풀기</button></div>
   </div>
   <div class="tcard">
     <h3>진도</h3>
@@ -2089,9 +2091,9 @@ function pickSet(n,unit,avoid){
   var a=items().filter(function(it){ return (!kSem()||it.sem===kSem()) && (!unit||it.unit===unit) && !(avoid&&avoid[it.id]) });
   function shuf(x){ for(var i=x.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=x[i]; x[i]=x[j]; x[j]=t } return x }
   var p1=shuf(a.filter(function(it){ return it.lamp==="again" })), p2=shuf(a.filter(function(it){ return it.lamp==="red" })),
-      p3=shuf(a.filter(function(it){ return it.lamp==="green" })), p4=shuf(a.filter(function(it){ return it.lamp==="done" }));
+      p3=shuf(a.filter(function(it){ return it.lamp==="green" }));
   var out=p1.slice(0,2).concat(p2).concat(p1.slice(2));
-  out=out.concat(p3).concat(p4);
+  out=out.concat(p3);   // ⭐ 정복 문제는 미션·단원 문제에서 빼고 '정복 다시 풀기'에서만
   return out.slice(0,n).map(function(it){ return it.id });
 }
 function ensureMission(){
@@ -2136,7 +2138,7 @@ function renderKid(){
     if(!uc[u]) return; var L=UNITLOOK[u]||["?","#adb5bd","#868e96"], pc=Math.round(uc[u].s/uc[u].t*100), pk=Math.round((uc[u].s+uc[u].k)/uc[u].t*100);
     var b=document.createElement("button"); b.className="k-unit"; b.style.background="linear-gradient(135deg,"+L[1]+","+L[2]+")";
     b.innerHTML='<span class="ic">'+L[0]+'</span><b>'+esc(u)+'</b><span>⭐ '+uc[u].s+' / '+uc[u].t+(uc[u].k?' &nbsp;·&nbsp; 알아요 '+uc[u].k:'')+'</span><div class="k-bar">'+(uc[u].k?'<i class="kn" style="width:'+pk+'%"></i>':'')+'<i style="width:'+Math.max(pc,2)+'%"></i></div>';
-    b.onclick=function(){ startSet(pickSet(MIS_N,u),"unit",u) };
+    b.onclick=function(){ var ids=pickSet(MIS_N,u); if(!ids.length) return toast("이 단원은 모두 정복했어요! ⭐ 정복 다시 풀기에서 복습해요"); startSet(ids,"unit",u) };
     ue.appendChild(b);
   });
 }
@@ -2167,6 +2169,12 @@ $("kAgain").onclick=function(){
   if(!a.length) return toast("다시 도전할 문제가 없어요! 👏");
   startSet(a.slice(0,MIS_N).map(function(it){ return it.id }),"extra");
 };
+$("kRev").onclick=function(){
+  var a=items().filter(function(it){ return (!kSem()||it.sem===kSem()) && it.lamp==="done" });
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t }
+  if(!a.length) return toast("아직 정복한 문제가 없어요. 두 번 맞히면 ⭐ 정복!");
+  startSet(a.slice(0,MIS_N).map(function(it){ return it.id }),"review");
+};
 $("kPick").onclick=function(){ $("kSec").scrollIntoView({behavior:"smooth",block:"start"}) };
 function startSet(ids,kind,unit){
   if(!ids.length) return toast("이 단원은 풀 문제가 없어요!");
@@ -2177,7 +2185,7 @@ function renderQ(){
   var it=byId(S.ids[S.i]); if(!it){ return nextQ() }
   $("kProg").innerHTML=S.ids.map(function(_,i){ return '<i class="'+(i<S.i?"ok":(i===S.i?"now":""))+'"></i>' }).join("");
   $("kQBody").innerHTML='<div class="k-q"><div class="k-qm"><span>'+esc(it.unit)+'</span><span>'+(S.i+1)+'번째 문제</span>'+
-    (it.lamp==="again"?'<span class="re">다시 도전!</span>':(it.lamp==="green"?'<span class="re">⭐ 정복 도전</span>':''))+'</div>'+
+    (it.lamp==="again"?'<span class="re">다시 도전!</span>':(it.lamp==="green"?'<span class="re">⭐ 정복 도전</span>':(it.lamp==="done"?'<span class="re">⭐ 정복 복습</span>':'')))+'</div>'+
     '<div class="q">'+it.q+'</div><div id="kH" class="k-box h hidden"><b>힌트</b>'+esc(it.hint||"힌트가 없는 문제예요.")+'</div>'+
     '<div id="kA" class="k-box a hidden"><b>정답</b>'+esc(it.ans)+(it.ansFig||'')+'</div></div>';
   $("kStep1").classList.remove("hidden"); $("kStep2").classList.add("hidden");
@@ -2222,7 +2230,7 @@ function finishSet(){
   saveG();
   var cols=["#3bc9db","#ffbf2e","#4f9dff","#34c38f","#9d7bff"], conf="";
   for(var i=0;i<28;i++) conf+='<i class="k-conf" style="left:'+(Math.random()*100)+'%;background:'+cols[i%5]+';animation-delay:'+(Math.random()*1.5).toFixed(2)+'s"></i>';
-  $("kCBox").innerHTML=conf+'<h3 class="jua">'+(S.kind==="daily"?"미션 완료!":"세트 완료!")+'</h3><p>'+S.ids.length+'문제 중 맞힌 문제</p>'+
+  $("kCBox").innerHTML=conf+'<h3 class="jua">'+(S.kind==="daily"?"미션 완료!":S.kind==="review"?"정복 복습 완료!":"세트 완료!")+'</h3><p>'+S.ids.length+'문제 중 맞힌 문제</p>'+
     '<div class="big2">'+S.right+' <span style="font-size:22px;color:#7a8099">/ '+S.ids.length+'</span></div>'+(msg?'<p style="color:#e8590c;font-weight:800">'+msg+'</p>':'')+(nb.length?'<div class="k-newb">새 배지! '+nb.map(function(b){ return b[1]+' '+b[2] }).join(' · ')+'</div>':'')+
     '<button class="k-go" id="kToCloset">내 기록 보기 📊</button><button class="k-ghost" id="kToHome">홈으로</button>';
   $("kCele").classList.remove("hidden");
