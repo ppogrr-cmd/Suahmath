@@ -160,14 +160,17 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 
 /* 오늘 읽을 5문장: 아직 안 읽은 문장을 책 순서대로, 다 읽었으면 적게 읽은 문장부터 */
 function rollDay(){
-  if(daily.d===ymd()) return;
+  /* 같은 날이라도 문장이 비어 있으면(교재를 넣기 전에 열었던 날) 다시 고른다 */
+  const ok = daily.d===ymd() && daily.ids.length && daily.ids.every(id=>byId(id));
+  if(ok) return;
+  if(daily.d===ymd() && daily.stamp) return;
   const fresh=SENT.filter(s=>!rd[s.id]);
   let ids=fresh.slice(0,DAY_N).map(s=>s.id);
   if(ids.length<DAY_N){
     const old=[...SENT].filter(s=>!ids.includes(s.id)).sort((a,b)=>(rd[a.id]||0)-(rd[b.id]||0));
     ids=ids.concat(old.slice(0,DAY_N-ids.length).map(s=>s.id));
   }
-  daily={d:ymd(),n:0,ids,stamp:false}; save();
+  daily={d:ymd(),n:0,ids,stamp:false}; save(); push();
 }
 function curStreak(){ return (streak.last===ymd()||streak.last===dayAdd(-1)) ? streak.n : 0; }
 function stampDay(){
@@ -273,7 +276,7 @@ async function cue(ms, my, label){
    R = {ids, i, kind:"daily"|"lesson", title} */
 let R=null;
 function openRead(ids, kind, title){
-  if(!ids.length) return;
+  if(!ids.length){ rollDay(); ids=daily.ids; if(!ids.length) return; }
   R={ids, i: kind==="daily" ? Math.min(daily.n, ids.length) : 0, kind, title};
   document.getElementById("rd").hidden=false; document.body.style.overflow="hidden"; renderRead();
 }
