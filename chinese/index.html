@@ -299,26 +299,47 @@ let auOpen=false;
 function unlockAudio(){ if(auOpen||!AU.paused) return; auOpen=true; try{ AU.src=SILENT; const p=AU.play(); if(p&&p.catch) p.catch(()=>{ auOpen=false; }); }catch(e){ auOpen=false; } }
 document.addEventListener("touchend",unlockAudio,{capture:true}); document.addEventListener("click",unlockAudio,{capture:true});
 
-let mic=null, recr=null, recChunks=[], recT0=0;
-const canRec=()=>!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
-const recMime=()=>["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t))||"";
-/* 아이패드는 한 번 쓴 마이크를 다시 쓰면 두 번째부터 빈 녹음이 나오는 경우가 있어,
-   녹음할 때마다 마이크를 새로 열고 끝나면 바로 닫는다 */
+/* 녹음: 아이패드 Safari의 MediaRecorder는 두 번째 녹음부터 빈 파일이 나오는 일이 있어,
+   마이크 소리를 Web Audio로 직접 받아 WAV로 만든다. 녹음마다 마이크를 열고 끝나면 닫는다
+   (마이크가 켜져 있으면 아이패드 스피커 소리가 작아지기 때문). */
+let mic=null, recr=null, recT0=0, actx=null, rsrc=null, rproc=null, rbufs=[], rrate=44100;
+const canRec=()=>!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (window.AudioContext||window.webkitAudioContext));
 async function recStart(){
   stopSound(); micOff();
-  mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
-  const t=recMime(); recr=new MediaRecorder(mic, t?{mimeType:t}:undefined); recChunks=[];
-  recr.ondataavailable=e=>{ if(e.data && e.data.size) recChunks.push(e.data); };
-  recr.start(); recT0=Date.now();
+  if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+  try{ await actx.resume(); }catch(e){}
+  mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  rrate=actx.sampleRate; rbufs=[];
+  rsrc=actx.createMediaStreamSource(mic);
+  rproc=actx.createScriptProcessor(4096,1,1);
+  rproc.onaudioprocess=e=>{ rbufs.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+  rsrc.connect(rproc); rproc.connect(actx.destination);
+  recr={state:"recording"}; recT0=Date.now();
+}
+function encodeWav(bufs, inRate, outRate=16000){
+  let n=0; bufs.forEach(b=>n+=b.length);
+  const all=new Float32Array(n); let o=0; bufs.forEach(b=>{ all.set(b,o); o+=b.length; });
+  const ratio=inRate/outRate, m=Math.floor(n/ratio), pcm=new Int16Array(m);
+  for(let i=0;i<m;i++){ const st=Math.floor(i*ratio), en=Math.min(n,Math.floor((i+1)*ratio)); let sum=0,c=0; for(let j=st;j<en;j++){ sum+=all[j]; c++; }
+    const v=Math.max(-1,Math.min(1,c?sum/c:0)); pcm[i]=v<0?v*0x8000:v*0x7fff; }
+  const buf=new ArrayBuffer(44+pcm.length*2), dv=new DataView(buf);
+  const W=(p,str)=>{ for(let i=0;i<str.length;i++) dv.setUint8(p+i,str.charCodeAt(i)); };
+  W(0,"RIFF"); dv.setUint32(4,36+pcm.length*2,true); W(8,"WAVE"); W(12,"fmt "); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+  dv.setUint32(24,outRate,true); dv.setUint32(28,outRate*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true); W(36,"data"); dv.setUint32(40,pcm.length*2,true);
+  new Int16Array(buf,44).set(pcm);
+  return {blob:new Blob([buf],{type:"audio/wav"}), sec:m/outRate};
 }
 function recStop(){
   return new Promise(res=>{
-    if(!recr || recr.state==="inactive") return res(null);
-    const r0=recr;
-    r0.onstop=()=>{ const blob=new Blob(recChunks,{type:r0.mimeType||"audio/mp4"}); recr=null; micOff();
-      res(blob.size?{blob, ms:Date.now()-recT0, t:blob.type||"audio/mp4", url:URL.createObjectURL(blob)}:null); };
-    try{ r0.requestData && r0.requestData(); }catch(e){}
-    r0.stop();
+    if(!recr) return res(null);
+    setTimeout(()=>{   // 마지막 조각까지 받도록 잠깐 기다린다
+      try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){}
+      const bufs=rbufs; rbufs=[]; rsrc=rproc=null; recr=null; micOff();
+      if(!bufs.length) return res(null);
+      const {blob,sec}=encodeWav(bufs, rrate);
+      if(sec<0.3) return res(null);
+      res({blob, ms:Math.round(sec*1000), t:"audio/wav", url:URL.createObjectURL(blob)});
+    },150);
   });
 }
 function micOff(){ if(mic){ mic.getTracks().forEach(t=>t.stop()); mic=null; } }
@@ -379,7 +400,7 @@ function openRead(ids, kind, title){
   prefetchMom(ids);
   document.getElementById("rd").hidden=false; document.body.style.overflow="hidden"; renderRead();
 }
-function closeRead(){ tok++; stopSound(); clearInterval(recTimer); try{ recr && recr.state!=="inactive" && recr.stop(); }catch(e){} recr=null; micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
+function closeRead(){ tok++; stopSound(); clearInterval(recTimer); try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){} recr=null; rbufs=[]; micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
 function renderRead(){
   const el=document.getElementById("rdIn"), n=R.ids.length;
   let bar=""; for(let i=0;i<n;i++) bar+=`<i class="${i<R.i?"on":""} ${i===R.i?"now":""}"></i>`;
@@ -533,7 +554,7 @@ document.getElementById("home").addEventListener("click",e=>{
 /* ===== 부모 화면 ===== */
 let PA={tab:"mom", rec:null, recId:null, kid:null, day:null, del:null, busy:{}};
 function openPa(){ document.getElementById("pa").hidden=false; document.body.style.overflow="hidden"; renderPa(); loadMomIdx().then(()=>{ renderPa(); prefetchMom(SENT.map(x=>x.id)); }); }
-function closePa(){ stopSound(); try{ recr && recr.state!=="inactive" && recr.stop(); }catch(e){} recr=null; micOff(); PA.recId=null; document.getElementById("pa").hidden=true; document.body.style.overflow=""; renderHome(); }
+function closePa(){ stopSound(); try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){} recr=null; rbufs=[]; micOff(); PA.recId=null; document.getElementById("pa").hidden=true; document.body.style.overflow=""; renderHome(); }
 function fmtT(at){ const d=new Date(at); return d.getHours()+":"+String(d.getMinutes()).padStart(2,"0"); }
 function renderPa(){
   const el=document.getElementById("paIn");
