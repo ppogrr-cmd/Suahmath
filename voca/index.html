@@ -4125,6 +4125,8 @@ function bump(k, id){
   missionStep(k);
   syncPush();
 }
+/* 보상: 오늘 미션을 끝냈으면 코인 받기 (같은 날은 한 번만) */
+function vocaEarn(){ if(daily.stamp && daily.d===ymd() && window.rewardEarn) rewardEarn("eng", ymd(), (streak.days||[]).filter(x=>x<ymd())); }
 function checkStamp(){
   if(daily.stamp) return;
   if(daily.nw<G_NEW || daily.qz<G_QZ || daily.sp<G_SPK) return;
@@ -4135,7 +4137,7 @@ function checkStamp(){
   streak.n = (streak.last===y) ? streak.n+1 : 1;
   streak.last = t;
   streak.best = Math.max(streak.best||0, streak.n);
-  saveDaily(); saveStreak(); syncPush();
+  saveDaily(); saveStreak(); syncPush(); vocaEarn();
   if(document.getElementById("vMis").hidden) party("오늘 미션 완료!", `${streak.n}일 연속 · 최고 ${streak.best}일`);
 }
 function party(title, sub){
@@ -4209,6 +4211,7 @@ function drawHello(){
 }
 
 function renderToday(){
+  vocaEarn();
   rollDay();
   drawHello();
   const tot = WORDS.length;

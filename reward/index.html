@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff4e0">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
+<link rel="icon" href="/apple-touch-icon.png?v=4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study">
+<title>Study</title>
+<script src="/nav.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--ink:#1f2a4d;--soft:#7a8099;--gold:#f59f00;--gold-d:#d9480f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{min-height:100dvh;background:linear-gradient(180deg,#fff4e0 0%,#fff8ec 55%,#fffbf4 100%);color:var(--ink);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.subjbar{max-width:560px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:8px}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom))}
+.hero{border-radius:26px;padding:22px 20px 20px;color:#fff;text-align:center;
+  background:linear-gradient(135deg,#ffd43b,#f59f00 55%,#e8590c);box-shadow:0 8px 22px rgba(217,72,15,.25)}
+.hero .n{font-family:"Jua";font-size:64px;line-height:1}
+.hero .s{font-size:15px;opacity:.95;margin-top:6px}
+.prog{height:16px;border-radius:9px;background:rgba(255,255,255,.35);margin:16px 0 6px;overflow:hidden}
+.prog i{display:block;height:100%;background:#fff;border-radius:9px}
+.hero .left{font-size:14px;font-weight:700}
+.ex{width:100%;border:0;border-radius:18px;padding:16px;margin-top:16px;font-family:"Jua";font-size:22px;color:#fff;
+  background:linear-gradient(180deg,#51cf66,#2f9e44);box-shadow:0 5px 0 #237032}
+.ex:disabled{background:rgba(255,255,255,.5);color:#fff;box-shadow:none}
+.confirm{display:flex;gap:8px;margin-top:12px}
+.confirm button{flex:1;border:0;border-radius:16px;padding:14px;font-family:"Jua";font-size:19px}
+.confirm .yes{background:#2f9e44;color:#fff}.confirm .no{background:#fff;color:#4a5170}
+.card{background:#fff;border-radius:24px;padding:18px;margin-top:14px;box-shadow:0 6px 18px rgba(31,42,77,.08)}
+.card h3{font-family:"Jua";font-weight:400;font-size:21px;margin:0 0 10px}
+.rule{font-size:15px;line-height:1.7;color:#4a5170}.rule b{color:var(--ink)}
+.runs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.run{border-radius:16px;padding:12px 10px;color:#fff;text-align:center}
+.run b{font-family:"Jua";font-weight:400;font-size:26px;display:block}
+.run span{font-size:12px;opacity:.95}
+.rq{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:#fff9db;margin-bottom:8px}
+.rq.paid{background:#ebfbee}
+.rq .t{flex:1;font-size:15px}.rq .t small{display:block;color:var(--soft);font-size:12px}
+.rq .st{font-weight:800;font-size:14px;color:#e67700}.rq.paid .st{color:#2f9e44}
+.rq button{border:0;border-radius:99px;padding:8px 12px;font-size:13px;font-weight:800;background:#fff;color:#4a5170;box-shadow:0 1px 4px #0001}
+.rq button.warn{background:#2f9e44;color:#fff}
+.lg{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #f1f3f5;font-size:15px}
+.lg:last-child{border-bottom:0}
+.lg i{width:10px;height:10px;border-radius:50%;flex:none}
+.lg .t{flex:1}.lg .t small{color:var(--soft);font-size:12px;margin-left:6px}
+.lg b{color:#e67700;font-size:16px}
+.lg.b b{color:#d9480f}
+.empty{color:var(--soft);font-size:14px;padding:6px 0}
+.note{text-align:center;color:var(--soft);font-size:12px;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="subjbar"><nav data-subjects></nav><span style="flex:1"></span></div>
+<div class="wrap" id="app"><div class="hero"><div class="n">🪙</div><div class="s">불러오는 중…</div></div></div>
+<script>
+const SUBJ={math:["수학","#3b5bdb"],eng:["영어","#0ca678"],zh:["중국어","#e03131"]};
+let V=null, ask=false, paying=null, msg="";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const md=d=>{ const p=d.split("-"); return (+p[1])+"월 "+(+p[2])+"일"; };
+const mdAt=at=>{ const d=new Date(at); return (d.getMonth()+1)+"월 "+d.getDate()+"일"; };
+async function load(){
+  try{ const r=await fetch("/api/reward",{cache:"no-store"}); if(!r.ok) throw 0; V=await r.json(); msg=""; }
+  catch(e){ msg="서버에 연결하지 못했어요. 잠시 뒤에 다시 열어 주세요."; }
+  render();
+}
+async function post(body){
+  try{ const r=await fetch("/api/reward",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const j=await r.json(); if(j && j.bal!=null) V=j; try{ localStorage.setItem("coinBal",JSON.stringify(V.bal)); }catch(e){} }catch(e){ msg="저장하지 못했어요. 인터넷을 확인해 주세요."; }
+  ask=false; paying=null; render();
+  document.querySelectorAll("a.coin").forEach(a=>a.textContent="🪙 "+(V?V.bal:"–"));
+}
+function render(){
+  const el=document.getElementById("app");
+  if(!V){ el.innerHTML=`<div class="hero"><div class="n">🪙</div><div class="s">${esc(msg||"불러오는 중…")}</div></div>`; return; }
+  const P=V.price||100, bal=V.bal, pc=Math.min(100,Math.round(bal/P*100));
+  const hero=`<div class="hero">
+      <div class="n">🪙 ${bal}</div>
+      <div class="s">${P}개 모으면 1만원으로 바꿀 수 있어요</div>
+      <div class="prog"><i style="width:${Math.max(pc,2)}%"></i></div>
+      <div class="left">${bal>=P?"🎉 바꿀 수 있어요!":`${P-bal}개 더 모으면 1만원!`}</div>
+      ${ask?`<div class="confirm"><button class="no" data-a="no">아니요</button><button class="yes" data-a="yes">네, 바꿀래요!</button></div>`
+           :`<button class="ex" data-a="ask" ${bal>=P?"":"disabled"}>💰 1만원으로 바꾸기</button>`}
+    </div>`;
+  const runs=Object.entries(SUBJ).map(([k,[nm,c]])=>{ const n=(V.runs||{})[k]||0, left=10-(n%10);
+    return `<div class="run" style="background:${c}"><b>${n}일</b><span>${nm} 연속<br>보너스까지 ${left}일</span></div>`; }).join("");
+  const req=(V.req||[]).map(r=>`<div class="rq ${r.st==="지급 완료"?"paid":""}">
+      <div class="t">🪙${r.n} → ${(r.won||10000).toLocaleString()}원<small>${mdAt(r.at)} 신청${r.paidAt?" · "+mdAt(r.paidAt)+" 받음":""}</small></div>
+      <span class="st">${esc(r.st)}</span>
+      ${r.st==="신청"?(paying===r.id?`<button class="warn" data-a="paid" data-id="${r.id}">줬어요 ✓</button>`:`<button data-a="pay" data-id="${r.id}">부모: 지급</button>`):""}
+    </div>`).join("");
+  const lg=(V.ledger||[]).slice(0,60).map(x=>{ const [nm,c]=SUBJ[x.s]||[x.s,"#adb5bd"];
+    return `<div class="lg ${x.k==="b"?"b":""}"><i style="background:${c}"></i><div class="t">${x.k==="b"?`${nm} ${x.run}일 연속 보너스 🔥`:`${nm} 미션 완료`}<small>${md(x.d)}</small></div><b>+${x.n}</b></div>`; }).join("");
+  el.innerHTML=hero+`
+    ${msg?`<div class="note">${esc(msg)}</div>`:""}
+    ${req?`<div class="card"><h3>바꾸기 신청</h3>${req}</div>`:""}
+    <div class="card"><h3>연속 기록</h3><div class="runs">${runs}</div></div>
+    <div class="card"><h3>코인 받는 법</h3><div class="rule">
+      📘 과목마다 <b>오늘의 미션을 끝내면 🪙1개</b><br>
+      🔥 같은 과목을 <b>10일 연속</b> 하면 보너스 <b>+1</b>, 20일이면 <b>+2</b>, 30일이면 <b>+3</b>…<br>
+      💰 <b>🪙${P}개</b>를 모으면 <b>1만원</b>으로 바꿔 달라고 신청해요</div></div>
+    <div class="card"><h3>받은 코인</h3>${lg||`<div class="empty">아직 받은 코인이 없어요. 오늘의 미션을 끝내 볼까요?</div>`}</div>`;
+}
+document.getElementById("app").addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]"); if(!b) return; const a=b.dataset.a;
+  if(a==="ask"){ ask=true; return render(); }
+  if(a==="no"){ ask=false; return render(); }
+  if(a==="yes") return post({op:"redeem"});
+  if(a==="pay"){ paying=b.dataset.id; return render(); }
+  if(a==="paid") return post({op:"paid",id:b.dataset.id});
+});
+load();
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) load(); });
+</script>
+</body>
+</html>

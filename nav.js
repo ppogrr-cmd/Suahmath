@@ -10,6 +10,7 @@
   ];
   function cur(){
     var p=location.pathname, best=SUBJECTS[0];
+    if(p.indexOf("/reward")===0) return ["보상","/reward/","#f59f00","#7a4a00","#ffc078","#d9480f"];
     SUBJECTS.forEach(function(s){ if(s[1]!=="/"&&p.indexOf(s[1].replace(/\/$/,""))===0) best=s });
     return best;
   }
@@ -31,5 +32,39 @@
       }).join("");
     });
   }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",draw); else draw();
+  /* ===== 보상 코인: 과목 선택 줄 오른쪽 끝에 🪙 개수, 누르면 보상 화면 ===== */
+  var COIN_CSS='.coin{flex:none;display:inline-flex;align-items:center;gap:4px;background:#fff;border-radius:99px;padding:8px 12px;'+
+    'font:800 15px "Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;color:#e67700;text-decoration:none;box-shadow:0 2px 10px rgba(31,42,77,.12)}'+
+    '.coin.pop{animation:coinPop .9s ease}@keyframes coinPop{30%{transform:scale(1.35)}}'+
+    '@media (max-width:430px){.sj a{padding:7px 10px 7px 9px;font-size:14px;gap:5px}.coin{padding:7px 10px;font-size:14px}}';
+  var st2=document.createElement("style"); st2.textContent=COIN_CSS; (document.head||document.documentElement).appendChild(st2);
+  function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)) }catch(e){} }
+  function showCoin(n,pop){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-subjects]"),function(nav){
+      var bar=nav.parentElement, a=bar.querySelector("a.coin");
+      if(!a){ a=document.createElement("a"); a.className="coin"; a.href="/reward/"; bar.appendChild(a); }
+      a.textContent="🪙 "+(n==null?"–":n);
+      if(pop){ a.classList.remove("pop"); void a.offsetWidth; a.classList.add("pop"); }
+    });
+  }
+  function refreshCoin(){
+    fetch("/api/reward",{cache:"no-store"}).then(function(r){ return r.ok?r.json():null }).then(function(j){
+      if(j){ lsSet("coinBal",j.bal); showCoin(j.bal) } }).catch(function(){});
+  }
+  /* 미션을 끝낸 날 한 번 부른다. 같은 과목·같은 날은 서버가 한 번만 준다.
+     s: "math" | "eng" | "zh", d: 그날 날짜, hist: 예전에 미션을 한 날들(연속 계산용) */
+  var sent={};
+  window.rewardEarn=function(s,d,hist){
+    var key=s+":"+d; if(sent[key]) return; sent[key]=1;
+    var done=lsGet("coinSent")||{}; var first=!done[key];
+    fetch("/api/reward",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({op:"earn",s:s,d:d,hist:hist||[]})})
+      .then(function(r){ return r.ok?r.json():null }).then(function(j){
+        if(!j){ sent[key]=0; return }
+        done[key]=1; lsSet("coinSent",done); lsSet("coinBal",j.bal); showCoin(j.bal, first);
+      }).catch(function(){ sent[key]=0 });
+  };
+  function boot(){ draw(); showCoin(lsGet("coinBal")); refreshCoin() }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot); else boot();
+  document.addEventListener("visibilitychange",function(){ if(!document.hidden) refreshCoin() });
 })();

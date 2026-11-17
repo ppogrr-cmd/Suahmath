@@ -2084,6 +2084,14 @@ function G(){
 function saveG(){ var g=G(); g.last=Date.now(); saveProg(); schedulePush() }
 function dayStr(off){ var d=new Date(); d.setDate(d.getDate()+(off||0)); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate() }
 function stars(list){ var n=0; (list||items()).forEach(function(it){ if(it.lamp==="done") n++ }); return n }
+/* 보상: 오늘 미션을 끝냈으면 코인 받기 (같은 날은 한 번만) */
+function isoDay(off){ var d=new Date(); d.setDate(d.getDate()+(off||0)); var z=function(n){ return (n<10?"0":"")+n }; return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate()) }
+function mathEarn(){
+  var g=G(); if(!(g.mDone && g.mDay===dayStr(0)) || !window.rewardEarn) return;
+  var hist=[], n=g.lastDay===dayStr(0)?(g.streak||0):0;
+  for(var i=1;i<n;i++) hist.push(isoDay(-i));
+  rewardEarn("math", isoDay(0), hist);
+}
 function streakNow(){ var g=G(); return (g.lastDay===dayStr(0)||g.lastDay===dayStr(-1))?(g.streak||0):0 }
 function kSem(){ return cfg.kSem||"" }
 
@@ -2105,6 +2113,7 @@ function ensureMission(){
 
 function renderKid(){
   if($("kidHome").classList.contains("hidden")) return;
+  mathEarn();
   ensureMission();
   var g=G(), all=items(), st=stars(all);
   $("kStreak").textContent="🔥 "+streakNow()+"일";
@@ -2222,6 +2231,7 @@ function finishSet(){
       g.mDone=true; var t=dayStr(0);
       if(g.lastDay===dayStr(-1)) g.streak=(g.streak||0)+1; else if(g.lastDay!==t) g.streak=1;
       g.lastDay=t; g.best=Math.max(g.best||0,g.streak); g.mCount=(g.mCount||0)+1;
+      setTimeout(mathEarn,0);
       if(g.streak>1) msg="🔥 "+g.streak+"일 연속!"
     }
   }
