@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff0ee">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
+<link rel="icon" href="/apple-touch-icon.png?v=4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study">
+<title>Study</title>
+<script src="/nav.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+SC:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--subj:#e03131;--subj-d:#6b1414;--subj-l:#ff6b6b;--subj-s:#b02525;
+  --ink:#1f2a4d;--soft:#7a8099;--rule:#e9e3e3;--mark:#ffe49c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{min-height:100dvh;background:linear-gradient(180deg,#fff0ee 0%,#fff5f0 55%,#fffaf6 100%);color:var(--ink);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom))}
+.subjbar{max-width:560px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:8px}
+.pill{background:#fff;border-radius:99px;padding:8px 13px;font-weight:800;font-size:15px;color:#e8590c;box-shadow:0 2px 10px rgba(31,42,77,.12)}
+.hero{border-radius:26px;padding:20px 20px 18px;color:#fff;background:linear-gradient(135deg,var(--subj-l),var(--subj) 60%,var(--subj-d));
+  box-shadow:0 8px 22px rgba(176,37,37,.25);margin-top:4px}
+.hero h1{font-family:"Jua";font-weight:400;font-size:24px;margin:0}
+.hero p{margin:4px 0 0;opacity:.85;font-size:14px}
+.card{background:#fff;border-radius:24px;padding:18px;margin-top:14px;box-shadow:0 6px 18px rgba(31,42,77,.08)}
+.card h3{font-family:"Jua";font-weight:400;font-size:21px;margin:0 0 10px}
+.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0 4px}
+.cells i{height:16px;border-radius:8px;background:#f1e8e8;display:block}
+.cells i.on{background:var(--subj)}
+.cells i.now{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--subj)}
+.lb{display:flex;justify-content:space-between;font-size:14px;color:var(--soft)}
+.lb b{color:var(--ink)}
+.go{width:100%;border:0;border-radius:18px;padding:15px;margin-top:14px;color:#fff;font-family:"Jua";font-size:21px;
+  background:linear-gradient(180deg,var(--subj-l),var(--subj));box-shadow:0 5px 0 var(--subj-s)}
+.go:active{transform:translateY(3px);box-shadow:0 2px 0 var(--subj-s)}
+.go.done{background:linear-gradient(180deg,#ffd43b,#f59f00);box-shadow:0 5px 0 #d9480f}
+.streak{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--soft)}
+.streak b{color:var(--ink);font-size:16px}
+.week{margin-left:auto;display:flex;gap:5px}.week i{width:11px;height:11px;border-radius:50%;background:#f1e8e8}.week i.on{background:var(--subj)}
+.bar{height:10px;border-radius:6px;background:#f1e8e8;overflow:hidden;margin:10px 0 4px}.bar i{display:block;height:100%;background:var(--subj);border-radius:6px}
+.big{font-size:14px;color:var(--soft)}.big b{font-size:26px;color:var(--ink)}
+.books{display:flex;gap:6px;overflow-x:auto;margin:12px -4px 10px;padding:0 4px 4px;scrollbar-width:none}
+.books::-webkit-scrollbar{display:none}
+.books button{flex:none;border:1px solid #f0dada;background:#fff;border-radius:99px;padding:7px 12px;font-size:13px;font-weight:700;color:#4a5170}
+.books button.on{background:var(--subj);border-color:var(--subj);color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.les{border:0;border-radius:16px;padding:12px;text-align:left;color:#fff;background:linear-gradient(135deg,var(--subj-l),var(--subj))}
+.les.full{background:linear-gradient(135deg,#ffd43b,#f59f00)}
+.les b{font-family:"Jua";font-weight:400;font-size:18px;display:block;line-height:1.2}
+.les span{font-size:12px;opacity:.95}
+.les .lbar{height:6px;border-radius:3px;background:rgba(255,255,255,.35);margin-top:6px;overflow:hidden}
+.les .lbar i{display:block;height:100%;background:#fff}
+.empty{text-align:center;padding:30px 10px;color:var(--soft);line-height:1.6}
+.empty .e{font-size:48px}
+.sync{text-align:center;font-size:12px;color:var(--soft);margin-top:18px}
+
+/* ===== 읽기 화면 ===== */
+#rd{position:fixed;inset:0;z-index:50;overflow:auto;background:linear-gradient(180deg,#fff0ee,#fffaf6);
+  padding:calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+#rd[hidden]{display:none}
+.in{max-width:560px;margin:0 auto}
+.top{display:flex;align-items:center;gap:10px}
+.x{width:40px;height:40px;border-radius:50%;border:0;background:#fff;font-size:18px;box-shadow:0 2px 8px #0001;flex:none}
+.pbar{flex:1;display:grid;gap:4px}.pbar i{height:12px;border-radius:6px;background:#f1e8e8;display:block}
+.pbar i.on{background:var(--subj)}.pbar i.now{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--subj)}
+.chip{display:inline-block;margin:18px 0 6px;padding:6px 14px;border-radius:99px;font-weight:800;font-size:14px;color:#fff;background:var(--subj)}
+.do{font-family:"Jua";font-size:23px;margin:4px 0 14px;line-height:1.35;min-height:31px}
+.sc{background:#fff;border-radius:26px;padding:26px 18px 22px;box-shadow:0 8px 24px rgba(31,42,77,.08);text-align:center;position:relative}
+.zh{font-family:"Noto Sans SC","PingFang SC","Heiti SC",sans-serif;font-weight:500;font-size:34px;line-height:2.1;color:#c6ccd9;word-break:break-all}
+.zh ruby{ruby-position:over}
+.zh rt{font-family:"Pretendard Variable",Pretendard,sans-serif;font-size:14px;font-weight:600;color:#c6ccd9;letter-spacing:0}
+.zh .c{transition:color .12s}
+.zh .c.on, .zh .c.on rt{color:var(--ink)}
+.zh .c.now, .zh .c.now rt{color:var(--subj)}
+.zh.nopy rt{display:none}
+.ko{margin-top:12px;font-size:18px;color:#4a5170}
+.ko.hide{filter:blur(6px);cursor:pointer}
+.cue{margin-top:16px;height:54px}
+.cue .t{font-family:"Jua";font-size:24px;color:#e8590c;opacity:0;transition:opacity .25s}
+.cue .tb{height:8px;border-radius:4px;background:#ffe8cc;margin:8px auto 0;width:70%;overflow:hidden;opacity:0;transition:opacity .25s}
+.cue .tb i{display:block;height:100%;width:0;background:#ff922b;border-radius:4px}
+.cue.show .t,.cue.show .tb{opacity:1}
+.cue.show .t{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.tools{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.tools button{border:0;border-radius:99px;padding:9px 14px;font-size:14px;font-weight:800;background:#fff0f0;color:var(--subj)}
+.tools button.off{background:#f1f3f5;color:#868e96}
+.btns{display:flex;gap:10px;margin-top:18px}
+.btns button{flex:1;border:0;border-radius:18px;padding:17px 10px;font-family:"Jua";font-size:20px}
+.btns .main{color:#fff;background:linear-gradient(180deg,var(--subj-l),var(--subj));box-shadow:0 5px 0 var(--subj-s)}
+.btns .sub{background:#fff;color:#4a5170;box-shadow:0 3px 0 #e9dede}
+.btns.lock button{opacity:.35;filter:grayscale(.6);pointer-events:none}
+.fin{text-align:center;padding-top:40px}
+.fin .big2{font-size:70px}.fin h2{font-family:"Jua";font-weight:400;font-size:30px;margin:10px 0}
+</style>
+</head>
+<body>
+<div class="subjbar"><nav data-subjects></nav><span style="flex:1"></span><span class="pill" id="pStreak">🔥 0일</span></div>
+<div class="wrap" id="home"></div>
+
+<div id="rd" hidden><div class="in" id="rdIn"></div></div>
+
+<script>
+/* ===== 교재 문장 =====
+   사진을 받을 때마다 여기에 추가한다.
+   id: 고유 번호, b: 교재, l: 과(챕터), zh: 중국어 문장, py: 병음(글자마다 띄어쓰기, 문장부호는 빼고), ko: 뜻 */
+const SENT=[
+];
+
+/* ===== 저장 ===== */
+const DAY_N=5;
+const store={ get(k){ try{ return JSON.parse(localStorage.getItem("zh-"+k)); }catch(e){ return null; } },
+              set(k,v){ try{ localStorage.setItem("zh-"+k, JSON.stringify(v)); }catch(e){} } };
+function ymd(d=new Date()){ const z=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate()); }
+function dayAdd(n){ const d=new Date(); d.setDate(d.getDate()+n); return ymd(d); }
+let rd = store.get("rd") || {};                       // 문장별 읽은 횟수
+let daily = store.get("daily") || {d:"",n:0,ids:[],stamp:false};
+let streak = store.get("streak") || {n:0,best:0,last:"",days:[]};
+let showPy = store.get("py"); if(showPy===null) showPy=true;
+let showKo = store.get("ko"); if(showKo===null) showKo=true;
+let book = store.get("book") || "";
+function save(){ store.set("rd",rd); store.set("daily",daily); store.set("streak",streak); }
+const byId=id=>SENT.find(s=>s.id===id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* 오늘 읽을 5문장: 아직 안 읽은 문장을 책 순서대로, 다 읽었으면 적게 읽은 문장부터 */
+function rollDay(){
+  if(daily.d===ymd()) return;
+  const fresh=SENT.filter(s=>!rd[s.id]);
+  let ids=fresh.slice(0,DAY_N).map(s=>s.id);
+  if(ids.length<DAY_N){
+    const old=[...SENT].filter(s=>!ids.includes(s.id)).sort((a,b)=>(rd[a.id]||0)-(rd[b.id]||0));
+    ids=ids.concat(old.slice(0,DAY_N-ids.length).map(s=>s.id));
+  }
+  daily={d:ymd(),n:0,ids,stamp:false}; save();
+}
+function curStreak(){ return (streak.last===ymd()||streak.last===dayAdd(-1)) ? streak.n : 0; }
+function stampDay(){
+  if(daily.stamp) return; daily.stamp=true;
+  const t=ymd();
+  if(streak.last!==t){ streak.n = streak.last===dayAdd(-1) ? streak.n+1 : 1; streak.last=t; }
+  streak.best=Math.max(streak.best||0, streak.n);
+  streak.days=[...new Set([...(streak.days||[]), t])].sort().slice(-120);
+}
+
+/* ===== 동기화 (수학·영어와 같은 방식, 항상 켜짐) ===== */
+let syncState="";
+function applyRemote(o){
+  if(!o) return;
+  for(const [k,v] of Object.entries(o.rd||{})) if((rd[k]||0)<v) rd[k]=v;
+  const r=o.dy;
+  if(r && r.d){
+    if(r.d>daily.d) daily=r;
+    else if(r.d===daily.d){ if((r.n||0)>daily.n){ daily.n=r.n; daily.ids=r.ids&&r.ids.length?r.ids:daily.ids; } daily.stamp=daily.stamp||!!r.stamp; }
+  }
+  const s=o.sk||{};
+  if((s.last||"")>(streak.last||"")){ streak.n=s.n; streak.last=s.last; }
+  streak.best=Math.max(streak.best||0,s.best||0);
+  streak.days=[...new Set([...(streak.days||[]),...(s.days||[])])].sort().slice(-120);
+  save();
+}
+async function pull(){
+  try{ const r=await fetch("/api/csync",{cache:"no-store"}); if(r.status===503){ syncState="서버 연결 전"; return; }
+    if(!r.ok) throw 0; applyRemote(await r.json()); syncState="맞춤"; renderHome(); }catch(e){ syncState="연결 안 됨"; }
+}
+let pushT=null;
+function push(){
+  clearTimeout(pushT);
+  pushT=setTimeout(async()=>{
+    try{ const r=await fetch("/api/csync",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rd,dy:daily,sk:streak})});
+      if(!r.ok) throw 0; applyRemote(await r.json()); syncState="맞춤"; }catch(e){ syncState="연결 안 됨"; }
+  },1000);
+}
+
+/* ===== 소리 ===== */
+let _v=null;
+function zhVoice(){
+  if(_v) return _v;
+  const vs=speechSynthesis.getVoices().filter(v=>/^zh[-_](CN|Hans)/i.test(v.lang)||/^cmn/i.test(v.lang));
+  const pref=["Tingting","婷婷","Lili","Yu-shu","Google 普通话","Microsoft Xiaoxiao","Microsoft Xiaoyi","Microsoft Huihui"];
+  for(const p of pref){ const v=vs.find(v=>v.name.includes(p)); if(v) return _v=v; }
+  return _v = vs[0] || speechSynthesis.getVoices().find(v=>/^zh/i.test(v.lang)) || null;
+}
+if("speechSynthesis" in window) speechSynthesis.addEventListener?.("voiceschanged",()=>{ _v=null; });
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+/* 읽어 주고, 끝나면 돌아온다. 끝 신호가 안 와도 예상 시간이 지나면 넘어간다 */
+function speakP(text, rate, onb){
+  return new Promise(res=>{
+    const n=[...text].length, minT=400+n*120/rate;
+    if(!("speechSynthesis" in window)){ setTimeout(res,minT); return; }
+    const u=new SpeechSynthesisUtterance(text); u.lang="zh-CN";
+    const v=zhVoice(); if(v) u.voice=v; u.rate=rate; u.pitch=1.3;   // 조금 높게, 아이 목소리 느낌
+    let done=false; const t0=Date.now();
+    const fin=()=>{ if(done) return; done=true; setTimeout(res, Math.max(0, minT-(Date.now()-t0))); };
+    u.onend=fin; u.onerror=fin; if(onb) u.onboundary=onb;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    setTimeout(fin, 3000+n*350/rate);
+  });
+}
+
+/* ===== 문장 그리기: 글자마다 병음을 위에 ===== */
+function isHan(ch){ return /[㐀-鿿豈-﫿]/.test(ch); }
+function sentHTML(s){
+  const py=(s.py||"").trim().split(/\s+/).filter(Boolean); let k=0, pos=0;
+  return [...s.zh].map(ch=>{
+    const a=pos; pos+=ch.length;
+    if(isHan(ch)){ const p=py[k++]||""; return `<ruby class="c" data-a="${a}">${esc(ch)}<rt>${esc(p)}</rt></ruby>`; }
+    return `<span class="c" data-a="${a}">${esc(ch)}</span>`;
+  }).join("");
+}
+/* 노래방 자막: 기기가 '지금 읽는 곳'을 알려 주면 따르고, 아니면 글자 수로 시간을 나눠 칠한다 */
+let tok=0;
+async function karaoke(s, rate, my){
+  const cs=[...document.querySelectorAll("#zh .c")]; if(!cs.length) return;
+  cs.forEach(c=>c.classList.remove("on","now"));
+  const han=cs.filter(c=>c.tagName==="RUBY");
+  const upto=i=>cs.forEach((c,j)=>{ c.classList.toggle("on",j<=i); c.classList.toggle("now",j===i); });
+  let byEvent=false; const per=330/rate, timers=[];
+  let t=0; cs.forEach((c,i)=>{ timers.push(setTimeout(()=>{ if(!byEvent && my===tok) upto(i); }, t)); if(c.tagName==="RUBY") t+=per; else t+=per*0.5; });
+  await Promise.all([wait(t*0.9), speakP(s.zh, rate, e=>{
+    if(e.name && e.name!=="word") return; byEvent=true;
+    let i=0; cs.forEach((c,j)=>{ if(+c.dataset.a<=e.charIndex) i=j; }); if(my===tok) upto(i);
+  })]);
+  timers.forEach(clearTimeout);
+  if(my===tok){ upto(cs.length-1); cs[cs.length-1].classList.remove("now"); }
+  return t;
+}
+/* 따라 읽을 시간: 막대가 차는 동안 */
+async function cue(ms, my, label){
+  const c=document.getElementById("cue"); if(!c) return;
+  c.querySelector(".t").textContent=label;
+  const b=c.querySelector(".tb i"); b.style.transition="none"; b.style.width="0";
+  c.classList.add("show"); void b.offsetWidth; b.style.transition=`width ${ms}ms linear`; b.style.width="100%";
+  await wait(ms); if(my===tok) c.classList.remove("show");
+}
+
+/* ===== 읽기 화면 =====
+   R = {ids, i, kind:"daily"|"lesson", title} */
+let R=null;
+function openRead(ids, kind, title){
+  if(!ids.length) return;
+  R={ids, i: kind==="daily" ? Math.min(daily.n, ids.length) : 0, kind, title};
+  document.getElementById("rd").hidden=false; document.body.style.overflow="hidden"; renderRead();
+}
+function closeRead(){ tok++; try{ speechSynthesis.cancel(); }catch(e){} document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
+function renderRead(){
+  const el=document.getElementById("rdIn"), n=R.ids.length;
+  let bar=""; for(let i=0;i<n;i++) bar+=`<i class="${i<R.i?"on":""} ${i===R.i?"now":""}"></i>`;
+  const top=`<div class="top"><button class="x" data-a="close" aria-label="닫기">✕</button><div class="pbar" style="grid-template-columns:repeat(${n},1fr)">${bar}</div></div>`;
+  if(R.i>=n){
+    const daily1=R.kind==="daily";
+    el.innerHTML=top+`<div class="fin"><div class="big2">🎉</div><h2>${daily1?"오늘 중국어 끝!":"다 읽었어요!"}</h2>
+      <p>${n}문장을 소리 내어 읽었어요.${daily1?`<br>🔥 ${curStreak()}일 연속`:""}</p>
+      <div class="btns"><button class="sub" data-a="close">홈으로</button><button class="main" data-a="again">한 번 더 ▶</button></div></div>`;
+    return;
+  }
+  const s=byId(R.ids[R.i]); if(!s){ R.i++; return renderRead(); }
+  el.innerHTML=top+`
+    <span class="chip">${esc(R.title)} · ${R.i+1} / ${n}</span>
+    <div class="do" id="do">잘 들어 보세요</div>
+    <div class="sc">
+      <div class="zh ${showPy?"":"nopy"}" id="zh">${sentHTML(s)}</div>
+      <div class="ko ${showKo?"":"hide"}" id="ko">${esc(s.ko||"")}</div>
+      <div class="cue" id="cue"><div class="t">🗣️ 따라 읽어 보세요</div><div class="tb"><i></i></div></div>
+      <div class="tools">
+        <button data-a="replay">🔁 다시 듣기</button><button data-a="slow">🐢 천천히</button>
+        <button data-a="py" class="${showPy?"":"off"}">병음 ${showPy?"켬":"끔"}</button>
+        <button data-a="ko" class="${showKo?"":"off"}">뜻 ${showKo?"켬":"끔"}</button>
+      </div>
+    </div>
+    <div class="btns lock" id="btns"><button class="main" data-a="next">다 읽었어요 ✓</button></div>`;
+  run(s);
+}
+/* 한 문장: 듣기 → 따라 읽기 → 다시 듣기 → 따라 읽기 → 버튼 열림 */
+async function run(s, rate=0.75){
+  const my=++tok, alive=()=>my===tok && R && !document.getElementById("rd").hidden;
+  const $=id=>document.getElementById(id);
+  document.getElementById("btns")?.classList.add("lock");
+  for(let r=0;r<2;r++){
+    if(!alive()) return;
+    $("do").textContent = r ? "한 번 더 들어 보세요" : "잘 들어 보세요";
+    const t = await karaoke(s, rate, my); if(!alive()) return;
+    $("do").textContent = "글자를 보며 따라 읽어 보세요";
+    await cue(Math.max(1800, (t||1500)*1.3+800), my, r ? "🗣️ 한 번 더 따라 읽기!" : "🗣️ 따라 읽어 보세요"); if(!alive()) return;
+  }
+  $("do").textContent="잘 읽었나요?";
+  $("btns").classList.remove("lock");
+}
+document.getElementById("rd").addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]"); if(!b){ if(e.target.closest("#ko")){ showKo=true; store.set("ko",true); document.getElementById("ko").classList.remove("hide"); } return; }
+  const a=b.dataset.a, s=R && byId(R.ids[R.i]);
+  if(a==="close") return closeRead();
+  if(a==="again"){ const ids=R.kind==="daily" ? R.ids : R.ids; R={...R, i:0, kind: R.kind==="daily"?"more":R.kind}; return renderRead(); }
+  if(a==="replay" && s){ return run(s); }
+  if(a==="slow" && s){ return run(s, 0.55); }
+  if(a==="py"){ showPy=!showPy; store.set("py",showPy); document.getElementById("zh").classList.toggle("nopy",!showPy); b.classList.toggle("off",!showPy); b.textContent="병음 "+(showPy?"켬":"끔"); return; }
+  if(a==="ko"){ showKo=!showKo; store.set("ko",showKo); document.getElementById("ko").classList.toggle("hide",!showKo); b.classList.toggle("off",!showKo); b.textContent="뜻 "+(showKo?"켬":"끔"); return; }
+  if(a==="next" && s){
+    if(b.closest(".lock")) return;
+    tok++; try{ speechSynthesis.cancel(); }catch(e){}
+    rd[s.id]=(rd[s.id]||0)+1;
+    R.i++;
+    if(R.kind==="daily"){ daily.n=Math.max(daily.n,R.i); if(daily.n>=daily.ids.length) stampDay(); }
+    save(); push(); renderRead();
+  }
+});
+
+/* ===== 홈 ===== */
+function renderHome(){
+  rollDay();
+  const el=document.getElementById("home");
+  document.getElementById("pStreak").textContent="🔥 "+curStreak()+"일";
+  const d0=new Date(), wd=["일","월","화","수","목","금","토"];
+  const hero=`<div class="hero"><h1>${daily.stamp?"오늘 중국어 끝! 很好 👏":"수아야, 오늘도 读一读!"}</h1><p>${d0.getMonth()+1}월 ${d0.getDate()}일 ${wd[d0.getDay()]}요일</p></div>`;
+  if(!SENT.length){
+    el.innerHTML=hero+`<div class="card"><div class="empty"><div class="e">📷</div>아직 교재 문장이 없어요.<br>교재 사진을 받으면 여기에 문장이 채워져요.</div></div>`;
+    return;
+  }
+  const n=daily.ids.length, done=Math.min(daily.n,n);
+  let cells=""; for(let i=0;i<n;i++) cells+=`<i class="${i<done?"on":""} ${i===done&&!daily.stamp?"now":""}"></i>`;
+  let wk=""; for(let i=-6;i<=0;i++) wk+=`<i class="${(streak.days||[]).includes(dayAdd(i))?"on":""}"></i>`;
+  const label = daily.stamp ? "한 번 더 읽기" : done ? `이어서 읽기 ▶ (${done}/${n})` : "시작하기 ▶";
+  const readN=SENT.filter(s=>rd[s.id]).length, pc=Math.round(readN/SENT.length*100);
+  // 교재 → 과
+  const books=[...new Set(SENT.map(s=>s.b||"교재"))];
+  if(!books.includes(book)) book=books[0];
+  const les=new Map(); SENT.filter(s=>(s.b||"교재")===book).forEach(s=>{ const o=les.get(s.l)||{n:0,r:0,ids:[]}; o.n++; if(rd[s.id]) o.r++; o.ids.push(s.id); les.set(s.l,o); });
+  const tiles=[...les].map(([l,o])=>{ const p=Math.round(o.r/o.n*100);
+    return `<button class="les ${p===100?"full":""}" data-les="${esc(l)}"><b>${esc(l)}</b><span>읽음 ${o.r} / ${o.n}</span><div class="lbar"><i style="width:${Math.max(p,3)}%"></i></div></button>`; }).join("");
+  el.innerHTML=hero+`
+    <div class="card">
+      <h3>오늘의 미션</h3>
+      <div class="lb"><span>문장 읽기</span><span><b>${done}</b> / ${n}</span></div>
+      <div class="cells" style="grid-template-columns:repeat(${n},1fr)">${cells}</div>
+      <div class="streak"><b>${curStreak()}일 연속</b> 최고 ${streak.best||0}일<div class="week">${wk}</div></div>
+      <button class="go ${daily.stamp?"done":""}" data-go="daily">${label}</button>
+    </div>
+    <div class="card">
+      <h3>진도</h3>
+      <div class="big"><b>${readN}</b> / ${SENT.length} 문장 읽음</div>
+      <div class="bar"><i style="width:${pc}%"></i></div>
+      <div class="books">${books.map(b=>`<button class="${b===book?"on":""}" data-book="${esc(b)}">${esc(b)}</button>`).join("")}</div>
+      <div class="grid">${tiles}</div>
+      <div class="big" style="margin-top:10px;font-size:13px">과를 누르면 그 과의 문장을 처음부터 읽어요</div>
+    </div>
+    <div class="sync">${syncState?"동기화: "+syncState:""}</div>`;
+}
+document.getElementById("home").addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]");
+  if(g){
+    if(daily.stamp) return openRead(daily.ids,"more","한 번 더");
+    return openRead(daily.ids,"daily","오늘의 문장");
+  }
+  const bk=e.target.closest("[data-book]"); if(bk){ book=bk.dataset.book; store.set("book",book); return renderHome(); }
+  const l=e.target.closest("[data-les]");
+  if(l){ const ids=SENT.filter(s=>(s.b||"교재")===book && s.l===l.dataset.les).map(s=>s.id); return openRead(ids,"lesson",l.dataset.les); }
+});
+
+renderHome(); pull();
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden && document.getElementById("rd").hidden){ pull(); renderHome(); } });
+</script>
+</body>
+</html>

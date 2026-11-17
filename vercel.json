@@ -7,6 +7,10 @@
     {
       "source": "/voca",
       "destination": "/voca/index.html"
+    },
+    {
+      "source": "/chinese",
+      "destination": "/chinese/index.html"
     }
   ],
   "headers": [
@@ -39,6 +43,15 @@
     },
     {
       "source": "/voca/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/chinese/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
