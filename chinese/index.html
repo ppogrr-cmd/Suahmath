@@ -98,6 +98,33 @@ button{font-family:inherit;cursor:pointer}
 .btns .main{color:#fff;background:linear-gradient(180deg,var(--subj-l),var(--subj));box-shadow:0 5px 0 var(--subj-s)}
 .btns .sub{background:#fff;color:#4a5170;box-shadow:0 3px 0 #e9dede}
 .btns.lock button{opacity:.35;filter:grayscale(.6);pointer-events:none}
+.chip.mom{background:#fff;color:var(--subj);margin-left:6px;box-shadow:0 0 0 1.5px var(--subj) inset}
+.rec{margin-top:16px;min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.mic{width:76px;height:76px;border-radius:50%;border:0;font-size:34px;background:linear-gradient(180deg,#ff8787,#e03131);color:#fff;box-shadow:0 5px 0 #b02525}
+.mic.on{font-size:26px;animation:pulse 1s ease-in-out infinite;background:linear-gradient(180deg,#ff6b6b,#c92a2a)}
+.rl{margin-top:8px;font-size:15px;color:#4a5170;font-weight:700}.rl b{color:var(--subj)}
+.cmp{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.cmp button{border:0;border-radius:99px;padding:11px 16px;font-size:15px;font-weight:800;background:#fff0f0;color:var(--subj)}
+.cmp button.re{background:#f1f3f5;color:#495057}
+.parent{display:block;width:100%;margin-top:14px;border:0;border-radius:18px;padding:14px;background:#fff;color:#4a5170;font-size:15px;font-weight:700;box-shadow:0 3px 10px rgba(31,42,77,.06)}
+#pa{position:fixed;inset:0;z-index:60;overflow:auto;background:#fffaf6;padding:calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+#pa[hidden]{display:none}
+.ptabs{flex:1;display:flex;gap:6px;background:#fff;border-radius:99px;padding:4px;box-shadow:0 2px 8px #0001}
+.ptabs button{flex:1;border:0;border-radius:99px;padding:9px;font-weight:800;font-size:14px;background:none;color:#7a8099}
+.ptabs button.on{background:var(--subj);color:#fff}
+.pnote{margin:14px 2px 10px;font-size:14px;color:#4a5170;line-height:1.5}
+.prow{display:flex;align-items:center;gap:8px;background:#fff;border-radius:16px;padding:10px 12px;margin-bottom:8px;box-shadow:0 2px 8px rgba(31,42,77,.05)}
+.prow.has{box-shadow:0 0 0 2px #ffc9c9 inset}
+.pz{flex:1;font-family:"Noto Sans SC","PingFang SC",sans-serif;font-size:19px;line-height:1.3}
+.pz small{display:block;font-family:"Pretendard Variable",Pretendard,sans-serif;font-size:12px;color:#868e96}
+.pb{display:flex;align-items:center;gap:6px;flex:none}
+.pb button{width:42px;height:42px;border-radius:50%;border:0;background:#fff0f0;color:var(--subj);font-size:17px}
+.pb button.prec.on{background:#e03131;color:#fff;animation:pulse 1s ease-in-out infinite}
+.pb button.warn{width:auto;border-radius:99px;padding:0 12px;background:#e03131;color:#fff;font-size:13px;font-weight:800}
+.pst{font-size:13px;color:#868e96}.pst.ok{color:#2f9e44;font-weight:800;font-size:16px}
+.pday{display:block;width:100%;text-align:left;border:0;border-radius:14px;padding:12px 14px;margin:6px 0;background:#fff;font-weight:800;font-size:15px;color:var(--ink)}
+.pday.on{background:var(--subj);color:#fff}
+.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#1f2a4d;color:#fff;padding:12px 18px;border-radius:14px;z-index:99;font-size:14px;max-width:90%}
 .fin{text-align:center;padding-top:40px}
 .fin .big2{font-size:70px}.fin h2{font-family:"Jua";font-weight:400;font-size:30px;margin:10px 0}
 </style>
@@ -107,6 +134,7 @@ button{font-family:inherit;cursor:pointer}
 <div class="wrap" id="home"></div>
 
 <div id="rd" hidden><div class="in" id="rdIn"></div></div>
+<div id="pa" hidden><div class="in" id="paIn"></div></div>
 
 <script>
 /* ===== 교재 문장 =====
@@ -236,6 +264,66 @@ function speakP(text, rate, onb){
   });
 }
 
+/* ===== 녹음과 재생 =====
+   엄마 목소리: 서버(api/cvoice)에 문장마다 한 개. 있으면 기계 음성 대신 쓴다.
+   수아 녹음: 따라 읽은 소리를 날짜별로 올려 두고 부모 화면에서 다시 듣는다. */
+const AU=new Audio(); AU.preload="auto"; AU.setAttribute("playsinline","");
+let momIdx=store.get("momIdx")||{};
+const urlCache={};
+function b64ToUrl(a,t){ const bin=atob(a), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return URL.createObjectURL(new Blob([u],{type:t})); }
+async function loadMomIdx(){ try{ const r=await fetch("/api/cvoice?list=mom",{cache:"no-store"}); if(r.ok){ momIdx=await r.json()||{}; store.set("momIdx",momIdx); } }catch(e){} }
+const momKey=id=>momIdx[id] ? "m:"+id+":"+momIdx[id].at : "";
+function cachedMom(id){ return urlCache[momKey(id)]||null; }
+async function momUrl(id){
+  const k=momKey(id); if(!k) return null; if(urlCache[k]) return urlCache[k];
+  try{ const r=await fetch("/api/cvoice?kind=mom&id="+encodeURIComponent(id)); if(!r.ok) return null; const j=await r.json(); return urlCache[k]=b64ToUrl(j.a,j.t); }catch(e){ return null; }
+}
+async function prefetchMom(ids){ for(const id of ids) await momUrl(id); }
+async function kidUrl(k){
+  if(urlCache["k:"+k]) return urlCache["k:"+k];
+  try{ const r=await fetch("/api/cvoice?kind=kid&k="+encodeURIComponent(k)); if(!r.ok) return null; const j=await r.json(); return urlCache["k:"+k]=b64ToUrl(j.a,j.t); }catch(e){ return null; }
+}
+function playUrl(url, rate=1){
+  return new Promise(res=>{
+    let done=false; const fin=()=>{ if(done) return; done=true; AU.onended=AU.onerror=null; res(); };
+    AU.onended=fin; AU.onerror=fin; AU.src=url; AU.playbackRate=rate; try{ AU.preservesPitch=true; AU.webkitPreservesPitch=true; }catch(e){}
+    AU.onloadedmetadata=()=>{ if(isFinite(AU.duration)) setTimeout(fin, AU.duration*1000/rate+1200); };
+    const p=AU.play(); if(p&&p.catch) p.catch(fin);
+    setTimeout(fin, 25000);
+  });
+}
+function stopSound(){ try{ AU.pause(); }catch(e){} try{ speechSynthesis.cancel(); }catch(e){} }
+/* 아이패드는 처음 한 번 손으로 눌러야 소리를 낼 수 있어서, 첫 터치 때 빈 소리로 열어 둔다 */
+const SILENT="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+let auOpen=false;
+function unlockAudio(){ if(auOpen||!AU.paused) return; auOpen=true; try{ AU.src=SILENT; const p=AU.play(); if(p&&p.catch) p.catch(()=>{ auOpen=false; }); }catch(e){ auOpen=false; } }
+document.addEventListener("touchend",unlockAudio,{capture:true}); document.addEventListener("click",unlockAudio,{capture:true});
+
+let mic=null, recr=null, recChunks=[], recT0=0;
+const canRec=()=>!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+const recMime=()=>["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t))||"";
+async function recStart(){
+  stopSound();
+  if(!mic) mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+  const t=recMime(); recr=new MediaRecorder(mic, t?{mimeType:t}:undefined); recChunks=[];
+  recr.ondataavailable=e=>{ if(e.data && e.data.size) recChunks.push(e.data); };
+  recr.start(); recT0=Date.now();
+}
+function recStop(){
+  return new Promise(res=>{
+    if(!recr || recr.state==="inactive") return res(null);
+    recr.onstop=()=>{ const blob=new Blob(recChunks,{type:recr.mimeType||"audio/mp4"}); res(blob.size?{blob, ms:Date.now()-recT0, t:blob.type||"audio/mp4", url:URL.createObjectURL(blob)}:null); };
+    recr.stop();
+  });
+}
+function micOff(){ try{ if(recr && recr.state!=="inactive") recr.stop(); }catch(e){} if(mic){ mic.getTracks().forEach(t=>t.stop()); mic=null; } }
+function blobB64(blob){ return new Promise(r=>{ const f=new FileReader(); f.onload=()=>r(String(f.result).split(",")[1]); f.readAsDataURL(blob); }); }
+async function upload(kind, id, rec){
+  try{ const a=await blobB64(rec.blob);
+    const r=await fetch("/api/cvoice",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind,id,d:ymd(),a,t:rec.t,ms:rec.ms})});
+    return r.ok ? await r.json() : null; }catch(e){ return null; }
+}
+
 /* ===== 문장 그리기: 글자마다 병음을 위에 ===== */
 function isHan(ch){ return /[㐀-鿿豈-﫿]/.test(ch); }
 function sentHTML(s){
@@ -253,12 +341,17 @@ async function karaoke(s, rate, my){
   cs.forEach(c=>c.classList.remove("on","now"));
   const han=cs.filter(c=>c.tagName==="RUBY");
   const upto=i=>cs.forEach((c,j)=>{ c.classList.toggle("on",j<=i); c.classList.toggle("now",j===i); });
-  let byEvent=false; const per=330/rate, timers=[];
+  let byEvent=false; const timers=[];
+  const mu=cachedMom(s.id), arate=rate/0.75;            // 엄마 녹음은 보통 속도 1, 천천히는 0.73
+  const units=cs.reduce((n,c)=>n+(c.tagName==="RUBY"?1:0.5),0);
+  const per = mu && momIdx[s.id].ms ? (momIdx[s.id].ms/arate)*0.92/units : 330/rate;
   let t=0; cs.forEach((c,i)=>{ timers.push(setTimeout(()=>{ if(!byEvent && my===tok) upto(i); }, t)); if(c.tagName==="RUBY") t+=per; else t+=per*0.5; });
-  await Promise.all([wait(t*0.9), speakP(s.zh, rate, e=>{
+  if(mu) await playUrl(mu, arate);
+  else await Promise.all([wait(t*0.9), speakP(s.zh, rate, e=>{
     if(e.name && e.name!=="word") return; byEvent=true;
     let i=0; cs.forEach((c,j)=>{ if(+c.dataset.a<=e.charIndex) i=j; }); if(my===tok) upto(i);
   })]);
+  if(!mu && momIdx[s.id]) momUrl(s.id);                 // 다음엔 엄마 목소리로
   timers.forEach(clearTimeout);
   if(my===tok){ upto(cs.length-1); cs[cs.length-1].classList.remove("now"); }
   return t;
@@ -278,9 +371,10 @@ let R=null;
 function openRead(ids, kind, title){
   if(!ids.length){ rollDay(); ids=daily.ids; if(!ids.length) return; }
   R={ids, i: kind==="daily" ? Math.min(daily.n, ids.length) : 0, kind, title};
+  prefetchMom(ids);
   document.getElementById("rd").hidden=false; document.body.style.overflow="hidden"; renderRead();
 }
-function closeRead(){ tok++; try{ speechSynthesis.cancel(); }catch(e){} document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
+function closeRead(){ tok++; stopSound(); micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
 function renderRead(){
   const el=document.getElementById("rdIn"), n=R.ids.length;
   let bar=""; for(let i=0;i<n;i++) bar+=`<i class="${i<R.i?"on":""} ${i===R.i?"now":""}"></i>`;
@@ -294,12 +388,12 @@ function renderRead(){
   }
   const s=byId(R.ids[R.i]); if(!s){ R.i++; return renderRead(); }
   el.innerHTML=top+`
-    <span class="chip">${esc(R.title)} · ${R.i+1} / ${n}</span>
+    <span class="chip">${esc(R.title)} · ${R.i+1} / ${n}</span>${momIdx[s.id]?`<span class="chip mom">👩 엄마 목소리</span>`:""}
     <div class="do" id="do">잘 들어 보세요</div>
     <div class="sc">
       <div class="zh ${showPy?"":"nopy"}" id="zh">${sentHTML(s)}</div>
       <div class="ko ${showKo?"":"hide"}" id="ko">${esc(s.ko||"")}</div>
-      <div class="cue" id="cue"><div class="t">🗣️ 따라 읽어 보세요</div><div class="tb"><i></i></div></div>
+      <div class="rec" id="recBox"></div>
       <div class="tools">
         <button data-a="replay">🔁 다시 듣기</button><button data-a="slow">🐢 천천히</button>
         <button data-a="py" class="${showPy?"":"off"}">병음 ${showPy?"켬":"끔"}</button>
@@ -307,22 +401,38 @@ function renderRead(){
       </div>
     </div>
     <div class="btns lock" id="btns"><button class="main" data-a="next">다 읽었어요 ✓</button></div>`;
-  run(s);
+  R.rec=null; R.rs="wait"; run(s);
 }
-/* 한 문장: 듣기 → 따라 읽기 → 다시 듣기 → 따라 읽기 → 버튼 열림 */
+/* 녹음 칸 */
+function setRec(st){
+  if(!R) return; R.rs=st; const el=document.getElementById("recBox"); if(!el) return;
+  const who=momIdx[R.ids[R.i]]?"👩 엄마":"🔊 선생님";
+  el.innerHTML =
+    st==="ready" ? `<button class="mic" data-a="recGo">🎙️</button><div class="rl">눌러서 녹음하고 따라 읽어요</div>` :
+    st==="on"    ? `<button class="mic on" data-a="recEnd">■</button><div class="rl">다 읽으면 눌러요 <b id="recSec">0초</b></div>` :
+    st==="done"  ? `<div class="cmp"><button data-a="hearModel">▶ ${who}</button><button data-a="hearMine">▶ 내 목소리</button><button data-a="recGo" class="re">🎙️ 다시</button></div>` :
+    st==="nomic" ? `<div class="rl">마이크를 쓸 수 없어요. 소리 내어 따라 읽어 보세요.</div>` : "";
+}
+let recTimer=null;
+/* 한 문장: 듣기 → 🎙️ 따라 읽으며 녹음 → 선생님(엄마)과 내 목소리 비교 → 버튼 열림 */
+const doTxt=t=>{ const d=document.getElementById("do"); if(d) d.textContent=t; };
 async function run(s, rate=0.75){
   const my=++tok, alive=()=>my===tok && R && !document.getElementById("rd").hidden;
-  const $=id=>document.getElementById(id);
-  document.getElementById("btns")?.classList.add("lock");
-  for(let r=0;r<2;r++){
-    if(!alive()) return;
-    $("do").textContent = r ? "한 번 더 들어 보세요" : "잘 들어 보세요";
-    const t = await karaoke(s, rate, my); if(!alive()) return;
-    $("do").textContent = "글자를 보며 따라 읽어 보세요";
-    await cue(Math.max(1800, (t||1500)*1.3+800), my, r ? "🗣️ 한 번 더 따라 읽기!" : "🗣️ 따라 읽어 보세요"); if(!alive()) return;
+  if(R.rs!=="done") doTxt("잘 들어 보세요");
+  await karaoke(s, rate, my); if(!alive()) return;
+  if(R.rs==="wait"){
+    if(canRec()){ setRec("ready"); doTxt("🎙️ 버튼을 누르고 따라 읽어 보세요"); }
+    else { setRec("nomic"); doTxt("소리 내어 따라 읽어 보세요"); document.getElementById("btns").classList.remove("lock"); }
   }
-  $("do").textContent="잘 읽었나요?";
-  $("btns").classList.remove("lock");
+}
+async function compare(s){
+  const my=++tok, alive=()=>my===tok && R;
+  doTxt(`${momIdx[s.id]?"엄마":"선생님"} 목소리와 내 목소리를 들어 봐요`);
+  await karaoke(s, 0.75, my); if(!alive()) return;
+  await wait(300); if(!alive()) return;
+  if(R.rec) await playUrl(R.rec.url); if(!alive()) return;
+  doTxt("잘 읽었나요?");
+  document.getElementById("btns").classList.remove("lock");
 }
 document.getElementById("rd").addEventListener("click",e=>{
   const b=e.target.closest("[data-a]"); if(!b){ if(e.target.closest("#ko")){ showKo=true; store.set("ko",true); document.getElementById("ko").classList.remove("hide"); } return; }
@@ -331,11 +441,30 @@ document.getElementById("rd").addEventListener("click",e=>{
   if(a==="again"){ const ids=R.kind==="daily" ? R.ids : R.ids; R={...R, i:0, kind: R.kind==="daily"?"more":R.kind}; return renderRead(); }
   if(a==="replay" && s){ return run(s); }
   if(a==="slow" && s){ return run(s, 0.55); }
+  if(a==="recGo" && s){
+    tok++; stopSound();
+    recStart().then(()=>{
+      setRec("on"); doTxt("🎙️ 듣고 있어요. 소리 내어 읽어요!");
+      clearInterval(recTimer); const t0=Date.now(), max=Math.max(8000,[...s.zh].length*900);
+      recTimer=setInterval(()=>{ const el=document.getElementById("recSec"); if(el) el.textContent=Math.floor((Date.now()-t0)/1000)+"초";
+        if(Date.now()-t0>max) document.querySelector('[data-a="recEnd"]')?.click(); },250);
+    }).catch(()=>{ setRec("nomic"); doTxt("소리 내어 따라 읽어 보세요"); document.getElementById("btns").classList.remove("lock"); });
+    return;
+  }
+  if(a==="recEnd" && s){
+    clearInterval(recTimer);
+    recStop().then(rec=>{ if(!R) return; if(!rec){ setRec("ready"); return; }
+      R.rec=rec; setRec("done"); compare(s); });
+    return;
+  }
+  if(a==="hearModel" && s){ const my=++tok; return karaoke(s,0.75,my); }
+  if(a==="hearMine" && R && R.rec){ tok++; stopSound(); return playUrl(R.rec.url); }
   if(a==="py"){ showPy=!showPy; store.set("py",showPy); document.getElementById("zh").classList.toggle("nopy",!showPy); b.classList.toggle("off",!showPy); b.textContent="병음 "+(showPy?"켬":"끔"); return; }
   if(a==="ko"){ showKo=!showKo; store.set("ko",showKo); document.getElementById("ko").classList.toggle("hide",!showKo); b.classList.toggle("off",!showKo); b.textContent="뜻 "+(showKo?"켬":"끔"); return; }
   if(a==="next" && s){
     if(b.closest(".lock")) return;
-    tok++; try{ speechSynthesis.cancel(); }catch(e){}
+    tok++; stopSound(); clearInterval(recTimer);
+    if(R.rec) upload("kid", s.id, R.rec);            // 수아 녹음은 부모 화면에서 다시 듣는다
     rd[s.id]=(rd[s.id]||0)+1;
     R.i++;
     if(R.kind==="daily"){ daily.n=Math.max(daily.n,R.i); if(daily.n>=daily.ids.length) stampDay(); }
@@ -381,6 +510,7 @@ function renderHome(){
       <div class="grid">${tiles}</div>
       <div class="big" style="margin-top:10px;font-size:13px">과를 누르면 그 과의 문장을 처음부터 읽어요</div>
     </div>
+    <button class="parent" data-pa="open">👪 부모 · 엄마 녹음 / 수아 녹음 듣기</button>
     <div class="sync">${syncState?"동기화: "+syncState:""}</div>`;
 }
 document.getElementById("home").addEventListener("click",e=>{
@@ -389,12 +519,74 @@ document.getElementById("home").addEventListener("click",e=>{
     if(daily.stamp) return openRead(daily.ids,"more","한 번 더");
     return openRead(daily.ids,"daily","오늘의 문장");
   }
+  if(e.target.closest("[data-pa]")) return openPa();
   const bk=e.target.closest("[data-book]"); if(bk){ book=bk.dataset.book; store.set("book",book); return renderHome(); }
   const l=e.target.closest("[data-les]");
   if(l){ const ids=SENT.filter(s=>(s.b||"교재")===book && s.l===l.dataset.les).map(s=>s.id); return openRead(ids,"lesson",l.dataset.les); }
 });
 
-renderHome(); pull();
+/* ===== 부모 화면 ===== */
+let PA={tab:"mom", rec:null, recId:null, kid:null, day:null, del:null, busy:{}};
+function openPa(){ document.getElementById("pa").hidden=false; document.body.style.overflow="hidden"; renderPa(); loadMomIdx().then(()=>{ renderPa(); prefetchMom(SENT.map(x=>x.id)); }); }
+function closePa(){ stopSound(); micOff(); PA.recId=null; document.getElementById("pa").hidden=true; document.body.style.overflow=""; renderHome(); }
+function fmtT(at){ const d=new Date(at); return d.getHours()+":"+String(d.getMinutes()).padStart(2,"0"); }
+function renderPa(){
+  const el=document.getElementById("paIn");
+  const tabs=`<div class="top"><button class="x" data-p="close" aria-label="닫기">✕</button>
+    <div class="ptabs"><button class="${PA.tab==="mom"?"on":""}" data-p="tab" data-t="mom">👩 엄마 녹음</button><button class="${PA.tab==="kid"?"on":""}" data-p="tab" data-t="kid">🎙️ 수아 녹음</button></div></div>`;
+  if(PA.tab==="mom"){
+    const n=SENT.filter(x=>momIdx[x.id]).length;
+    el.innerHTML=tabs+`<div class="pnote">문장마다 🎙️을 눌러 읽고, ■로 멈추면 저장돼요. 녹음한 문장은 미션에서 엄마 목소리로 나와요. <b>${n} / ${SENT.length}</b></div>`+
+      SENT.map(x=>{ const has=!!momIdx[x.id], on=PA.recId===x.id, busy=PA.busy[x.id];
+        return `<div class="prow ${has?"has":""}"><div class="pz">${esc(x.zh)}<small>${esc(x.py)}</small></div>
+          <div class="pb">${busy?`<span class="pst">저장 중…</span>`:has?`<span class="pst ok">✓</span>`:""}
+            <button data-p="play" data-id="${x.id}">▶</button>
+            <button class="${on?"prec on":"prec"}" data-p="${on?"stop":"rec"}" data-id="${x.id}">${on?"■":"🎙️"}</button>
+            ${has?`<button data-p="del" data-id="${x.id}" class="${PA.del===x.id?"warn":""}">${PA.del===x.id?"삭제?":"🗑"}</button>`:""}</div></div>`; }).join("");
+    return;
+  }
+  // 수아 녹음
+  if(!PA.kid){ el.innerHTML=tabs+`<div class="pnote">불러오는 중…</div>`;
+    fetch("/api/cvoice?list=kid",{cache:"no-store"}).then(r=>r.ok?r.json():[]).catch(()=>[]).then(j=>{ PA.kid=Array.isArray(j)?j:[]; renderPa(); }); return; }
+  const days=[...new Set(PA.kid.map(x=>x.d))];
+  el.innerHTML=tabs+(days.length?`<div class="pnote">날짜를 누르면 그날 수아가 따라 읽은 녹음을 들을 수 있어요. (60일 보관)</div>`:`<div class="pnote">아직 수아 녹음이 없어요.</div>`)+
+    days.map(d=>{ const list=PA.kid.filter(x=>x.d===d), open=PA.day===d;
+      return `<button class="pday ${open?"on":""}" data-p="day" data-d="${d}">${d} · ${list.length}개 ${open?"▲":"▼"}</button>`+
+        (open?list.map(x=>{ const s=byId(x.id), ready=!!urlCache["k:"+x.k];
+          return `<div class="prow"><div class="pz">${esc(s?s.zh:x.id)}<small>${fmtT(x.at)} · ${Math.round((x.ms||0)/1000)}초</small></div>
+            <div class="pb">${ready?`<button data-p="kplay" data-k="${x.k}">▶</button>`:`<span class="pst">…</span>`}</div></div>`; }).join(""):""); }).join("");
+}
+document.getElementById("pa").addEventListener("click",e=>{
+  const b=e.target.closest("[data-p]"); if(!b) return;
+  const p=b.dataset.p, id=b.dataset.id, x=id&&byId(id);
+  if(p==="close") return closePa();
+  if(p==="tab"){ PA.tab=b.dataset.t; PA.del=null; return renderPa(); }
+  if(p==="play" && x){ stopSound(); const u=cachedMom(id); if(u) playUrl(u); else speakP(x.zh,0.75); return; }
+  if(p==="rec" && x){
+    if(PA.recId) return;
+    recStart().then(()=>{ PA.recId=id; renderPa(); }).catch(()=>{ alertBox("마이크를 쓸 수 없어요. 설정에서 마이크를 허용해 주세요."); });
+    return;
+  }
+  if(p==="stop"){
+    recStop().then(async rec=>{ const rid=PA.recId; PA.recId=null; if(!rec){ renderPa(); return; }
+      PA.busy[rid]=true; renderPa(); playUrl(rec.url);
+      const j=await upload("mom", rid, rec); delete PA.busy[rid];
+      if(j && j.idx){ momIdx=j.idx; store.set("momIdx",momIdx); urlCache[momKey(rid)]=rec.url; } else alertBox("저장하지 못했어요. 인터넷을 확인하고 다시 녹음해 주세요.");
+      renderPa(); });
+    return;
+  }
+  if(p==="del" && x){
+    if(PA.del!==id){ PA.del=id; return renderPa(); }
+    PA.del=null; fetch("/api/cvoice?kind=mom&id="+encodeURIComponent(id),{method:"DELETE"}).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.idx){ momIdx=j.idx; store.set("momIdx",momIdx); } renderPa(); });
+    return;
+  }
+  if(p==="day"){ const d=b.dataset.d; PA.day = PA.day===d ? null : d; renderPa();
+    if(PA.day){ (async()=>{ for(const x of PA.kid.filter(y=>y.d===d)){ await kidUrl(x.k); if(PA.day===d) renderPa(); } })(); } return; }
+  if(p==="kplay"){ stopSound(); const u=urlCache["k:"+b.dataset.k]; if(u) playUrl(u); return; }
+});
+function alertBox(t){ const n=document.createElement("div"); n.className="toast"; n.textContent=t; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
+
+renderHome(); pull(); loadMomIdx().then(()=>prefetchMom(daily.ids));
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && document.getElementById("rd").hidden){ pull(); renderHome(); } });
 </script>
 </body>
