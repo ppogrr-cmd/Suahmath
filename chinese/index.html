@@ -302,9 +302,11 @@ document.addEventListener("touchend",unlockAudio,{capture:true}); document.addEv
 let mic=null, recr=null, recChunks=[], recT0=0;
 const canRec=()=>!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
 const recMime=()=>["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t))||"";
+/* 아이패드는 한 번 쓴 마이크를 다시 쓰면 두 번째부터 빈 녹음이 나오는 경우가 있어,
+   녹음할 때마다 마이크를 새로 열고 끝나면 바로 닫는다 */
 async function recStart(){
-  stopSound();
-  if(!mic) mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+  stopSound(); micOff();
+  mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
   const t=recMime(); recr=new MediaRecorder(mic, t?{mimeType:t}:undefined); recChunks=[];
   recr.ondataavailable=e=>{ if(e.data && e.data.size) recChunks.push(e.data); };
   recr.start(); recT0=Date.now();
@@ -312,11 +314,14 @@ async function recStart(){
 function recStop(){
   return new Promise(res=>{
     if(!recr || recr.state==="inactive") return res(null);
-    recr.onstop=()=>{ const blob=new Blob(recChunks,{type:recr.mimeType||"audio/mp4"}); res(blob.size?{blob, ms:Date.now()-recT0, t:blob.type||"audio/mp4", url:URL.createObjectURL(blob)}:null); };
-    recr.stop();
+    const r0=recr;
+    r0.onstop=()=>{ const blob=new Blob(recChunks,{type:r0.mimeType||"audio/mp4"}); recr=null; micOff();
+      res(blob.size?{blob, ms:Date.now()-recT0, t:blob.type||"audio/mp4", url:URL.createObjectURL(blob)}:null); };
+    try{ r0.requestData && r0.requestData(); }catch(e){}
+    r0.stop();
   });
 }
-function micOff(){ try{ if(recr && recr.state!=="inactive") recr.stop(); }catch(e){} if(mic){ mic.getTracks().forEach(t=>t.stop()); mic=null; } }
+function micOff(){ if(mic){ mic.getTracks().forEach(t=>t.stop()); mic=null; } }
 function blobB64(blob){ return new Promise(r=>{ const f=new FileReader(); f.onload=()=>r(String(f.result).split(",")[1]); f.readAsDataURL(blob); }); }
 async function upload(kind, id, rec){
   try{ const a=await blobB64(rec.blob);
@@ -374,7 +379,7 @@ function openRead(ids, kind, title){
   prefetchMom(ids);
   document.getElementById("rd").hidden=false; document.body.style.overflow="hidden"; renderRead();
 }
-function closeRead(){ tok++; stopSound(); micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
+function closeRead(){ tok++; stopSound(); clearInterval(recTimer); try{ recr && recr.state!=="inactive" && recr.stop(); }catch(e){} recr=null; micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
 function renderRead(){
   const el=document.getElementById("rdIn"), n=R.ids.length;
   let bar=""; for(let i=0;i<n;i++) bar+=`<i class="${i<R.i?"on":""} ${i===R.i?"now":""}"></i>`;
@@ -453,7 +458,7 @@ document.getElementById("rd").addEventListener("click",e=>{
   }
   if(a==="recEnd" && s){
     clearInterval(recTimer);
-    recStop().then(rec=>{ if(!R) return; if(!rec){ setRec("ready"); return; }
+    recStop().then(rec=>{ if(!R) return; if(!rec){ setRec("ready"); alertBox("녹음이 안 됐어요. 한 번 더 눌러 주세요."); return; }
       R.rec=rec; setRec("done"); compare(s); });
     return;
   }
@@ -528,7 +533,7 @@ document.getElementById("home").addEventListener("click",e=>{
 /* ===== 부모 화면 ===== */
 let PA={tab:"mom", rec:null, recId:null, kid:null, day:null, del:null, busy:{}};
 function openPa(){ document.getElementById("pa").hidden=false; document.body.style.overflow="hidden"; renderPa(); loadMomIdx().then(()=>{ renderPa(); prefetchMom(SENT.map(x=>x.id)); }); }
-function closePa(){ stopSound(); micOff(); PA.recId=null; document.getElementById("pa").hidden=true; document.body.style.overflow=""; renderHome(); }
+function closePa(){ stopSound(); try{ recr && recr.state!=="inactive" && recr.stop(); }catch(e){} recr=null; micOff(); PA.recId=null; document.getElementById("pa").hidden=true; document.body.style.overflow=""; renderHome(); }
 function fmtT(at){ const d=new Date(at); return d.getHours()+":"+String(d.getMinutes()).padStart(2,"0"); }
 function renderPa(){
   const el=document.getElementById("paIn");
@@ -568,7 +573,7 @@ document.getElementById("pa").addEventListener("click",e=>{
     return;
   }
   if(p==="stop"){
-    recStop().then(async rec=>{ const rid=PA.recId; PA.recId=null; if(!rec){ renderPa(); return; }
+    recStop().then(async rec=>{ const rid=PA.recId; PA.recId=null; if(!rec){ renderPa(); alertBox("녹음이 안 됐어요. 다시 눌러 주세요."); return; }
       PA.busy[rid]=true; renderPa(); playUrl(rec.url);
       const j=await upload("mom", rid, rec); delete PA.busy[rid];
       if(j && j.idx){ momIdx=j.idx; store.set("momIdx",momIdx); urlCache[momKey(rid)]=rec.url; } else alertBox("저장하지 못했어요. 인터넷을 확인하고 다시 녹음해 주세요.");
