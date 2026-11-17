@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 // 보상(코인) — 과목마다 오늘의 미션을 끝내면 1개, 같은 과목을 연속 10일마다 보너스(10일 +1, 20일 +2 …).
 // 100개를 모으면 1만원으로 바꿔 달라고 신청할 수 있다.
 //   GET                                    → { bal, ledger, req, runs }
@@ -6,6 +7,9 @@
 //   POST {op:"paid", id} / {op:"cancel", id}
 const KEY = "reward-suah";
 const PRICE = 100;
+// 부모 비밀번호 — 번호 대신 암호화한 값만 둔다 (sha256("suahstudy-reward:" + 번호))
+const PIN_HASH = "304c81c932b760caa3f027b88625bf212f15a2a6810381218b39868a670f746e";
+const pinOk = (p) => createHash("sha256").update("suahstudy-reward:" + String(p || "")).digest("hex") === PIN_HASH;
 const SUBJ = { math: "수학", eng: "영어", zh: "중국어" };
 const BASE = () => process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = () => process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -78,6 +82,7 @@ export default async function handler(req, res) {
       return res.status(200).json(view(o));
     }
     if (b.op === "paid" || b.op === "cancel") {
+      if (!pinOk(b.pin)) return res.status(403).json({ error: "bad-pin", ...view(o) });
       const r = o.req.find((x) => x.id === b.id);
       if (!r) return res.status(404).json({ error: "not-found" });
       if (b.op === "paid") { r.st = "지급 완료"; r.paidAt = Date.now(); }

@@ -57,6 +57,13 @@ button{font-family:inherit;cursor:pointer}
 .lg b{color:#e67700;font-size:16px}
 .lg.b b{color:#d9480f}
 .empty{color:var(--soft);font-size:14px;padding:6px 0}
+.pin{background:#f8f9fa;border-radius:16px;padding:14px;margin:-2px 0 10px;text-align:center}
+.pin .pt{font-weight:800;font-size:15px}
+.dots{display:flex;gap:12px;justify-content:center;margin:12px 0}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid #adb5bd}.dots i.on{background:#1f2a4d;border-color:#1f2a4d}
+.pm{color:#e03131;font-size:14px;font-weight:700;margin-bottom:8px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:260px;margin:0 auto}
+.pad button{border:0;border-radius:14px;padding:14px 0;font-size:22px;font-weight:700;background:#fff;color:#1f2a4d;box-shadow:0 2px 6px #0001}
 .note{text-align:center;color:var(--soft);font-size:12px;margin-top:16px}
 </style>
 </head>
@@ -65,13 +72,21 @@ button{font-family:inherit;cursor:pointer}
 <div class="wrap" id="app"><div class="hero"><div class="n">🪙</div><div class="s">불러오는 중…</div></div></div>
 <script>
 const SUBJ={math:["수학","#3b5bdb"],eng:["영어","#0ca678"],zh:["중국어","#e03131"]};
-let V=null, ask=false, paying=null, msg="";
+let V=null, ask=false, paying=null, msg="", pin="", pinMsg="";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const md=d=>{ const p=d.split("-"); return (+p[1])+"월 "+(+p[2])+"일"; };
 const mdAt=at=>{ const d=new Date(at); return (d.getMonth()+1)+"월 "+d.getDate()+"일"; };
 async function load(){
   try{ const r=await fetch("/api/reward",{cache:"no-store"}); if(!r.ok) throw 0; V=await r.json(); msg=""; }
   catch(e){ msg="서버에 연결하지 못했어요. 잠시 뒤에 다시 열어 주세요."; }
+  render();
+}
+async function sendPaid(){
+  try{ const r=await fetch("/api/reward",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({op:"paid",id:paying,pin})});
+    const j=await r.json();
+    if(r.status===403){ pin=""; pinMsg="비밀번호가 달라요"; return render(); }
+    if(j && j.bal!=null) V=j; paying=null; pin=""; pinMsg="";
+  }catch(e){ pin=""; pinMsg="연결이 안 돼요. 다시 해 주세요"; }
   render();
 }
 async function post(body){
@@ -97,8 +112,12 @@ function render(){
   const req=(V.req||[]).map(r=>`<div class="rq ${r.st==="지급 완료"?"paid":""}">
       <div class="t">🪙${r.n} → ${(r.won||10000).toLocaleString()}원<small>${mdAt(r.at)} 신청${r.paidAt?" · "+mdAt(r.paidAt)+" 받음":""}</small></div>
       <span class="st">${esc(r.st)}</span>
-      ${r.st==="신청"?(paying===r.id?`<button class="warn" data-a="paid" data-id="${r.id}">줬어요 ✓</button>`:`<button data-a="pay" data-id="${r.id}">부모: 지급</button>`):""}
-    </div>`).join("");
+      ${r.st==="신청"&&paying!==r.id?`<button data-a="pay" data-id="${r.id}">부모: 지급</button>`:""}
+    </div>${r.st==="신청"&&paying===r.id?`<div class="pin">
+      <div class="pt">부모 비밀번호를 눌러 주세요</div>
+      <div class="dots">${[0,1,2,3].map(i=>`<i class="${i<pin.length?"on":""}"></i>`).join("")}</div>
+      ${pinMsg?`<div class="pm">${esc(pinMsg)}</div>`:""}
+      <div class="pad">${[1,2,3,4,5,6,7,8,9,"✕",0,"⌫"].map(k=>`<button data-a="key" data-k="${k}">${k}</button>`).join("")}</div></div>`:""}`).join("");
   const lg=(V.ledger||[]).slice(0,60).map(x=>{ const [nm,c]=SUBJ[x.s]||[x.s,"#adb5bd"];
     return `<div class="lg ${x.k==="b"?"b":""}"><i style="background:${c}"></i><div class="t">${x.k==="b"?`${nm} ${x.run}일 연속 보너스 🔥`:`${nm} 미션 완료`}<small>${md(x.d)}</small></div><b>+${x.n}</b></div>`; }).join("");
   el.innerHTML=hero+`
@@ -116,8 +135,15 @@ document.getElementById("app").addEventListener("click",e=>{
   if(a==="ask"){ ask=true; return render(); }
   if(a==="no"){ ask=false; return render(); }
   if(a==="yes") return post({op:"redeem"});
-  if(a==="pay"){ paying=b.dataset.id; return render(); }
-  if(a==="paid") return post({op:"paid",id:b.dataset.id});
+  if(a==="pay"){ paying=b.dataset.id; pin=""; pinMsg=""; return render(); }
+  if(a==="key"){
+    const k=b.dataset.k;
+    if(k==="✕"){ paying=null; pin=""; pinMsg=""; return render(); }
+    if(k==="⌫"){ pin=pin.slice(0,-1); return render(); }
+    if(pin.length<4) pin+=k;
+    if(pin.length===4) return sendPaid();
+    return render();
+  }
 });
 load();
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) load(); });
