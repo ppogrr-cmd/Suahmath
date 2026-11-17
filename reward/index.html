@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#fff4e0">
+<meta name="theme-color" content="#fff0f6">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
 <link rel="icon" href="/apple-touch-icon.png?v=4">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,17 +19,18 @@
 :root{--ink:#1f2a4d;--soft:#7a8099;--gold:#f59f00;--gold-d:#d9480f}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
-body{min-height:100dvh;background:linear-gradient(180deg,#fff4e0 0%,#fff8ec 55%,#fffbf4 100%);color:var(--ink);
+body{min-height:100dvh;background:linear-gradient(180deg,#fff0f6 0%,#fff5f9 55%,#fffafc 100%);color:var(--ink);
   font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif}
 button{font-family:inherit;cursor:pointer}
 .subjbar{max-width:560px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:8px}
 .wrap{max-width:560px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom))}
-.hero{border-radius:26px;padding:22px 20px 20px;color:#fff;text-align:center;
-  background:linear-gradient(135deg,#ffd43b,#f59f00 55%,#e8590c);box-shadow:0 8px 22px rgba(217,72,15,.25)}
+.hero{border-radius:26px;padding:22px 20px 20px;color:#fff;text-align:center;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#ff8cc6,#e64980 55%,#c2255c);box-shadow:0 8px 22px rgba(194,37,92,.28)}
+.hero .deco{position:absolute;font-size:30px;opacity:.35}
 .hero .n{font-family:"Jua";font-size:64px;line-height:1}
 .hero .s{font-size:15px;opacity:.95;margin-top:6px}
 .prog{height:16px;border-radius:9px;background:rgba(255,255,255,.35);margin:16px 0 6px;overflow:hidden}
-.prog i{display:block;height:100%;background:#fff;border-radius:9px}
+.prog i{display:block;height:100%;border-radius:9px;background:repeating-linear-gradient(135deg,#fff 0 10px,#ffdeeb 10px 20px)}
 .hero .left{font-size:14px;font-weight:700}
 .ex{width:100%;border:0;border-radius:18px;padding:16px;margin-top:16px;font-family:"Jua";font-size:22px;color:#fff;
   background:linear-gradient(180deg,#51cf66,#2f9e44);box-shadow:0 5px 0 #237032}
@@ -54,8 +55,8 @@ button{font-family:inherit;cursor:pointer}
 .lg:last-child{border-bottom:0}
 .lg i{width:10px;height:10px;border-radius:50%;flex:none}
 .lg .t{flex:1}.lg .t small{color:var(--soft);font-size:12px;margin-left:6px}
-.lg b{color:#e67700;font-size:16px}
-.lg.b b{color:#d9480f}
+.lg b{color:#d6336c;font-size:16px}
+.lg.b b{color:#c2255c}
 .empty{color:var(--soft);font-size:14px;padding:6px 0}
 .pin{background:#f8f9fa;border-radius:16px;padding:14px;margin:-2px 0 10px;text-align:center}
 .pin .pt{font-weight:800;font-size:15px}
@@ -69,7 +70,7 @@ button{font-family:inherit;cursor:pointer}
 </head>
 <body>
 <div class="subjbar"><nav data-subjects></nav><span style="flex:1"></span></div>
-<div class="wrap" id="app"><div class="hero"><div class="n">🪙</div><div class="s">불러오는 중…</div></div></div>
+<div class="wrap" id="app"><div class="hero"><div class="n">🍬</div><div class="s">불러오는 중…</div></div></div>
 <script>
 const SUBJ={math:["수학","#3b5bdb"],eng:["영어","#0ca678"],zh:["중국어","#e03131"]};
 let V=null, ask=false, paying=null, msg="", pin="", pinMsg="";
@@ -93,15 +94,16 @@ async function post(body){
   try{ const r=await fetch("/api/reward",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const j=await r.json(); if(j && j.bal!=null) V=j; try{ localStorage.setItem("coinBal",JSON.stringify(V.bal)); }catch(e){} }catch(e){ msg="저장하지 못했어요. 인터넷을 확인해 주세요."; }
   ask=false; paying=null; render();
-  document.querySelectorAll("a.coin").forEach(a=>a.textContent="🪙 "+(V?V.bal:"–"));
+  document.querySelectorAll("a.coin").forEach(a=>a.textContent="🍬 "+(V?V.bal:"–"));
 }
 function render(){
   const el=document.getElementById("app");
-  if(!V){ el.innerHTML=`<div class="hero"><div class="n">🪙</div><div class="s">${esc(msg||"불러오는 중…")}</div></div>`; return; }
+  if(!V){ el.innerHTML=`<div class="hero"><div class="n">🍬</div><div class="s">${esc(msg||"불러오는 중…")}</div></div>`; return; }
   const P=V.price||100, bal=V.bal, pc=Math.min(100,Math.round(bal/P*100));
   const hero=`<div class="hero">
-      <div class="n">🪙 ${bal}</div>
-      <div class="s">${P}개 모으면 1만원으로 바꿀 수 있어요</div>
+      <span class="deco" style="left:14px;top:12px">🍭</span><span class="deco" style="right:16px;top:18px">🍬</span><span class="deco" style="right:30px;bottom:70px">🍭</span>
+      <div class="n">🍬 ${bal}</div>
+      <div class="s">사탕 ${P}개를 모으면 1만원으로 바꿀 수 있어요</div>
       <div class="prog"><i style="width:${Math.max(pc,2)}%"></i></div>
       <div class="left">${bal>=P?"🎉 바꿀 수 있어요!":`${P-bal}개 더 모으면 1만원!`}</div>
       ${ask?`<div class="confirm"><button class="no" data-a="no">아니요</button><button class="yes" data-a="yes">네, 바꿀래요!</button></div>`
@@ -110,7 +112,7 @@ function render(){
   const runs=Object.entries(SUBJ).map(([k,[nm,c]])=>{ const n=(V.runs||{})[k]||0, left=10-(n%10);
     return `<div class="run" style="background:${c}"><b>${n}일</b><span>${nm} 연속<br>보너스까지 ${left}일</span></div>`; }).join("");
   const req=(V.req||[]).map(r=>`<div class="rq ${r.st==="지급 완료"?"paid":""}">
-      <div class="t">🪙${r.n} → ${(r.won||10000).toLocaleString()}원<small>${mdAt(r.at)} 신청${r.paidAt?" · "+mdAt(r.paidAt)+" 받음":""}</small></div>
+      <div class="t">🍬${r.n} → ${(r.won||10000).toLocaleString()}원<small>${mdAt(r.at)} 신청${r.paidAt?" · "+mdAt(r.paidAt)+" 받음":""}</small></div>
       <span class="st">${esc(r.st)}</span>
       ${r.st==="신청"&&paying!==r.id?`<button data-a="pay" data-id="${r.id}">부모: 지급</button>`:""}
     </div>${r.st==="신청"&&paying===r.id?`<div class="pin">
@@ -124,11 +126,11 @@ function render(){
     ${msg?`<div class="note">${esc(msg)}</div>`:""}
     ${req?`<div class="card"><h3>바꾸기 신청</h3>${req}</div>`:""}
     <div class="card"><h3>연속 기록</h3><div class="runs">${runs}</div></div>
-    <div class="card"><h3>코인 받는 법</h3><div class="rule">
-      📘 과목마다 <b>오늘의 미션을 끝내면 🪙1개</b><br>
+    <div class="card"><h3>사탕 받는 법</h3><div class="rule">
+      📘 과목마다 <b>오늘의 미션을 끝내면 🍬1개</b><br>
       🔥 같은 과목을 <b>10일 연속</b> 하면 보너스 <b>+1</b>, 20일이면 <b>+2</b>, 30일이면 <b>+3</b>…<br>
-      💰 <b>🪙${P}개</b>를 모으면 <b>1만원</b>으로 바꿔 달라고 신청해요</div></div>
-    <div class="card"><h3>받은 코인</h3>${lg||`<div class="empty">아직 받은 코인이 없어요. 오늘의 미션을 끝내 볼까요?</div>`}</div>`;
+      💰 <b>🍬${P}개</b>를 모으면 <b>1만원</b>으로 바꿔 달라고 신청해요</div></div>
+    <div class="card"><h3>받은 사탕</h3>${lg||`<div class="empty">아직 받은 사탕이 없어요. 오늘의 미션을 끝내 볼까요?</div>`}</div>`;
 }
 document.getElementById("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-a]"); if(!b) return; const a=b.dataset.a;

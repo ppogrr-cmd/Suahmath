@@ -10,7 +10,7 @@
   ];
   function cur(){
     var p=location.pathname, best=SUBJECTS[0];
-    if(p.indexOf("/reward")===0) return ["보상","/reward/","#f59f00","#7a4a00","#ffc078","#d9480f"];
+    if(p.indexOf("/reward")===0) return ["보상","/reward/","#e64980","#7a1f45","#ff8cc6","#c2255c"];
     SUBJECTS.forEach(function(s){ if(s[1]!=="/"&&p.indexOf(s[1].replace(/\/$/,""))===0) best=s });
     return best;
   }
@@ -32,9 +32,9 @@
       }).join("");
     });
   }
-  /* ===== 보상 코인: 과목 선택 줄 오른쪽 끝에 🪙 개수, 누르면 보상 화면 ===== */
+  /* ===== 보상 사탕(수아 아명 Candy): 과목 선택 줄 오른쪽 끝에 🍬 개수, 누르면 보상 화면 ===== */
   var COIN_CSS='.coin{flex:none;display:inline-flex;align-items:center;gap:4px;background:#fff;border-radius:99px;padding:8px 12px;'+
-    'font:800 15px "Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;color:#e67700;text-decoration:none;box-shadow:0 2px 10px rgba(31,42,77,.12)}'+
+    'font:800 15px "Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;color:#d6336c;text-decoration:none;box-shadow:0 2px 10px rgba(31,42,77,.12)}'+
     '.coin.pop{animation:coinPop .9s ease}@keyframes coinPop{30%{transform:scale(1.35)}}'+
     '@media (max-width:430px){.sj a{padding:7px 10px 7px 9px;font-size:14px;gap:5px}.coin{padding:7px 10px;font-size:14px}}';
   var st2=document.createElement("style"); st2.textContent=COIN_CSS; (document.head||document.documentElement).appendChild(st2);
@@ -44,7 +44,7 @@
     Array.prototype.forEach.call(document.querySelectorAll("[data-subjects]"),function(nav){
       var bar=nav.parentElement, a=bar.querySelector("a.coin");
       if(!a){ a=document.createElement("a"); a.className="coin"; a.href="/reward/"; bar.appendChild(a); }
-      a.textContent="🪙 "+(n==null?"–":n);
+      a.textContent="🍬 "+(n==null?"–":n);
       if(pop){ a.classList.remove("pop"); void a.offsetWidth; a.classList.add("pop"); }
     });
   }
@@ -62,8 +62,39 @@
       .then(function(r){ return r.ok?r.json():null }).then(function(j){
         if(!j){ sent[key]=0; return }
         done[key]=1; lsSet("coinSent",done); lsSet("coinBal",j.bal); showCoin(j.bal, first);
+        if(first){
+          var got=(j.ledger||[]).filter(function(x){ return x.s===s && x.d===d });
+          var n=got.reduce(function(a,x){ return a+(x.n||0) },0), bon=got.filter(function(x){ return x.k==="b" })[0];
+          candyParty(n||1, j.bal, bon);
+        }
       }).catch(function(){ sent[key]=0 });
   };
+  /* 미션을 끝내면 사탕이 쏟아지고, 받은 개수를 크게 보여 준다 */
+  var PARTY_CSS='.cp{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(255,240,246,.82);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);animation:cpIn .25s ease}'+
+    '@keyframes cpIn{from{opacity:0}}'+
+    '.cp .rain{position:absolute;top:-60px;font-size:34px;animation:cpFall linear forwards}'+
+    '@keyframes cpFall{to{transform:translateY(110vh) rotate(540deg)}}'+
+    '.cp .box{position:relative;background:#fff;border-radius:30px;padding:26px 30px 22px;text-align:center;box-shadow:0 14px 40px rgba(194,37,92,.28);animation:cpPop .5s cubic-bezier(.2,1.6,.4,1)}'+
+    '@keyframes cpPop{from{transform:scale(.4)}}'+
+    '.cp .big{font-size:84px;line-height:1;animation:cpWig 1.2s ease-in-out infinite}'+
+    '@keyframes cpWig{25%{transform:rotate(-12deg) scale(1.08)}75%{transform:rotate(12deg) scale(1.08)}}'+
+    '.cp h2{margin:10px 0 4px;font:400 30px "Jua","Pretendard Variable",sans-serif;color:#c2255c}'+
+    '.cp p{margin:4px 0 0;font:700 15px "Pretendard Variable",Pretendard,sans-serif;color:#4a5170}'+
+    '.cp .bn{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:99px;background:#fff0f6;color:#d6336c;font:800 14px "Pretendard Variable",sans-serif}'+
+    '.cp .ok{margin-top:16px;border:0;border-radius:16px;padding:12px 26px;background:linear-gradient(180deg,#ff8cc6,#e64980);color:#fff;font:400 19px "Jua",sans-serif;box-shadow:0 4px 0 #c2255c}';
+  var st3=document.createElement("style"); st3.textContent=PARTY_CSS; (document.head||document.documentElement).appendChild(st3);
+  function candyParty(n,bal,bon){
+    var el=document.createElement("div"); el.className="cp";
+    var rain="", kinds=["🍬","🍭","🍬","🍬","🍭"];
+    for(var i=0;i<26;i++) rain+='<span class="rain" style="left:'+(Math.random()*96)+'%;animation-duration:'+(1.8+Math.random()*1.6).toFixed(2)+'s;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s">'+kinds[i%5]+'</span>';
+    el.innerHTML=rain+'<div class="box"><div class="big">🍬</div><h2>사탕 +'+n+'개!</h2>'+
+      (bon?'<div class="bn">🔥 '+bon.run+'일 연속 보너스 +'+bon.n+'</div>':'')+
+      '<p>지금 모은 사탕 <b>'+bal+'개</b></p><button class="ok">고마워요 🍭</button></div>';
+    document.body.appendChild(el);
+    var close=function(){ if(el.parentNode) el.parentNode.removeChild(el) };
+    el.addEventListener("click",function(e){ if(e.target.closest(".ok")||!e.target.closest(".box")) close() });
+    setTimeout(close,6000);
+  }
   function boot(){ draw(); showCoin(lsGet("coinBal")); refreshCoin() }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot); else boot();
   document.addEventListener("visibilitychange",function(){ if(!document.hidden) refreshCoin() });
