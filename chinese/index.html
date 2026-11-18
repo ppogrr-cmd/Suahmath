@@ -494,7 +494,9 @@ document.getElementById("rd").addEventListener("click",e=>{
   if(a==="recEnd" && s){
     clearInterval(recTimer);
     recStop().then(rec=>{ if(!R) return; if(!rec){ setRec("ready"); alertBox("녹음이 안 됐어요. 한 번 더 눌러 주세요."); return; }
-      R.rec=rec; setRec("done"); compare(s); });
+      R.rec=rec; setRec("done");
+      document.getElementById("btns").classList.remove("lock");   // 녹음했으면 바로 넘어갈 수 있게 (비교 듣기는 계속)
+      compare(s); });
     return;
   }
   if(a==="hearModel" && s){ const my=++tok; return karaoke(s,0.75,my); }
