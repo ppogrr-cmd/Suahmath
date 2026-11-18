@@ -402,7 +402,19 @@ function openRead(ids, kind, title){
   prefetchMom(ids);
   document.getElementById("rd").hidden=false; document.body.style.overflow="hidden"; renderRead();
 }
-function closeRead(){ tok++; stopSound(); clearInterval(recTimer); try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){} recr=null; rbufs=[]; micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
+/* 수아 녹음 올리기 — 실패하면 기기에 모아 두고 다음에 열 때 다시 보낸다 */
+const kidQ=[];
+async function sendKid(id, rec){
+  const j=await upload("kid", id, rec);
+  if(j && j.ok) return true;
+  kidQ.push([id,rec]); alertBox("녹음을 올리지 못했어요. 인터넷이 되면 다시 보낼게요.");
+  return false;
+}
+async function flushKid(){ while(kidQ.length){ const [id,rec]=kidQ[0]; const j=await upload("kid", id, rec); if(!(j&&j.ok)) return; kidQ.shift(); } }
+window.addEventListener("online", flushKid);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) flushKid(); });
+function closeRead(){ if(R && R.rec && R.ids){ sendKid(R.ids[R.i], R.rec); R.rec=null; }   // 녹음하고 ✕로 나가도 올린다
+  tok++; stopSound(); clearInterval(recTimer); try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){} recr=null; rbufs=[]; micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
 function renderRead(){
   const el=document.getElementById("rdIn"), n=R.ids.length;
   let bar=""; for(let i=0;i<n;i++) bar+=`<i class="${i<R.i?"on":""} ${i===R.i?"now":""}"></i>`;
@@ -492,7 +504,8 @@ document.getElementById("rd").addEventListener("click",e=>{
   if(a==="next" && s){
     if(b.closest(".lock")) return;
     tok++; stopSound(); clearInterval(recTimer);
-    if(R.rec) upload("kid", s.id, R.rec);            // 수아 녹음은 부모 화면에서 다시 듣는다
+    if(R.rec) sendKid(s.id, R.rec);                  // 수아 녹음은 부모 화면에서 다시 듣는다 (한 번 더 읽기도 같이)
+    R.rec=null;
     rd[s.id]=(rd[s.id]||0)+1;
     R.i++;
     if(R.kind==="daily"){ daily.n=Math.max(daily.n,R.i); if(daily.n>=daily.ids.length){ stampDay(); setTimeout(zhEarn,0); } }
@@ -555,7 +568,7 @@ document.getElementById("home").addEventListener("click",e=>{
 
 /* ===== 부모 화면 ===== */
 let PA={tab:"mom", rec:null, recId:null, kid:null, day:null, del:null, busy:{}};
-function openPa(){ document.getElementById("pa").hidden=false; document.body.style.overflow="hidden"; renderPa(); loadMomIdx().then(()=>{ renderPa(); prefetchMom(SENT.map(x=>x.id)); }); }
+function openPa(){ PA.kid=null; document.getElementById("pa").hidden=false; document.body.style.overflow="hidden"; renderPa(); loadMomIdx().then(()=>{ renderPa(); prefetchMom(SENT.map(x=>x.id)); }); }
 function closePa(){ stopSound(); try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){} recr=null; rbufs=[]; micOff(); PA.recId=null; document.getElementById("pa").hidden=true; document.body.style.overflow=""; renderHome(); }
 function fmtT(at){ const d=new Date(at); return d.getHours()+":"+String(d.getMinutes()).padStart(2,"0"); }
 function renderPa(){
@@ -588,7 +601,7 @@ document.getElementById("pa").addEventListener("click",e=>{
   const b=e.target.closest("[data-p]"); if(!b) return;
   const p=b.dataset.p, id=b.dataset.id, x=id&&byId(id);
   if(p==="close") return closePa();
-  if(p==="tab"){ PA.tab=b.dataset.t; PA.del=null; return renderPa(); }
+  if(p==="tab"){ PA.tab=b.dataset.t; PA.del=null; if(PA.tab==="kid") PA.kid=null; return renderPa(); }
   if(p==="play" && x){ stopSound(); const u=cachedMom(id); if(u) playUrl(u); else speakP(x.zh,0.75); return; }
   if(p==="rec" && x){
     if(PA.recId) return;
