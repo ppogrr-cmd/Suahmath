@@ -406,15 +406,14 @@ function openRead(ids, kind, title){
 const kidQ=[];
 async function sendKid(id, rec){
   const j=await upload("kid", id, rec);
-  if(j && j.ok) return true;
+  if(j && j.ok){ rec.k=j.k; urlCache["k:"+j.k]=rec.url; return true; }
   kidQ.push([id,rec]); alertBox("녹음을 올리지 못했어요. 인터넷이 되면 다시 보낼게요.");
   return false;
 }
 async function flushKid(){ while(kidQ.length){ const [id,rec]=kidQ[0]; const j=await upload("kid", id, rec); if(!(j&&j.ok)) return; kidQ.shift(); } }
 window.addEventListener("online", flushKid);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) flushKid(); });
-function closeRead(){ if(R && R.rec && R.ids){ sendKid(R.ids[R.i], R.rec); R.rec=null; }   // 녹음하고 ✕로 나가도 올린다
-  tok++; stopSound(); clearInterval(recTimer); try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){} recr=null; rbufs=[]; micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
+function closeRead(){   tok++; stopSound(); clearInterval(recTimer); try{ rsrc && rsrc.disconnect(); rproc && rproc.disconnect(); }catch(e){} recr=null; rbufs=[]; micOff(); document.getElementById("rd").hidden=true; document.body.style.overflow=""; R=null; renderHome(); }
 function renderRead(){
   const el=document.getElementById("rdIn"), n=R.ids.length;
   let bar=""; for(let i=0;i<n;i++) bar+=`<i class="${i<R.i?"on":""} ${i===R.i?"now":""}"></i>`;
@@ -494,7 +493,9 @@ document.getElementById("rd").addEventListener("click",e=>{
   if(a==="recEnd" && s){
     clearInterval(recTimer);
     recStop().then(rec=>{ if(!R) return; if(!rec){ setRec("ready"); alertBox("녹음이 안 됐어요. 한 번 더 눌러 주세요."); return; }
-      R.rec=rec; setRec("done");
+      const old=R.rec; R.rec=rec; setRec("done");
+      // 녹음하자마자 올린다 — '다 읽었어요'를 안 눌러도 부모 화면에서 들을 수 있다
+      sendKid(s.id, rec).then(ok=>{ if(ok && old && old.k) fetch("/api/cvoice?kind=kid&k="+encodeURIComponent(old.k),{method:"DELETE"}).catch(()=>{}); });
       document.getElementById("btns").classList.remove("lock");   // 녹음했으면 바로 넘어갈 수 있게 (비교 듣기는 계속)
       compare(s); });
     return;
@@ -506,8 +507,7 @@ document.getElementById("rd").addEventListener("click",e=>{
   if(a==="next" && s){
     if(b.closest(".lock")) return;
     tok++; stopSound(); clearInterval(recTimer);
-    if(R.rec) sendKid(s.id, R.rec);                  // 수아 녹음은 부모 화면에서 다시 듣는다 (한 번 더 읽기도 같이)
-    R.rec=null;
+    R.rec=null;                                      // 녹음은 멈출 때 이미 올렸다
     rd[s.id]=(rd[s.id]||0)+1;
     R.i++;
     if(R.kind==="daily"){ daily.n=Math.max(daily.n,R.i); if(daily.n>=daily.ids.length){ stampDay(); setTimeout(zhEarn,0); } }
@@ -597,7 +597,7 @@ function renderPa(){
       return `<button class="pday ${open?"on":""}" data-p="day" data-d="${d}">${d} · ${list.length}개 ${open?"▲":"▼"}</button>`+
         (open?list.map(x=>{ const s=byId(x.id), ready=!!urlCache["k:"+x.k];
           return `<div class="prow"><div class="pz">${esc(s?s.zh:x.id)}<small>${fmtT(x.at)} · ${Math.round((x.ms||0)/1000)}초</small></div>
-            <div class="pb">${ready?`<button data-p="kplay" data-k="${x.k}">▶</button>`:`<span class="pst">…</span>`}</div></div>`; }).join(""):""); }).join("");
+            <div class="pb"><button data-p="kplay" data-k="${x.k}">${ready?"▶":PA.busy["k"+x.k]?"…":"▶"}</button></div></div>`; }).join(""):""); }).join("");
 }
 document.getElementById("pa").addEventListener("click",e=>{
   const b=e.target.closest("[data-p]"); if(!b) return;
@@ -625,7 +625,11 @@ document.getElementById("pa").addEventListener("click",e=>{
   }
   if(p==="day"){ const d=b.dataset.d; PA.day = PA.day===d ? null : d; renderPa();
     if(PA.day){ (async()=>{ for(const x of PA.kid.filter(y=>y.d===d)){ await kidUrl(x.k); if(PA.day===d) renderPa(); } })(); } return; }
-  if(p==="kplay"){ stopSound(); const u=urlCache["k:"+b.dataset.k]; if(u) playUrl(u); return; }
+  if(p==="kplay"){ stopSound(); const k=b.dataset.k, u=urlCache["k:"+k];
+    if(u){ playUrl(u); return; }
+    PA.busy["k"+k]=true; renderPa();
+    kidUrl(k).then(u2=>{ delete PA.busy["k"+k]; renderPa(); if(u2) playUrl(u2); else alertBox("녹음을 불러오지 못했어요. 잠시 뒤에 다시 눌러 주세요."); });
+    return; }
 });
 function alertBox(t){ const n=document.createElement("div"); n.className="toast"; n.textContent=t; document.body.appendChild(n); setTimeout(()=>n.remove(),3000); }
 

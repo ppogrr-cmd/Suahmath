@@ -6,7 +6,7 @@
 //   GET  ?kind=kid&k=…        → { a, t, ms }
 //   POST {kind:"mom", id, a, t, ms}
 //   POST {kind:"kid", id, d, a, t, ms}
-//   DELETE ?kind=mom&id=…
+//   DELETE ?kind=mom&id=…  /  DELETE ?kind=kid&k=…
 const KEEP_DAYS = 60;                     // 수아 녹음은 60일 지나면 지운다
 const MAX_B64 = 1_400_000;                // 한 녹음 최대 약 1MB
 const BASE = () => process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -79,6 +79,14 @@ export default async function handler(req, res) {
       delete idx[id];
       await setJSON("zh-mom-index", idx);
       return res.status(200).json({ ok: true, idx });
+    }
+    // 같은 문장을 다시 녹음하면 앞의 녹음은 지운다
+    if (req.method === "DELETE" && q.kind === "kid") {
+      const k = safe(q.k);
+      await kv(["DEL", `zh-kid:${k}`]);
+      const idx = (await getJSON("zh-kid-index", [])).filter((x) => x.k !== k);
+      await setJSON("zh-kid-index", idx);
+      return res.status(200).json({ ok: true });
     }
     return res.status(405).json({ error: "method-not-allowed" });
   } catch (e) {
