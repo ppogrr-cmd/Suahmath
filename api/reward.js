@@ -9,7 +9,6 @@ const KEY = "reward-suah";
 const PRICE = 100;
 // 캔디샵 상품 — 여기만 고치면 상품이 바뀐다
 const SHOP = [
-  { id: "movie", n: 20, icon: "🎬", name: "영화 고르기", won: 0, bonus: "보고 싶은 영화를 수아가 골라요" },
   { id: "c50",  n: 50,  icon: "💵", name: "5천원",  won: 5000,  bonus: "말랑이 구매권 1장" },
   { id: "c100", n: 100, icon: "💰", name: "1만원",  won: 10000, bonus: "말랑이 구매권 2장" },
 ];
