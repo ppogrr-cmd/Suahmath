@@ -58,6 +58,17 @@ button{font-family:inherit;cursor:pointer}
 .lg b{color:#d6336c;font-size:16px}
 .lg.b b{color:#c2255c}
 .empty{color:var(--soft);font-size:14px;padding:6px 0}
+.shop{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item{border-radius:20px;padding:14px 12px;text-align:center;background:#fff5f9;box-shadow:0 0 0 2px #ffdeeb inset}
+.item.ok{background:linear-gradient(180deg,#fff0f6,#ffdeeb);box-shadow:0 0 0 2px #f783ac inset}
+.item .ic{font-size:40px;line-height:1.1}
+.item b{display:block;font-family:"Jua";font-weight:400;font-size:22px;margin-top:4px}
+.item .bn{font-size:13px;color:#c2255c;font-weight:700;margin-top:2px}
+.item .pr{font-weight:800;color:#d6336c;margin-top:6px}
+.item .buy{width:100%;margin-top:10px;border:0;border-radius:14px;padding:11px 6px;font-family:"Jua";font-size:17px;color:#fff;background:linear-gradient(180deg,#ff8cc6,#e64980);box-shadow:0 3px 0 #c2255c}
+.item .buy:disabled{background:#f1f3f5;color:#868e96;box-shadow:none;font-family:inherit;font-size:13px;font-weight:700}
+.item .confirm{flex-direction:column;gap:6px}
+.item .confirm button{padding:10px;font-size:16px}
 .pin{background:#f8f9fa;border-radius:16px;padding:14px;margin:-2px 0 10px;text-align:center}
 .pin .pt{font-weight:800;font-size:15px}
 .dots{display:flex;gap:12px;justify-content:center;margin:12px 0}
@@ -73,7 +84,7 @@ button{font-family:inherit;cursor:pointer}
 <div class="wrap" id="app"><div class="hero"><div class="n">🍬</div><div class="s">불러오는 중…</div></div></div>
 <script>
 const SUBJ={math:["수학","#3b5bdb"],eng:["영어","#0ca678"],zh:["중국어","#e03131"]};
-let V=null, ask=false, paying=null, msg="", pin="", pinMsg="";
+let V=null, ask=null, paying=null, msg="", pin="", pinMsg="";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const md=d=>{ const p=d.split("-"); return (+p[1])+"월 "+(+p[2])+"일"; };
 const mdAt=at=>{ const d=new Date(at); return (d.getMonth()+1)+"월 "+d.getDate()+"일"; };
@@ -93,26 +104,30 @@ async function sendPaid(){
 async function post(body){
   try{ const r=await fetch("/api/reward",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const j=await r.json(); if(j && j.bal!=null) V=j; try{ localStorage.setItem("coinBal",JSON.stringify(V.bal)); }catch(e){} }catch(e){ msg="저장하지 못했어요. 인터넷을 확인해 주세요."; }
-  ask=false; paying=null; render();
+  ask=null; paying=null; render();
   document.querySelectorAll("a.coin").forEach(a=>a.textContent="🍬 "+(V?V.bal:"–"));
 }
 function render(){
   const el=document.getElementById("app");
   if(!V){ el.innerHTML=`<div class="hero"><div class="n">🍬</div><div class="s">${esc(msg||"불러오는 중…")}</div></div>`; return; }
-  const P=V.price||100, bal=V.bal, pc=Math.min(100,Math.round(bal/P*100));
+  const SHOP=V.shop||[{id:"c100",n:100,icon:"💰",name:"1만원",bonus:""}];
+  const bal=V.bal, next=SHOP.find(x=>x.n>bal)||SHOP[SHOP.length-1], P=next.n, pc=Math.min(100,Math.round(bal/P*100));
   const hero=`<div class="hero">
       <span class="deco" style="left:14px;top:12px">🍭</span><span class="deco" style="right:16px;top:18px">🍬</span><span class="deco" style="right:30px;bottom:70px">🍭</span>
       <div class="n">🍬 ${bal}</div>
-      <div class="s">사탕 ${P}개를 모으면 1만원으로 바꿀 수 있어요</div>
+      <div class="s">모은 사탕으로 캔디샵에서 바꿔요</div>
       <div class="prog"><i style="width:${Math.max(pc,2)}%"></i></div>
-      <div class="left">${bal>=P?"🎉 바꿀 수 있어요!":`${P-bal}개 더 모으면 1만원!`}</div>
-      ${ask?`<div class="confirm"><button class="no" data-a="no">아니요</button><button class="yes" data-a="yes">네, 바꿀래요!</button></div>`
-           :`<button class="ex" data-a="ask" ${bal>=P?"":"disabled"}>💰 1만원으로 바꾸기</button>`}
-    </div>`;
+      <div class="left">${bal>=P?"🎉 바꿀 수 있어요!":`${P-bal}개 더 모으면 ${esc(next.name)}!`}</div>
+    </div>
+    <div class="card"><h3>🍭 캔디샵</h3><div class="shop">${SHOP.map(x=>{ const ok=bal>=x.n;
+      return `<div class="item ${ok?"ok":""}"><div class="ic">${x.icon||"🎁"}</div><b>${esc(x.name)}</b>
+        ${x.bonus?`<div class="bn">+ ${esc(x.bonus)}</div>`:""}<div class="pr">🍬 ${x.n}개</div>
+        ${ask===x.id?`<div class="confirm"><button class="no" data-a="no">아니요</button><button class="yes" data-a="yes" data-item="${x.id}">바꿀래요!</button></div>`
+          :`<button class="buy" data-a="ask" data-item="${x.id}" ${ok?"":"disabled"}>${ok?"바꾸기":`${x.n-bal}개 더 필요해요`}</button>`}</div>`; }).join("")}</div></div>`;
   const runs=Object.entries(SUBJ).map(([k,[nm,c]])=>{ const n=(V.runs||{})[k]||0, left=10-(n%10);
     return `<div class="run" style="background:${c}"><b>${n}일</b><span>${nm} 연속<br>보너스까지 ${left}일</span></div>`; }).join("");
   const req=(V.req||[]).map(r=>`<div class="rq ${r.st==="지급 완료"?"paid":""}">
-      <div class="t">🍬${r.n} → ${(r.won||10000).toLocaleString()}원<small>${mdAt(r.at)} 신청${r.paidAt?" · "+mdAt(r.paidAt)+" 받음":""}</small></div>
+      <div class="t">🍬${r.n} → ${esc(r.name||((r.won||10000).toLocaleString()+"원"))}${r.bonus?" + "+esc(r.bonus):""}<small>${mdAt(r.at)} 신청${r.paidAt?" · "+mdAt(r.paidAt)+" 받음":""}</small></div>
       <span class="st">${esc(r.st)}</span>
       ${r.st==="신청"&&paying!==r.id?`<button data-a="pay" data-id="${r.id}">부모: 지급</button>`:""}
     </div>${r.st==="신청"&&paying===r.id?`<div class="pin">
@@ -129,14 +144,14 @@ function render(){
     <div class="card"><h3>사탕 받는 법</h3><div class="rule">
       📘 과목마다 <b>오늘의 미션을 끝내면 🍬1개</b><br>
       🔥 같은 과목을 <b>10일 연속</b> 하면 보너스 <b>+1</b>, 20일이면 <b>+2</b>, 30일이면 <b>+3</b>…<br>
-      💰 <b>🍬${P}개</b>를 모으면 <b>1만원</b>으로 바꿔 달라고 신청해요</div></div>
+      🍭 캔디샵에서 ${SHOP.map(x=>`<b>🍬${x.n}개 → ${esc(x.name)}</b>${x.bonus?"(+"+esc(x.bonus)+")":""}`).join(", ")}로 바꿔 달라고 신청해요</div></div>
     <div class="card"><h3>받은 사탕</h3>${lg||`<div class="empty">아직 받은 사탕이 없어요. 오늘의 미션을 끝내 볼까요?</div>`}</div>`;
 }
 document.getElementById("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-a]"); if(!b) return; const a=b.dataset.a;
-  if(a==="ask"){ ask=true; return render(); }
-  if(a==="no"){ ask=false; return render(); }
-  if(a==="yes") return post({op:"redeem"});
+  if(a==="ask"){ ask=b.dataset.item; return render(); }
+  if(a==="no"){ ask=null; return render(); }
+  if(a==="yes") return post({op:"redeem",item:b.dataset.item});
   if(a==="pay"){ paying=b.dataset.id; pin=""; pinMsg=""; return render(); }
   if(a==="key"){
     const k=b.dataset.k;
