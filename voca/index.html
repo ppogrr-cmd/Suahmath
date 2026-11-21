@@ -3852,10 +3852,13 @@ if(RESET_DAYS.includes(ymd()) && store.get("resetDone")!==ymd()){
 let vq = null;   // 지금 퀴즈 문제 {d, opts, ans, pick}
 let vx = null;   // 미션을 마친 뒤 '한 번 더' 판 {nw,qz,ids} — 오늘 미션 칸은 건드리지 않는다
 const VC = ()=> vx || daily;
+let vCur=null;   // 지금 화면의 단어 — 다시 그려도 같은 단어가 나오게
 function vNewWord(){
-  /* 모르는 단어: '헷갈려요'로 표시한 단어 먼저, 그다음 아직 안 본 단어 — 책 순서대로 */
+  /* 모르는 단어를 섞어서: '헷갈려요' 단어 전부 + 책 순서상 다음에 배울 새 단어 20개 중에서 무작위로 */
   const free=d=>!daily.ids.includes(d.id) && !VC().ids.includes(d.id);
-  return WORDS.find(d=>stageOf(d.id)===1 && free(d)) || WORDS.find(d=>stageOf(d.id)===0 && free(d));
+  if(vCur && free(vCur) && stageOf(vCur.id)<2) return vCur;
+  const pool=[...WORDS.filter(d=>stageOf(d.id)===1 && free(d)), ...WORDS.filter(d=>stageOf(d.id)===0 && free(d)).slice(0,20)];
+  return vCur = pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
 }
 /* 퀴즈: 이미 '외웠어요' 한 단어. 복습할 때가 된 단어 먼저.
    그날 고른 순서를 기기에 적어 두어, 껐다 켜도 같은 단어가 또 나오지 않게 한다. */
@@ -4058,7 +4061,7 @@ document.getElementById("vMis").addEventListener("click",e=>{
   if(a==="know"||a==="later"){ vcTok++;
     const id=b.dataset.id;
     if(a==="know"){ setStage(id,2); schedule(id,true); } else touch(id);
-    if(vx){ vx.ids.push(id); vx.nw++; } else bump("nw", id);   // 어느 쪽이든 한 칸
+    vCur=null; if(vx){ vx.ids.push(id); vx.nw++; } else bump("nw", id);   // 어느 쪽이든 한 칸
     syncPush(); return renderVMis();
   }
   if(a==="pick" && vq && vq.pick==null){
