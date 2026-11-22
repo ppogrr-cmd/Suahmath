@@ -229,10 +229,30 @@ const SECRETS=[
 /* ---------- 상태 ---------- */
 let S={base:'clay',color:'straw',texture:'soft',shape:'ball',parts:[],coat:'none',face:'smile'};
 const by=(arr,id)=>arr.find(x=>x.id===id);
-let store=[],found=[];
+let store=[],found=[],delIds=[];
 const KEY='malang-gongbang-v1';
-try{const j=JSON.parse(localStorage.getItem(KEY)||'{}');store=j.items||[];found=j.found||[]}catch(e){}
-function save(){try{localStorage.setItem(KEY,JSON.stringify({items:store,found}))}catch(e){}}
+try{const j=JSON.parse(localStorage.getItem(KEY)||'{}');store=j.items||[];found=j.found||[];delIds=j.del||[]}catch(e){}
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify({items:store,found,del:delIds}))}catch(e){}}
+function save(){saveLocal();pushSync()}
+/* ---------- 기기끼리 도감 맞추기 (api/msync) ---------- */
+const ver=x=>x.u||x.t||0;
+function mergeIn(o){
+  if(!o||!Array.isArray(o.items))return false;
+  delIds=[...new Set([...delIds,...(o.del||[])])].slice(-2000);
+  const gone=new Set(delIds),m=new Map();
+  for(const it of [...store,...o.items]){if(!it||!it.id||gone.has(it.id))continue;const p=m.get(it.id);if(!p||ver(it)>ver(p))m.set(it.id,it)}
+  const before=JSON.stringify([store.map(x=>x.id+':'+ver(x)),found]);
+  store=[...m.values()].sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,300);
+  found=[...new Set([...found,...(o.found||[])])];
+  saveLocal();
+  return before!==JSON.stringify([store.map(x=>x.id+':'+ver(x)),found]);
+}
+let pushT=null;
+function pushSync(){clearTimeout(pushT);pushT=setTimeout(async()=>{try{const r=await fetch('/api/msync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:store,found,del:delIds})});if(r.ok&&mergeIn(await r.json()))refreshViews()}catch(e){}},800)}
+async function pullSync(){try{const r=await fetch('/api/msync',{cache:'no-store'});if(!r.ok)return;const changed=mergeIn(await r.json());if(changed)refreshViews();
+  // 이 기기에만 있던 말랑이도 서버로
+  pushSync()}catch(e){}}
+function refreshViews(){if(!document.getElementById('book').hidden&&!document.getElementById('pv').classList.contains('show'))renderBook()}
 
 /* ---------- 색 도우미 ---------- */
 function mix(hex,t,to='#ffffff'){
@@ -519,7 +539,7 @@ function attachPlay(box,item){
     crack++;crackSound();
     if(crack>=need){broken=true;flakes(box);say('바사삭!! 속살 공개');}
     else say('바삭!');
-    paint();item.crack=crack;item.broken=broken;save();
+    paint();item.crack=crack;item.broken=broken;item.u=Date.now();save();
   }
   function startGesture(){
     const arr=[...ptrs.values()];
@@ -627,7 +647,7 @@ function attachPlay(box,item){
   requestAnimationFrame(frame);
   return{
     destroy(){alive=false},
-    rewax(){crack=0;broken=false;item.crack=0;item.broken=false;save();paint();blip(400);say('왁스 코팅 완료!')},
+    rewax(){crack=0;broken=false;item.crack=0;item.broken=false;item.u=Date.now();save();paint();blip(400);say('왁스 코팅 완료!')},
     isBroken:()=>broken
   };
 }
@@ -661,7 +681,7 @@ document.getElementById('pvBtns').addEventListener('click',e=>{
   if(act==='info')document.getElementById('pvInfo').classList.toggle('show');
   if(act==='del'){
     if(!delArm){delArm=true;renderPvBtns();setTimeout(()=>{if(delArm){delArm=false;renderPvBtns()}},2500);return}
-    store=store.filter(x=>x.id!==pvItem.id);save();closePlay();return;
+    delIds.push(pvItem.id);store=store.filter(x=>x.id!==pvItem.id);save();closePlay();return;
   }
   if(act!=='del'&&delArm){delArm=false;renderPvBtns()}
 });
@@ -691,6 +711,8 @@ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(b.datase
 document.getElementById('snd').onclick=()=>setSound(!soundOn);
 document.getElementById('snd').textContent=soundOn?'🔊':'🔇';
 renderSteps();renderPreview();
+pullSync();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pullSync()});
 </script>
 </body>
 </html>
