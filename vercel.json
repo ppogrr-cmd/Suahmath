@@ -15,6 +15,10 @@
     {
       "source": "/reward",
       "destination": "/reward/index.html"
+    },
+    {
+      "source": "/malang",
+      "destination": "/malang/index.html"
     }
   ],
   "headers": [
@@ -56,6 +60,15 @@
     },
     {
       "source": "/chinese/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/malang/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff5f8">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
+<link rel="icon" href="/apple-touch-icon.png?v=4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study">
+<title>Study</title>
+<script src="/nav.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff5f8; --ink:#4a3848; --soft:#8a7486; --line:#f1dbe5;
+  --pink:#ff7fa8; --pink2:#ffd6e4; --card:#ffffff; --mint:#6fd6b8;
+  --r:22px;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Gowun Dodum',system-ui,sans-serif}
+body{background-image:radial-gradient(#ffdbe7 1.4px,transparent 1.4px);background-size:22px 22px;min-height:100vh}
+.subjbar{max-width:1180px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 20px 0;display:flex;align-items:center;gap:8px}
+h1,h2,h3,.jua,button{font-family:'Jua',system-ui,sans-serif;font-weight:400}
+button{cursor:pointer;color:var(--ink)}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px 6px;max-width:1180px;margin:0 auto}
+header h1{margin:0;font-size:30px;letter-spacing:-.5px}
+header h1 span{color:var(--pink)}
+.sndbtn{border:2px solid var(--line);background:#fff;width:44px;height:44px;border-radius:50%;font-size:20px}
+.tabs{display:flex;gap:6px;background:#fff;border:2px solid var(--line);padding:4px;border-radius:999px}
+.tabs button{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-size:16px}
+.tabs button.on{background:var(--pink);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:8px 20px 40px}
+.lab{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:20px;align-items:start}
+.stage{position:sticky;top:12px;background:var(--card);border:2px solid var(--line);border-radius:28px;padding:18px;text-align:center;box-shadow:0 8px 0 #f6e3ea}
+.stage .bowl{position:relative;aspect-ratio:1/1;border-radius:22px;background:radial-gradient(circle at 50% 60%,#fff 0,#fff3f7 70%);overflow:hidden}
+.stage .bowl svg{width:100%;height:100%;display:block}
+.stage .hint{color:var(--soft);font-size:14px;margin:10px 0 12px}
+.recipe-line{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px;min-height:30px}
+.chip{background:#fff3f7;border:1.5px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
+.actions{display:flex;gap:10px}
+.btn{flex:1;border:0;border-radius:18px;padding:14px 10px;font-size:19px;background:#fff;border:2px solid var(--line);box-shadow:0 4px 0 var(--line);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn.main{background:var(--pink);color:#fff;border-color:#f0628f;box-shadow:0 4px 0 #e0517e}
+.steps{display:flex;flex-direction:column;gap:14px}
+.step{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:14px 16px 16px}
+.step h3{margin:0 0 10px;font-size:20px;display:flex;align-items:center;gap:8px}
+.step h3 .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--pink2);color:#d8457a;font-size:16px}
+.step h3 small{font-family:'Gowun Dodum';color:var(--soft);font-size:13px;margin-left:auto}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:16px;padding:10px 6px 9px;text-align:center;font-size:15px;transition:all .12s;position:relative}
+.opt .ic{font-size:26px;display:block;line-height:1.2;margin-bottom:2px}
+.opt .sub{display:block;font-family:'Gowun Dodum';font-size:11.5px;color:var(--soft);margin-top:2px}
+.opt.on{border-color:var(--pink);background:#fff0f5;box-shadow:0 0 0 3px #ffd6e4}
+.opt:active{transform:scale(.96)}
+.sw{display:block;width:30px;height:30px;border-radius:50%;margin:0 auto 4px;border:2px solid rgba(0,0,0,.06)}
+/* result modal */
+.modal{position:fixed;inset:0;background:rgba(74,56,72,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal.show{display:flex}
+.card{background:#fff;border-radius:30px;max-width:460px;width:100%;padding:20px 20px 18px;text-align:center;position:relative;animation:pop .45s cubic-bezier(.2,1.6,.4,1);max-height:94vh;overflow:auto}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.rar{display:inline-block;padding:4px 14px;border-radius:999px;font-family:'Jua';font-size:15px;color:#fff}
+.r1{background:#a9b4c2}.r2{background:#5cb8ff}.r3{background:#b47cff}.r4{background:linear-gradient(90deg,#ff8a5c,#ffcf3f,#ff6fae)}
+.card h2{margin:10px 0 2px;font-size:28px}
+.card .type{color:var(--soft);font-size:14px;margin-bottom:6px}
+.secret{display:inline-block;margin-top:6px;background:#fff7d6;border:1.5px dashed #f0c64a;color:#9a7310;border-radius:12px;padding:4px 10px;font-size:13px}
+.play{position:relative;width:250px;max-width:70vw;aspect-ratio:1/1;margin:6px auto 0;touch-action:none;user-select:none;-webkit-user-select:none}
+
+.play .say{position:absolute;left:50%;top:6%;transform:translateX(-50%);font-family:'Jua';font-size:24px;color:var(--pink);pointer-events:none;animation:float .9s ease-out forwards;white-space:nowrap}
+@keyframes float{from{opacity:1;transform:translate(-50%,10px) scale(.8)}to{opacity:0;transform:translate(-50%,-40px) scale(1.15)}}
+.flake{position:absolute;width:14px;height:10px;background:#fffaf0;border:1px solid #eadfc8;border-radius:3px;pointer-events:none;animation:fall 1.1s ease-in forwards}
+@keyframes fall{to{transform:translate(var(--dx),160px) rotate(var(--rot));opacity:0}}
+.desc{font-size:14.5px;line-height:1.6;color:#5b4a58;margin:8px 4px 12px;text-align:left;background:#fff8fb;border-radius:14px;padding:10px 12px}
+.stats{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:14px;text-align:left;margin:0 4px 14px}
+.bar{height:10px;border-radius:99px;background:#f6e9ef;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px}
+.x{position:absolute;right:14px;top:12px;border:0;background:#fff3f7;width:36px;height:36px;border-radius:50%;font-size:18px}
+/* book */
+.book h2{font-size:24px;margin:6px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.item{background:#fff;border:2px solid var(--line);border-radius:20px;padding:10px;text-align:center;font-size:14px}
+.item svg{width:100%;aspect-ratio:1/1;display:block}
+.item b{font-family:'Jua';font-weight:400;font-size:15px;display:block;margin:4px 0}
+.secrets{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:22px}
+.sc{background:#fff;border:2px dashed var(--line);border-radius:16px;padding:10px 12px;font-size:14px}
+.sc.got{border-style:solid;border-color:#f0c64a;background:#fffbea}
+.sc b{font-family:'Jua';font-weight:400;font-size:16px}
+.empty{color:var(--soft);padding:30px;text-align:center;background:#fff;border-radius:20px;border:2px dashed var(--line)}
+.count{color:var(--soft);font-size:14px;margin-left:8px;font-family:'Gowun Dodum'}
+
+/* play view */
+.playview{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;background:radial-gradient(circle at 50% 45%,#fff 0,#ffeef5 60%,#ffe2ee 100%);touch-action:none;overscroll-behavior:none}
+.playview.show{display:flex}
+.pv-top{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 16px 0}
+.pv-top .ttl{flex:1;text-align:center;font-family:'Jua';font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.round{border:2px solid var(--line);background:#fff;min-width:46px;height:46px;border-radius:23px;font-size:18px;padding:0 14px;font-family:'Jua'}
+.pv-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;touch-action:none}
+.pv-box{width:min(78vw,58vh);aspect-ratio:1/1}
+.pv-guide{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:0 14px 8px;pointer-events:none}
+.pv-guide span{background:rgba(255,255,255,.85);border:1.5px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;color:#6b5768}
+.pv-bottom{display:flex;gap:8px;justify-content:center;padding:6px 14px calc(18px + env(safe-area-inset-bottom));flex-wrap:wrap}
+.pv-info{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:min(92vw,520px);background:#fff;border-radius:22px;padding:14px;box-shadow:0 10px 30px rgba(120,60,90,.18);display:none;z-index:3}
+.pv-info.show{display:block}
+.jelly{width:100%;height:100%;will-change:transform;transform-origin:50% 60%}
+.jelly svg{width:100%;height:100%;display:block;pointer-events:none}
+.toybox{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.toybox .say{position:absolute;left:50%;top:2%;transform:translateX(-50%);font-family:'Jua';font-size:26px;color:var(--pink);pointer-events:none;animation:float .9s ease-out forwards;white-space:nowrap;z-index:2;text-shadow:0 2px 0 #fff}
+.item{position:relative}
+.item .playtag{position:absolute;right:8px;top:8px;background:var(--pink);color:#fff;border-radius:999px;font-size:11px;padding:3px 8px;font-family:'Jua'}
+@media (max-width:760px){
+  .lab{grid-template-columns:1fr}
+  .stage{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;text-align:left;padding:10px;border-radius:0 0 22px 22px;margin:0 -20px}
+  .stage .hint{display:none}
+  .recipe-line{justify-content:flex-start;margin-bottom:8px;min-height:0}
+  .btn{font-size:16px;padding:10px 6px}
+  header h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="subjbar"><nav data-subjects></nav><span style="flex:1"></span></div>
+<header>
+  <h1>🫧 말랑 <span>공방</span></h1>
+  <div style="display:flex;gap:8px;align-items:center"><button id="snd" class="sndbtn" aria-label="소리 켜기/끄기">🔊</button><div class="tabs"><button class="on" data-v="lab">만들기</button><button data-v="book">도감</button></div></div>
+</header>
+<main>
+  <section id="lab" class="lab">
+    <div class="stage">
+      <div class="bowl" id="preview"></div>
+      <div>
+        <p class="hint">재료를 고를 때마다 모양이 바뀌어요</p>
+        <div class="recipe-line" id="chips"></div>
+        <div class="actions">
+          <button class="btn" id="rand">🎲 아무거나</button>
+          <button class="btn main" id="make">✨ 완성하기</button>
+        </div>
+      </div>
+    </div>
+    <div class="steps" id="steps"></div>
+  </section>
+  <section id="book" class="book" hidden></section>
+</main>
+
+<div class="modal" id="modal"><div class="card" id="card"></div></div>
+<div class="playview" id="pv">
+  <div class="pv-top"><button class="round" id="pvBack">← 도감</button><div class="ttl" id="pvName"></div><button class="round" id="pvSnd">🔊</button></div>
+  <div class="pv-stage" id="pvStage"><div class="pv-box toybox" id="pvBox"></div><div class="pv-info" id="pvInfo"></div></div>
+  <div class="pv-guide"><span>👆 톡 = 꾹 누르기</span><span>✌️ 벌리면 쭈욱 · 오므리면 꾸욱</span><span>🔄 두 손가락 돌리면 비틀기</span><span>☝️ 끌면 잡아당기기</span><span>👆👆 두 번 톡 = 점프</span></div>
+  <div class="pv-bottom" id="pvBtns"></div>
+</div>
+
+<script>
+/* ---------- 재료 데이터 ---------- */
+const BASES=[
+ {id:'clay',name:'클레이',ic:'🧁',sub:'보송보송 불투명',op:1,gloss:.25,type:'클레이 말랑이',d:'부드러운 클레이를 조물조물 반죽했어요'},
+ {id:'water',name:'물',ic:'💧',sub:'투명한 물젤리',op:.55,gloss:.85,type:'물말랑이',d:'맑은 물을 젤리처럼 굳혀서 속이 다 비쳐요'},
+ {id:'silicone',name:'실리콘',ic:'🫧',sub:'매끈 반투명',op:.82,gloss:.6,type:'실리콘 말랑이',d:'매끈한 실리콘이라 손에 착 감겨요'},
+ {id:'slime',name:'슬라임',ic:'🟢',sub:'반짝 촉촉',op:.75,gloss:.95,type:'슬라임볼',d:'촉촉한 슬라임을 동그랗게 모았어요'},
+];
+const COLORS=[
+ {id:'straw',name:'딸기',c:'#ff8fb1'},{id:'peach',name:'복숭아',c:'#ffb38a'},
+ {id:'lemon',name:'레몬',c:'#ffe066'},{id:'mint',name:'민트',c:'#7ee0c3'},
+ {id:'sky',name:'하늘',c:'#8ccfff'},{id:'lav',name:'라벤더',c:'#c3a6ff'},
+ {id:'milk',name:'우유',c:'#fff3e0'},{id:'choco',name:'초코',c:'#a8735a'},
+ {id:'clear',name:'투명',c:'#e9f6ff'},{id:'rainbow',name:'무지개',c:'rainbow'},
+];
+const TEXTURES=[
+ {id:'soft',name:'말랑',ic:'☁️',sub:'꾹 누르면 쏙',say:'말랑~',d:'누르면 손가락이 쏙 들어가요'},
+ {id:'chewy',name:'쫀득',ic:'🍡',sub:'천천히 올라와요',say:'쫀드윽~',d:'누르면 천천히, 쫀득하게 다시 부풀어요'},
+ {id:'bouncy',name:'탱글',ic:'🏀',sub:'통통 튀어요',say:'탱글!',d:'누르면 통통 튀면서 돌아와요'},
+ {id:'fluffy',name:'폭신',ic:'🐑',sub:'구름 거품',say:'폭신~',d:'작은 거품이 가득해서 구름처럼 폭신해요'},
+ {id:'crunchy',name:'사각',ic:'🍬',sub:'알갱이 사각사각',say:'사각사각!',d:'안에 작은 알갱이가 사각사각 소리를 내요'},
+];
+const SHAPES=[
+ {id:'ball',name:'동글',ic:'⚪',n:'볼'},{id:'heart',name:'하트',ic:'💗',n:'하트'},
+ {id:'drop',name:'물방울',ic:'💧',n:'방울'},{id:'bear',name:'곰돌이',ic:'🐻',n:'곰돌이'},
+ {id:'cube',name:'네모떡',ic:'🟪',n:'큐브'},{id:'star',name:'별',ic:'⭐',n:'별'},
+];
+const PARTS=[
+ {id:'star',name:'별',ic:'⭐',pre:'별빛'},{id:'heart',name:'하트',ic:'❤️',pre:'하트'},
+ {id:'pearl',name:'진주',ic:'🤍',pre:'진주'},{id:'glitter',name:'반짝이',ic:'✨',pre:'반짝'},
+ {id:'flower',name:'꽃',ic:'🌸',pre:'꽃잎'},{id:'cherry',name:'체리',ic:'🍒',pre:'체리'},
+ {id:'bead',name:'알록 비즈',ic:'🔮',pre:'알록'},{id:'ribbon',name:'리본',ic:'🎀',pre:'리본'},
+];
+const COATS=[
+ {id:'none',name:'코팅 없음',ic:'🚫',sub:'그대로'},
+ {id:'wax',name:'양초 왁스',ic:'🕯️',sub:'바삭 왁뿌!'},
+ {id:'wax2',name:'두꺼운 왁스',ic:'🕯️🕯️',sub:'두 번 담금'},
+ {id:'sugar',name:'설탕 코팅',ic:'🍭',sub:'사르르 오돌'},
+ {id:'shine',name:'반짝 코팅',ic:'🌟',sub:'금가루 뿌리기'},
+];
+const FACES=[
+ {id:'none',name:'얼굴 없음',ic:'⬜'},{id:'smile',name:'방긋',ic:'😊'},
+ {id:'wink',name:'윙크',ic:'😉'},{id:'sleep',name:'졸림',ic:'😪'},{id:'wow',name:'놀람',ic:'😮'},
+];
+const RAR=['','일반','희귀','영웅','전설'];
+
+/* ---------- 비밀 레시피 ---------- */
+const SECRETS=[
+ {id:'galaxy',name:'은하수 물방울',r:4,hint:'투명한 재료 + 밤하늘 색 + 별과 반짝이',
+  t:s=>s.base==='water'&&['lav','sky'].includes(s.color)&&s.parts.includes('star')&&s.parts.includes('glitter')},
+ {id:'mochi',name:'딸기 찹쌀떡',r:3,hint:'클레이 + 딸기 + 쫀득 + 동글',
+  t:s=>s.base==='clay'&&s.color==='straw'&&s.texture==='chewy'&&s.shape==='ball'},
+ {id:'cloud',name:'구름 솜사탕',r:3,hint:'폭신한 질감 + 하얗거나 하늘색 + 설탕',
+  t:s=>s.texture==='fluffy'&&['milk','sky'].includes(s.color)&&s.coat==='sugar'},
+ {id:'lemoncandy',name:'레몬캔디 왁뿌',r:3,hint:'레몬 + 사각 + 왁스 코팅',
+  t:s=>s.color==='lemon'&&s.texture==='crunchy'&&(s.coat==='wax'||s.coat==='wax2')},
+ {id:'unicorn',name:'무지개 별똥볼',r:4,hint:'무지개 + 별 + 반짝 코팅',
+  t:s=>s.color==='rainbow'&&s.parts.includes('star')&&s.coat==='shine'},
+ {id:'brownie',name:'초코 브라우니 큐브',r:3,hint:'초코 클레이를 네모나게, 사각사각',
+  t:s=>s.base==='clay'&&s.color==='choco'&&s.shape==='cube'&&s.texture==='crunchy'},
+ {id:'sakura',name:'벚꽃 왁뿌볼',r:3,hint:'분홍빛 + 꽃 + 왁스 + 동글',
+  t:s=>['straw','peach'].includes(s.color)&&s.parts.includes('flower')&&(s.coat==='wax'||s.coat==='wax2')&&s.shape==='ball'},
+ {id:'sea',name:'바다 진주방울',r:3,hint:'물이나 실리콘 + 바다색 + 진주 + 물방울 모양',
+  t:s=>['water','silicone'].includes(s.base)&&['sky','mint'].includes(s.color)&&s.parts.includes('pearl')&&s.shape==='drop'},
+ {id:'cherryjelly',name:'체리 젤리볼',r:2,hint:'슬라임 + 딸기 + 체리 + 탱글',
+  t:s=>s.base==='slime'&&s.color==='straw'&&s.parts.includes('cherry')&&s.texture==='bouncy'},
+ {id:'treasure',name:'보물상자 왁뿌',r:4,hint:'두꺼운 왁스 속에 파츠 3개를 숨기기',
+  t:s=>s.coat==='wax2'&&s.parts.length===3},
+ {id:'sleepybear',name:'잠꾸러기 곰젤리',r:2,hint:'곰돌이 + 졸린 얼굴 + 말랑',
+  t:s=>s.shape==='bear'&&s.face==='sleep'&&s.texture==='soft'},
+ {id:'milkcookie',name:'우유 쿠키 왁뿌',r:2,hint:'우유색 + 초코칩 같은 비즈 + 왁스',
+  t:s=>s.color==='milk'&&s.parts.includes('bead')&&(s.coat==='wax'||s.coat==='wax2')},
+];
+
+/* ---------- 상태 ---------- */
+let S={base:'clay',color:'straw',texture:'soft',shape:'ball',parts:[],coat:'none',face:'smile'};
+const by=(arr,id)=>arr.find(x=>x.id===id);
+let store=[],found=[];
+const KEY='malang-gongbang-v1';
+try{const j=JSON.parse(localStorage.getItem(KEY)||'{}');store=j.items||[];found=j.found||[]}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({items:store,found}))}catch(e){}}
+
+/* ---------- 색 도우미 ---------- */
+function mix(hex,t,to='#ffffff'){
+  const a=hex.match(/\w\w/g).map(h=>parseInt(h,16)),b=to.match(/\w\w/g).map(h=>parseInt(h,16));
+  return '#'+a.map((v,i)=>Math.round(v+(b[i]-v)*t).toString(16).padStart(2,'0')).join('');
+}
+function rnd(seed){let x=seed;return()=>{x=(x*9301+49297)%233280;return x/233280}}
+
+/* ---------- 모양 ---------- */
+function starPts(cx,cy,R,r,n=5){let p=[];for(let i=0;i<n*2;i++){const a=-Math.PI/2+i*Math.PI/n,rr=i%2?r:R;p.push((cx+Math.cos(a)*rr).toFixed(1)+','+(cy+Math.sin(a)*rr).toFixed(1))}return p.join(' ')}
+const SHAPE_SVG={
+ ball:'<circle cx="100" cy="108" r="68"/>',
+ heart:'<path d="M100 172 C 34 128, 22 72, 56 50 C 78 36, 96 48, 100 66 C 104 48, 122 36, 144 50 C 178 72, 166 128, 100 172Z"/>',
+ drop:'<path d="M100 26 C 122 62, 166 96, 166 128 C 166 162, 136 178, 100 178 C 64 178, 34 162, 34 128 C 34 96, 78 62, 100 26Z"/>',
+ bear:'<circle cx="54" cy="58" r="24"/><circle cx="146" cy="58" r="24"/><circle cx="100" cy="114" r="64"/>',
+ cube:'<rect x="38" y="46" width="124" height="124" rx="30"/>',
+ star:`<polygon points="${starPts(100,112,78,40)}" stroke-linejoin="round"/>`,
+};
+
+/* ---------- 파츠 그리기 ---------- */
+function partSVG(id,x,y,s=1,seed=1){
+  const g=(inner)=>`<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
+  switch(id){
+   case 'star':return g(`<polygon points="${starPts(0,0,11,5)}" fill="#ffd43b" stroke="#f2b01e" stroke-width="1.2" stroke-linejoin="round"/>`);
+   case 'heart':return g(`<path d="M0 9 C-11 2,-11 -7,-5 -8 C-2 -9,0 -6,0 -4 C0 -6,2 -9,5 -8 C11 -7,11 2,0 9Z" fill="#ff5c8a"/>`);
+   case 'pearl':return g(`<circle r="7.5" fill="#fffdf8" stroke="#eadcc8" stroke-width="1"/><circle cx="-2.5" cy="-2.5" r="2.4" fill="#fff"/>`);
+   case 'flower':return g([0,72,144,216,288].map(a=>`<circle cx="${(Math.cos(a*Math.PI/180)*6).toFixed(1)}" cy="${(Math.sin(a*Math.PI/180)*6).toFixed(1)}" r="5" fill="#ffc2d6"/>`).join('')+'<circle r="3.6" fill="#ffd84d"/>');
+   case 'cherry':return g('<path d="M-5 2 Q-2 -12 6 -14 M5 3 Q4 -8 6 -14" stroke="#5b9b3c" stroke-width="1.6" fill="none"/><circle cx="-5" cy="5" r="5.5" fill="#e8384f"/><circle cx="5" cy="6" r="5.5" fill="#d92d45"/><circle cx="-7" cy="3" r="1.5" fill="#fff" opacity=".8"/>');
+   case 'bead':{const r=rnd(seed*7+3),cs=['#6fb8ff','#ff8fb1','#ffd84d','#8fe0a8','#c3a6ff'];let o='';for(let i=0;i<4;i++)o+=`<circle cx="${(r()*18-9).toFixed(1)}" cy="${(r()*18-9).toFixed(1)}" r="3.4" fill="${cs[Math.floor(r()*cs.length)]}"/>`;return g(o)}
+  }
+  return '';
+}
+
+/* ---------- 말랑이 그리기 ---------- */
+let uid=0;
+function draw(s,o={}){
+  const id='m'+(uid++);
+  const base=by(BASES,s.base),col=by(COLORS,s.color);
+  const rainbow=col.c==='rainbow';
+  const c=rainbow?'#ffb3d1':col.c;
+  const shape=SHAPE_SVG[s.shape];
+  const crack=o.crack||0,broken=o.broken;
+  const waxed=(s.coat==='wax'||s.coat==='wax2');
+  let defs=`<clipPath id="${id}c">${shape}</clipPath>`;
+  if(rainbow){
+    defs+=`<linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1">${['#ff9aa8','#ffc98a','#ffef8a','#9fe8b8','#8fd0ff','#c3a6ff'].map((k,i)=>`<stop offset="${i/5}" stop-color="${k}"/>`).join('')}</linearGradient>`;
+  }else{
+    defs+=`<radialGradient id="${id}g" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="${mix(c,.55)}"/><stop offset=".6" stop-color="${c}"/><stop offset="1" stop-color="${mix(c,.22,'#6a4a60')}"/></radialGradient>`;
+  }
+  defs+=`<radialGradient id="${id}h" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
+  let inner='';
+  // body
+  inner+=`<g fill="url(#${id}g)" opacity="${s.color==='clear'?Math.min(base.op,.45):base.op}">${shape}</g>`;
+  // texture
+  const r=rnd(7);
+  if(s.texture==='fluffy'){for(let i=0;i<38;i++)inner+=`<circle cx="${(30+r()*140).toFixed(0)}" cy="${(40+r()*140).toFixed(0)}" r="${(2+r()*6).toFixed(1)}" fill="#fff" opacity="${(.22+r()*.25).toFixed(2)}"/>`}
+  if(s.texture==='crunchy'){const cs=['#fff','#ffe08a','#ffc2d6','#bfe6ff'];for(let i=0;i<46;i++)inner+=`<circle cx="${(30+r()*140).toFixed(0)}" cy="${(40+r()*140).toFixed(0)}" r="${(1.6+r()*2.2).toFixed(1)}" fill="${cs[i%4]}" opacity=".85"/>`}
+  if(s.texture==='chewy'){inner+=`<path d="M60 120 C 80 95, 120 140, 140 112 M66 145 C 90 128, 112 158, 134 138" stroke="${mix(c,.5)}" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55"/>`}
+  if(s.texture==='bouncy'){inner+=`<ellipse cx="128" cy="150" rx="22" ry="9" fill="#fff" opacity=".25" transform="rotate(-25 128 150)"/>`}
+  // parts (inside)
+  const slots=[[72,98],[130,94],[100,140],[76,142],[128,138],[102,76]];
+  let si=0;const regular=s.parts.filter(p=>p!=='glitter'&&p!=='ribbon');
+  regular.forEach((p,k)=>{for(let j=0;j<2;j++){const [x,y]=slots[si++%slots.length];inner+=partSVG(p,x,y,1.15,k*2+j+1)}});
+  if(s.parts.includes('glitter')){const rg=rnd(11),gc=['#ffd43b','#fff','#ffb3e0','#a8e3ff'];for(let i=0;i<34;i++){const x=30+rg()*140,y=40+rg()*140;inner+=`<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="3" height="3" fill="${gc[i%4]}" transform="rotate(${(rg()*90).toFixed(0)} ${x.toFixed(0)} ${y.toFixed(0)})"/>`}}
+  // coating
+  if(waxed){
+    const wop=broken?.12:(s.coat==='wax2'?.82:.62);
+    inner+=`<g opacity="${wop}"><g fill="#fffaf0">${shape}</g>`;
+    const rw=rnd(5);for(let i=0;i<30;i++)inner+=`<circle cx="${(30+rw()*140).toFixed(0)}" cy="${(40+rw()*140).toFixed(0)}" r="${(1+rw()*3).toFixed(1)}" fill="#f0e6d2" opacity=".7"/>`;
+    inner+='</g>';
+    const cracks=['M70 60 L84 86 L76 104 L92 122','M140 70 L124 96 L136 118 L120 140','M60 140 L84 132 L100 150 L126 148','M100 50 L104 76 L94 92','M150 120 L134 128 L140 152'];
+    for(let i=0;i<Math.min(crack,cracks.length);i++)inner+=`<path d="${cracks[i]}" stroke="#c9b79a" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+  if(s.coat==='sugar'){const rs=rnd(13);for(let i=0;i<60;i++)inner+=`<rect x="${(30+rs()*140).toFixed(0)}" y="${(40+rs()*140).toFixed(0)}" width="2.6" height="2.6" fill="#fff" opacity=".9"/>`}
+  if(s.coat==='shine'){const rs=rnd(17);for(let i=0;i<16;i++){const x=34+rs()*132,y=44+rs()*130;inner+=`<polygon points="${starPts(x,y,4.5,1.6,4)}" fill="#ffd43b"/>`}}
+  // highlight
+  const gl=waxed&&!broken?.18:base.gloss;
+  inner+=`<ellipse cx="74" cy="76" rx="26" ry="15" fill="url(#${id}h)" opacity="${gl}" transform="rotate(-30 74 76)"/>`;
+  inner+=`<circle cx="62" cy="96" r="4" fill="#fff" opacity="${gl*.8}"/>`;
+  // face
+  let face='';
+  const fy=s.shape==='drop'?132:s.shape==='heart'?100:s.shape==='star'?116:114;
+  if(s.face!=='none'){
+    const e1=82,e2=118;
+    if(s.face==='smile'||s.face==='wow')face+=`<ellipse cx="${e1}" cy="${fy}" rx="5" ry="6.5" fill="#3d2b38"/><ellipse cx="${e2}" cy="${fy}" rx="5" ry="6.5" fill="#3d2b38"/><circle cx="${e1+1.6}" cy="${fy-2.4}" r="1.8" fill="#fff"/><circle cx="${e2+1.6}" cy="${fy-2.4}" r="1.8" fill="#fff"/>`;
+    if(s.face==='wink')face+=`<ellipse cx="${e1}" cy="${fy}" rx="5" ry="6.5" fill="#3d2b38"/><circle cx="${e1+1.6}" cy="${fy-2.4}" r="1.8" fill="#fff"/><path d="M${e2-7} ${fy} q7 -7 14 0" stroke="#3d2b38" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    if(s.face==='sleep')face+=`<path d="M${e1-7} ${fy-1} q7 7 14 0 M${e2-7} ${fy-1} q7 7 14 0" stroke="#3d2b38" stroke-width="3" fill="none" stroke-linecap="round"/><text x="140" y="${fy-26}" font-family="Jua" font-size="16" fill="#8a7486">z z</text>`;
+    face+=`<ellipse cx="${e1-12}" cy="${fy+12}" rx="8" ry="4.5" fill="#ff7fa8" opacity=".45"/><ellipse cx="${e2+12}" cy="${fy+12}" rx="8" ry="4.5" fill="#ff7fa8" opacity=".45"/>`;
+    if(s.face==='wow')face+=`<ellipse cx="100" cy="${fy+14}" rx="5" ry="6" fill="#3d2b38"/>`;
+    else face+=`<path d="M93 ${fy+11} q7 7 14 0" stroke="#3d2b38" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  }
+  // ribbon (outside clip, on top)
+  let ribbon='';
+  if(s.parts.includes('ribbon')){
+    const ry=s.shape==='bear'?44:s.shape==='drop'?40:s.shape==='heart'?50:s.shape==='star'?40:44;
+    const rx=s.shape==='bear'?122:s.shape==='drop'?100:128;
+    ribbon=`<g transform="translate(${rx} ${ry})"><path d="M0 0 C -14 -14,-26 -6,-24 4 C -22 14,-10 10,0 0Z M0 0 C 14 -14,26 -6,24 4 C 22 14,10 10,0 0Z" fill="#ff5c8a" stroke="#e0416f" stroke-width="1.5"/><circle r="5" fill="#ff7fa1" stroke="#e0416f" stroke-width="1.5"/></g>`;
+  }
+  const outline=`<g fill="none" stroke="${rainbow?'#d79abb':mix(c,.35,'#6a4a60')}" stroke-width="5" opacity="${s.base==='water'?.45:.35}">${shape}</g>`;
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>
+  <ellipse cx="100" cy="186" rx="58" ry="9" fill="#e9cfdb" opacity=".6"/>
+  ${outline}<g fill="#fff">${shape}</g><g clip-path="url(#${id}c)">${inner}</g>${face}${ribbon}</svg>`;
+}
+
+/* ---------- 결과 분석 ---------- */
+function analyze(s){
+  const base=by(BASES,s.base),col=by(COLORS,s.color),tex=by(TEXTURES,s.texture),shp=by(SHAPES,s.shape);
+  const waxed=s.coat==='wax'||s.coat==='wax2';
+  const secret=SECRETS.find(x=>x.t(s));
+  let type;
+  if(waxed)type=s.shape==='ball'?'왁뿌볼':'왁뿌 '+shp.n;
+  else type=s.shape==='ball'?base.type:base.type.replace(/말랑이|볼/,'')+' '+shp.n+(s.base==='slime'?'':' 말랑이');
+  type=type.replace(/\s+/g,' ').trim();
+  const pre=s.parts.slice(0,2).map(p=>by(PARTS,p).pre).join(' ');
+  let name=secret?secret.name:[col.name,tex.name,pre,type].filter(Boolean).join(' ');
+  // stats
+  const cap=v=>Math.max(5,Math.min(100,Math.round(v)));
+  const soft=cap({clay:55,water:50,silicone:65,slime:75}[s.base]+{soft:35,chewy:15,bouncy:20,fluffy:30,crunchy:-10}[s.texture]-(s.coat==='wax2'?15:0));
+  const chew=cap({soft:50,chewy:92,bouncy:40,fluffy:30,crunchy:22}[s.texture]+(s.base==='slime'||s.base==='clay'?8:0));
+  const shine=cap((s.base==='water'||s.base==='slime'?25:5)+(s.parts.includes('glitter')?40:0)+(s.parts.includes('star')?12:0)+(s.parts.includes('pearl')?12:0)+(s.coat==='shine'?45:0)+(s.color==='rainbow'?10:0));
+  const crunch=cap({none:0,wax:70,wax2:95,sugar:45,shine:20}[s.coat]+(s.texture==='crunchy'?40:0));
+  // rarity
+  let sc=s.parts.length*.9+(s.coat!=='none'?1:0)+(s.coat==='wax2'?.8:0)+(s.color==='rainbow'?1:0)+(s.face!=='none'?.3:0)+(s.shape!=='ball'?.4:0);
+  let rar=sc<1.8?1:sc<3.2?2:sc<4.6?3:4;
+  if(secret)rar=Math.max(rar,secret.r);
+  // description
+  let d=`${base.d}. ${col.name==='무지개'?'무지개 색을 층층이 섞었고':col.name+'색을 섞었고'}, ${tex.d}.`;
+  const ins=s.parts.filter(p=>p!=='ribbon').map(p=>by(PARTS,p).name);
+  if(ins.length){const last=ins[ins.length-1],cc=last.charCodeAt(last.length-1)-0xAC00;d+=` 안에는 ${ins.join(', ')}${cc>=0&&cc%28?'이':'가'} 쏙쏙 숨어 있어요.`}
+  if(s.parts.includes('ribbon'))d+=' 머리에는 귀여운 리본을 달았어요.';
+  if(waxed)d+=` 겉은 녹인 양초에 ${s.coat==='wax2'?'두 번':'한 번'} 담가 굳혀서, 누르면 '바삭!' 하고 왁스가 깨져요.`;
+  if(s.coat==='sugar')d+=' 겉에 설탕을 묻혀 오돌오돌해요.';
+  if(s.coat==='shine')d+=' 금빛 반짝이를 뿌려 마무리했어요.';
+  return {name,type,secret,rar,stats:{soft,chew,shine,crunch},desc:d};
+}
+
+/* ---------- 화면: 재료 단계 ---------- */
+const STEPS=[
+ {k:'base',t:'베이스 재료',arr:BASES},
+ {k:'color',t:'색깔',arr:COLORS,color:true},
+ {k:'texture',t:'말랑 질감',arr:TEXTURES},
+ {k:'shape',t:'모양',arr:SHAPES},
+ {k:'parts',t:'파츠 넣기',arr:PARTS,multi:3,note:'최대 3개'},
+ {k:'coat',t:'겉 코팅',arr:COATS,note:'양초 왁스 = 왁뿌볼'},
+ {k:'face',t:'얼굴',arr:FACES},
+];
+function renderSteps(){
+  document.getElementById('steps').innerHTML=STEPS.map((st,i)=>`
+  <div class="step"><h3><span class="n">${i+1}</span>${st.t}${st.note?`<small>${st.note}</small>`:''}</h3>
+  <div class="opts">${st.arr.map(o=>{
+    const on=st.multi?S.parts.includes(o.id):S[st.k]===o.id;
+    const top=st.color?`<span class="sw" style="background:${o.c==='rainbow'?'linear-gradient(135deg,#ff9aa8,#ffef8a,#9fe8b8,#8fd0ff,#c3a6ff)':o.c}"></span>`:`<span class="ic">${o.ic}</span>`;
+    return `<button class="opt${on?' on':''}" data-k="${st.k}" data-id="${o.id}">${top}${o.name}${o.sub?`<span class="sub">${o.sub}</span>`:''}</button>`}).join('')}</div></div>`).join('');
+}
+function renderPreview(){
+  document.getElementById('preview').innerHTML=draw(S);
+  const chips=[by(BASES,S.base).name,by(COLORS,S.color).name,by(TEXTURES,S.texture).name,by(SHAPES,S.shape).name,...S.parts.map(p=>by(PARTS,p).name)];
+  if(S.coat!=='none')chips.push(by(COATS,S.coat).name);
+  document.getElementById('chips').innerHTML=chips.map(c=>`<span class="chip">${c}</span>`).join('');
+}
+document.getElementById('steps').addEventListener('click',e=>{
+  const b=e.target.closest('.opt');if(!b)return;
+  const k=b.dataset.k,id=b.dataset.id;
+  if(k==='parts'){
+    const i=S.parts.indexOf(id);
+    if(i>=0)S.parts.splice(i,1);else{if(S.parts.length>=3)S.parts.shift();S.parts.push(id)}
+  }else S[k]=id;
+  blip(520+Math.random()*200);
+  renderSteps();renderPreview();
+});
+document.getElementById('rand').onclick=()=>{
+  const p=a=>a[Math.floor(Math.random()*a.length)].id;
+  S.base=p(BASES);S.color=p(COLORS);S.texture=p(TEXTURES);S.shape=p(SHAPES);S.coat=p(COATS);S.face=p(FACES);
+  const n=Math.floor(Math.random()*4);S.parts=[...PARTS].sort(()=>Math.random()-.5).slice(0,n).map(x=>x.id);
+  blip(700);renderSteps();renderPreview();
+};
+
+/* ---------- 소리 ---------- */
+let AC,MASTER,soundOn=true,unlocked=false;
+try{soundOn=localStorage.getItem(KEY+'-snd')!=='off'}catch(e){}
+// iOS: 무음 스위치가 켜져 있어도 미디어 소리로 재생되게
+try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
+function silentWav(){const sr=8000,n=800,b=new ArrayBuffer(44+n*2),v=new DataView(b);const w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);return URL.createObjectURL(new Blob([b],{type:'audio/wav'}))}
+let keepAlive;
+function ac(){
+  try{
+    if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();
+      const comp=AC.createDynamicsCompressor();MASTER=AC.createGain();MASTER.gain.value=1.6;MASTER.connect(comp).connect(AC.destination)}
+    if(AC.state!=='running')AC.resume();
+  }catch(e){}
+  return AC;
+}
+function unlock(){
+  // iOS 사파리는 touchend/click 같은 '손을 뗄 때' 이벤트에서만 소리를 켜 줘서, 매번 상태를 확인해 다시 켠다
+  const a=ac();if(!a)return;
+  if(a.state!=='running'){try{a.resume()}catch(e){}}
+  if(!unlocked){
+    try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0)}catch(e){}
+    try{keepAlive=new Audio(silentWav());keepAlive.loop=true;keepAlive.volume=.01;keepAlive.setAttribute('playsinline','')}catch(e){}
+  }
+  if(keepAlive&&keepAlive.paused){keepAlive.play().then(()=>{unlocked=true}).catch(()=>{})}
+  if(a.state==='running')unlocked=true;
+}
+['touchend','pointerup','click','keydown'].forEach(ev=>document.addEventListener(ev,unlock,{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AC&&AC.state!=='running')try{AC.resume()}catch(e){}});
+function out(){return MASTER||AC.destination}
+function when(fn){const a=ac();if(!a||!soundOn)return;if(a.state==='running'){fn(a);return}let done=false;a.resume().then(()=>{if(!done){done=true;fn(a)}}).catch(()=>{});setTimeout(()=>{done=true},150)}
+function blip(f){when(a=>{const t=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='triangle';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.6,t+.09);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.16);o.connect(g).connect(out());o.start(t);o.stop(t+.18)})}
+function noise(dur,freq,q,vol){when(a=>{const len=Math.floor(a.sampleRate*dur),buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.5);const src=a.createBufferSource();src.buffer=buf;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=q;const g=a.createGain();g.gain.value=vol;src.connect(f).connect(g).connect(out());src.start()})}
+function squishTone(t){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='sine';const f0=t==='bouncy'?380:t==='chewy'?140:220;o.frequency.setValueAtTime(f0,now);o.frequency.exponentialRampToValueAtTime(t==='bouncy'?760:f0*.6,now+(t==='chewy'?.45:.2));g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.5,now+.02);g.gain.exponentialRampToValueAtTime(.001,now+(t==='chewy'?.5:.25));o.connect(g).connect(out());o.start(now);o.stop(now+.55)})}
+function squishSound(t){if(t==='crunchy'){for(let i=0;i<5;i++)setTimeout(()=>noise(.05,2500+Math.random()*2500,1.2,3),i*45)}else{squishTone(t);noise(.22,t==='fluffy'?900:450,.8,2.2)}}
+function crackSound(){noise(.08,2200,1,4);setTimeout(()=>noise(.06,3400,1.4,3),45);setTimeout(()=>noise(.05,1600,1,2.5),95)}
+function stretchSound(sv,t){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain(),f=a.createBiquadFilter();o.type=t==='crunchy'?'square':'sawtooth';const base=t==='chewy'?120:t==='bouncy'?260:180;o.frequency.setValueAtTime(base*sv,now);o.frequency.linearRampToValueAtTime(base*sv*1.25,now+.12);f.type='lowpass';f.frequency.value=t==='crunchy'?2400:900;g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.18,now+.02);g.gain.exponentialRampToValueAtTime(.001,now+.15);o.connect(f).connect(g).connect(out());o.start(now);o.stop(now+.17)});if(t==='crunchy')noise(.05,3000,1.2,2)}
+function boing(sv,t){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain(),dur=t==='chewy'?.7:.4;o.type='sine';const f0=sv>1?520:200,f1=sv>1?160:420;o.frequency.setValueAtTime(f0,now);o.frequency.exponentialRampToValueAtTime(f1,now+dur);const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=t==='bouncy'?18:9;lg.gain.value=t==='bouncy'?60:25;lfo.connect(lg).connect(o.frequency);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.45,now+.02);g.gain.exponentialRampToValueAtTime(.001,now+dur);o.connect(g).connect(out());o.start(now);lfo.start(now);o.stop(now+dur+.05);lfo.stop(now+dur+.05)})}
+function twistSound(){when(a=>{const now=a.currentTime;for(let i=0;i<3;i++){const o=a.createOscillator(),g=a.createGain(),t=now+i*.04;o.type='triangle';o.frequency.setValueAtTime(900+i*180,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+.05);o.connect(g).connect(out());o.start(t);o.stop(t+.06)}})}
+function thud(v){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.setValueAtTime(140,now);o.frequency.exponentialRampToValueAtTime(60,now+.15);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.min(.6,Math.abs(v)/1500),now+.01);g.gain.exponentialRampToValueAtTime(.001,now+.18);o.connect(g).connect(out());o.start(now);o.stop(now+.2)})}
+function setSound(on){soundOn=on;try{localStorage.setItem(KEY+'-snd',on?'on':'off')}catch(e){}document.getElementById('snd').textContent=on?'🔊':'🔇';if(on)blip(660)}
+
+/* ---------- 완성 결과 ---------- */
+store.forEach((it,i)=>{if(!it.id)it.id='i'+it.t+'_'+i});
+document.getElementById('make').onclick=()=>{
+  const s=JSON.parse(JSON.stringify(S));
+  const a=analyze(s);
+  const isNew=a.secret&&!found.includes(a.secret.id);
+  if(isNew)found.push(a.secret.id);
+  const item={id:'i'+Date.now(),s,name:a.name,rar:a.rar,t:Date.now(),crack:0,broken:false};
+  store.unshift(item);
+  if(store.length>200)store.length=200;
+  save();
+  [523,659,784,1046].forEach((f,i)=>setTimeout(()=>blip(f),i*90));
+  openCard(item,isNew);
+};
+let engine=null;
+function openCard(item,isNew){
+  const s=item.s,a=analyze(s);
+  const bar=(l,v,c)=>`<span>${l}</span><span class="bar"><i style="width:${v}%;background:${c}"></i></span><span>${v}</span>`;
+  document.getElementById('card').innerHTML=`
+   <button class="x" id="close">✕</button>
+   <span class="rar r${a.rar}">${RAR[a.rar]}</span>
+   <h2>${a.name}</h2>
+   <div class="type">${a.type} · 도감에 저장됐어요</div>
+   ${a.secret?`<div class="secret">${isNew?'🎉 새 비밀 레시피 발견!':'🔑 비밀 레시피'}</div>`:''}
+   <div class="play toybox" id="play"></div>
+   <div class="hint" style="color:var(--soft);font-size:13px">눌러 보고, 두 손가락으로 벌려 봐요!</div>
+   <div class="desc">${a.desc}</div>
+   <div class="stats">${bar('말랑',a.stats.soft,'#ff9fc0')}${bar('쫀득',a.stats.chew,'#c3a6ff')}${bar('반짝',a.stats.shine,'#ffd43b')}${bar('바삭',a.stats.crunch,'#f0b37a')}</div>
+   <div class="actions"><button class="btn" id="again">다시 만들기</button><button class="btn main" id="toplay">🖐 크게 갖고 놀기</button></div>`;
+  document.getElementById('modal').classList.add('show');
+  document.getElementById('close').onclick=closeCard;
+  document.getElementById('again').onclick=closeCard;
+  document.getElementById('toplay').onclick=()=>{closeCard();openPlay(item)};
+  if(engine)engine.destroy();
+  engine=attachPlay(document.getElementById('play'),item);
+}
+function closeCard(){document.getElementById('modal').classList.remove('show');if(engine){engine.destroy();engine=null}}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeCard()});
+
+/* ---------- 놀이 엔진 (멀티터치 + 스프링 물리) ---------- */
+const PHYS={
+  soft:   {k:170,c:11, fk:520,fc:38, jump:.45},
+  chewy:  {k:38, c:13, fk:90, fc:20, jump:.25},
+  bouncy: {k:300,c:5,  fk:650,fc:40, jump:.7},
+  fluffy: {k:110,c:12, fk:380,fc:34, jump:.35},
+  crunchy:{k:380,c:20, fk:700,fc:46, jump:.4},
+};
+const MAXS={slime:3,water:2.4,silicone:2.2,clay:1.9};
+function attachPlay(box,item){
+  const s=item.s,tex=s.texture,P=PHYS[tex];
+  const waxed=s.coat==='wax'||s.coat==='wax2',need=s.coat==='wax2'?5:3;
+  const maxS=MAXS[s.base]*(tex==='crunchy'?.8:tex==='chewy'?1.15:1),minS=tex==='crunchy'?.6:.42;
+  box.innerHTML='<div class="jelly"></div>';
+  const jelly=box.firstChild;
+  let crack=item.crack||0,broken=!!item.broken;
+  const paint=()=>{jelly.innerHTML=draw(s,{crack,broken})};paint();
+  // 상태
+  const X={s:1,rot:0,tx:0,ty:0,q:0},V={s:0,rot:0,tx:0,ty:0,q:0},T={s:1,rot:0,tx:0,ty:0,q:0};
+  let th=0,jy=0,vjy=0,airborne=false;
+  const ptrs=new Map();let g=null;let lastTap=0;let alive=true;
+  let sndS=1,sndRot=0,said={};
+  const say=t=>{const d=document.createElement('div');d.className='say';d.textContent=t;box.appendChild(d);setTimeout(()=>d.remove(),900)};
+  const pos=e=>{const r=box.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+  function doCrack(){
+    if(!waxed||broken)return;
+    crack++;crackSound();
+    if(crack>=need){broken=true;flakes(box);say('바사삭!! 속살 공개');}
+    else say('바삭!');
+    paint();item.crack=crack;item.broken=broken;save();
+  }
+  function startGesture(){
+    const arr=[...ptrs.values()];
+    if(arr.length>=2){
+      const [p1,p2]=arr;
+      g={type:'pinch',d0:Math.hypot(p2.x-p1.x,p2.y-p1.y)||1,a0:Math.atan2(p2.y-p1.y,p2.x-p1.x),s0:X.s,rot0:T.rot,thr:{}};
+      T.q=0;
+    }else if(arr.length===1){
+      g={type:'one',x0:arr[0].x,y0:arr[0].y,t0:performance.now(),moved:false,thr:{}};
+    }else g=null;
+  }
+  function onDown(e){
+    e.preventDefault();unlock();
+    try{box.setPointerCapture(e.pointerId)}catch(_){}
+    ptrs.set(e.pointerId,pos(e));
+    startGesture();
+    if(ptrs.size===1){
+      T.q=tex==='crunchy'?.18:.3;
+      if(waxed&&!broken)doCrack();else{squishSound(tex);}
+    }
+  }
+  function onMove(e){
+    if(!ptrs.has(e.pointerId))return;
+    e.preventDefault();
+    ptrs.set(e.pointerId,pos(e));
+    if(!g)return;
+    const arr=[...ptrs.values()];
+    if(g.type==='pinch'&&arr.length>=2){
+      const [p1,p2]=arr,d=Math.hypot(p2.x-p1.x,p2.y-p1.y),a=Math.atan2(p2.y-p1.y,p2.x-p1.x);
+      T.s=Math.max(minS,Math.min(maxS,g.s0*d/g.d0));
+      th=a;
+      let da=a-g.a0;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;
+      T.rot=g.rot0+da*180/Math.PI;
+      T.tx=((p1.x+p2.x)/2-box.clientWidth/2)*.15;T.ty=((p1.y+p2.y)/2-box.clientHeight/2)*.15;
+      checkThresholds();
+    }else if(g.type==='one'&&arr.length===1){
+      const dx=arr[0].x-g.x0,dy=arr[0].y-g.y0,len=Math.hypot(dx,dy);
+      if(len>10)g.moved=true;
+      if(g.moved){
+        T.q=.05;
+        const w=box.clientWidth;
+        T.s=Math.max(1,Math.min(maxS,1+len/(w*.55)*(maxS-1)));
+        th=Math.atan2(dy,dx);
+        T.tx=dx*.42;T.ty=dy*.42;
+        checkThresholds();
+      }
+    }
+  }
+  function checkThresholds(){
+    const t=g.thr;
+    if(T.s>1.45&&!t.long){t.long=1;say(tex==='crunchy'?'뿌드득~':'쭈우욱~');doCrack()}
+    if(T.s<.72&&!t.short){t.short=1;say('꾸우욱');doCrack()}
+    if(Math.abs(T.rot-(g.rot0||0))>45&&!t.twist){t.twist=1;say('빙글~')}
+  }
+  function onUp(e){
+    if(!ptrs.has(e.pointerId))return;
+    ptrs.delete(e.pointerId);
+    try{box.releasePointerCapture(e.pointerId)}catch(_){}
+    if(ptrs.size===0){
+      const wasOne=g&&g.type==='one'&&!g.moved&&performance.now()-g.t0<280;
+      if(Math.abs(X.s-1)>.25)boing(X.s,tex);
+      else if(Math.abs(X.rot)>20)twistSound();
+      T.s=1;T.rot=0;T.tx=0;T.ty=0;T.q=0;g=null;
+      if(wasOne){
+        const now=performance.now();
+        if(now-lastTap<330){jump();lastTap=0}else{lastTap=now;say(by(TEXTURES,tex).say)}
+      }
+    }else startGesture();
+  }
+  function jump(){if(airborne)return;airborne=true;vjy=-(box.clientHeight*2.6);V.q-=4;say('통!');blip(500)}
+  box.addEventListener('pointerdown',onDown);
+  box.addEventListener('pointermove',onMove);
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>box.addEventListener(ev,onUp));
+  const stopTouch=e=>e.preventDefault();
+  box.addEventListener('touchend',()=>unlock(),{passive:true});
+  box.addEventListener('touchstart',stopTouch,{passive:false});box.addEventListener('touchmove',stopTouch,{passive:false});
+  // 루프
+  let last=performance.now();
+  function frame(now){
+    if(!alive)return;
+    const dt=Math.min(1/30,(now-last)/1000);last=now;
+    const held=ptrs.size>0;
+    const k=held?P.fk:P.k,c=held?P.fc:P.c;
+    for(const key in X){
+      const kk=key==='q'&&!held?Math.max(k,120):k;
+      const acc=kk*(T[key]-X[key])-c*V[key];
+      V[key]+=acc*dt;X[key]+=V[key]*dt;
+    }
+    X.s=Math.max(.3,X.s);X.q=Math.max(-.35,Math.min(.5,X.q));
+    if(airborne){
+      vjy+=box.clientHeight*9*dt;jy+=vjy*dt;
+      if(jy>0){jy=0;
+        if(vjy<box.clientHeight*.6){airborne=false;vjy=0}
+        else{V.q+=vjy/box.clientHeight*3.5;vjy=-vjy*P.jump;thud(vjy)}
+      }
+    }
+    // 소리: 늘어날 때 끼익, 돌릴 때 뽀득
+    if(held&&Math.abs(X.s-sndS)>.14){stretchSound(X.s,tex);sndS=X.s}
+    if(held&&Math.abs(X.rot-sndRot)>22){twistSound();sndRot=X.rot}
+    if(!held){sndS=X.s;sndRot=X.rot}
+    const ss=X.s,inv=1/Math.sqrt(ss),H=box.clientHeight;
+    jelly.style.transform=`translate(${X.tx}px,${X.ty+jy+X.q*H*.18}px) rotate(${th}rad) scale(${ss},${inv}) rotate(${-th}rad) rotate(${X.rot}deg) scale(${1+X.q*.7},${1-X.q})`;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return{
+    destroy(){alive=false},
+    rewax(){crack=0;broken=false;item.crack=0;item.broken=false;save();paint();blip(400);say('왁스 코팅 완료!')},
+    isBroken:()=>broken
+  };
+}
+function flakes(box){for(let i=0;i<16;i++){const f=document.createElement('div');f.className='flake';f.style.left=(25+Math.random()*50)+'%';f.style.top=(25+Math.random()*45)+'%';f.style.setProperty('--dx',(Math.random()*160-80)+'px');f.style.setProperty('--rot',(Math.random()*360)+'deg');box.appendChild(f);setTimeout(()=>f.remove(),1200)}}
+
+/* ---------- 놀이 화면 ---------- */
+let pvItem=null,pvEngine=null,delArm=false;
+function openPlay(item){
+  pvItem=item;delArm=false;
+  const a=analyze(item.s);
+  document.getElementById('pvName').innerHTML=`${item.name} <span class="rar r${a.rar}" style="font-size:12px;padding:2px 9px;vertical-align:middle">${RAR[a.rar]}</span>`;
+  document.getElementById('pvSnd').textContent=soundOn?'🔊':'🔇';
+  document.getElementById('pvInfo').classList.remove('show');
+  const bar=(l,v,c)=>`<span>${l}</span><span class="bar"><i style="width:${v}%;background:${c}"></i></span><span>${v}</span>`;
+  document.getElementById('pvInfo').innerHTML=`<div class="desc" style="margin-top:0">${a.desc}</div><div class="stats" style="margin-bottom:0">${bar('말랑',a.stats.soft,'#ff9fc0')}${bar('쫀득',a.stats.chew,'#c3a6ff')}${bar('반짝',a.stats.shine,'#ffd43b')}${bar('바삭',a.stats.crunch,'#f0b37a')}</div>`;
+  if(pvEngine)pvEngine.destroy();
+  document.getElementById('pv').classList.add('show');
+  pvEngine=attachPlay(document.getElementById('pvBox'),item);
+  renderPvBtns();
+}
+function renderPvBtns(){
+  const waxed=pvItem.s.coat==='wax'||pvItem.s.coat==='wax2';
+  document.getElementById('pvBtns').innerHTML=
+    (waxed?'<button class="round" data-a="rewax">🕯️ 왁스 다시 씌우기</button>':'')+
+    '<button class="round" data-a="info">ℹ️ 정보</button>'+
+    `<button class="round" data-a="del" style="${delArm?'background:#ff7fa8;color:#fff;border-color:#ff7fa8':''}">${delArm?'한 번 더 누르면 삭제':'🗑 지우기'}</button>`;
+}
+document.getElementById('pvBtns').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const act=b.dataset.a;
+  if(act==='rewax')pvEngine.rewax();
+  if(act==='info')document.getElementById('pvInfo').classList.toggle('show');
+  if(act==='del'){
+    if(!delArm){delArm=true;renderPvBtns();setTimeout(()=>{if(delArm){delArm=false;renderPvBtns()}},2500);return}
+    store=store.filter(x=>x.id!==pvItem.id);save();closePlay();return;
+  }
+  if(act!=='del'&&delArm){delArm=false;renderPvBtns()}
+});
+function closePlay(){document.getElementById('pv').classList.remove('show');if(pvEngine){pvEngine.destroy();pvEngine=null}show('book')}
+document.getElementById('pvBack').onclick=closePlay;
+document.getElementById('pvSnd').onclick=()=>{setSound(!soundOn);document.getElementById('pvSnd').textContent=soundOn?'🔊':'🔇'};
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+
+/* ---------- 도감 ---------- */
+function renderBook(){
+  const el=document.getElementById('book');
+  el.innerHTML=`<h2>🔑 비밀 레시피<span class="count">${found.length} / ${SECRETS.length}</span></h2>
+  <div class="secrets">${SECRETS.map(x=>{const g=found.includes(x.id);return `<div class="sc${g?' got':''}"><b>${g?x.name:'???'}</b> <span class="rar r${x.r}" style="font-size:11px;padding:2px 8px">${RAR[x.r]}</span><div style="color:var(--soft);margin-top:4px">힌트: ${x.hint}</div></div>`}).join('')}</div>
+  <h2>🧺 내가 만든 말랑이<span class="count">${store.length}개 · 눌러서 갖고 놀기</span></h2>
+  ${store.length?`<div class="grid">${store.map((it,i)=>`<button class="item" data-i="${i}"><span class="playtag">🖐 놀기</span>${draw(it.s,{crack:it.crack||0,broken:it.broken})}<b>${it.name}</b><span class="rar r${it.rar}" style="font-size:12px;padding:2px 10px">${RAR[it.rar]}</span></button>`).join('')}</div>`:'<div class="empty">아직 만든 게 없어요. 만들기 탭에서 첫 말랑이를 만들어 봐요!</div>'}`;
+}
+document.getElementById('book').addEventListener('click',e=>{const b=e.target.closest('.item');if(!b)return;openPlay(store[+b.dataset.i])});
+function show(v){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  document.getElementById('lab').hidden=v!=='lab';document.getElementById('book').hidden=v!=='book';
+  if(v==='book')renderBook();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+
+document.getElementById('snd').onclick=()=>setSound(!soundOn);
+document.getElementById('snd').textContent=soundOn?'🔊':'🔇';
+renderSteps();renderPreview();
+</script>
+</body>
+</html>

@@ -5,7 +5,8 @@
   var SUBJECTS=[
     ["수학","/",      "#3b5bdb","#1f2a4d","#4f8cff","#2b44a8"],
     ["영어","/voca/", "#0ca678","#0b4f43","#20c997","#087f5b"],
-    ["중국어","/chinese/","#e03131","#6b1414","#ff6b6b","#b02525"]
+    ["중국어","/chinese/","#e03131","#6b1414","#ff6b6b","#b02525"],
+    ["말랑이","/malang/","#f06595","#7a1f45","#ff8cc6","#c2255c"]
     // ["한자","/hanja/",   "#7048e8","#2b1d63","#9775fa","#5435b8"]
   ];
   function cur(){
@@ -36,7 +37,7 @@
   var COIN_CSS='.coin{flex:none;display:inline-flex;align-items:center;gap:4px;background:#fff;border-radius:99px;padding:8px 12px;'+
     'font:800 15px "Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;color:#d6336c;text-decoration:none;box-shadow:0 2px 10px rgba(31,42,77,.12)}'+
     '.coin.pop{animation:coinPop .9s ease}@keyframes coinPop{30%{transform:scale(1.35)}}'+
-    '@media (max-width:430px){.sj a{padding:7px 10px 7px 9px;font-size:14px;gap:5px}.coin{padding:7px 10px;font-size:14px}}';
+    '@media (max-width:430px){.sj a{padding:7px 9px;font-size:14px;gap:5px}.sj a i{display:none}.coin{padding:7px 10px;font-size:14px}}';
   var st2=document.createElement("style"); st2.textContent=COIN_CSS; (document.head||document.documentElement).appendChild(st2);
   function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } }
   function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)) }catch(e){} }
