@@ -465,10 +465,76 @@ function draw3D(s,o,R){
   <g clip-path="url(#${id}c)">${inner}</g>${face}${ribbon}</svg>`;
 }
 
+/* ---------- 실사 이미지 말랑이 (분홍 원본 → 색 바꿔 입히기) ---------- */
+const IMSRC={},IMCACHE={};let IMREADY=0;
+const IMLUM={"ball_clay":0.675,"drop_clay":0.686,"bear_clay":0.687,"heart_clay":0.689,"cube_clay":0.665,"star_clay":0.673,"ball_water":0.72,"drop_water":0.75,"bear_water":0.738,"heart_water":0.742,"cube_water":0.737,"star_water":0.756,"ball_silicone":0.74,"drop_silicone":0.717,"bear_silicone":0.743,"heart_silicone":0.753,"cube_silicone":0.73,"star_silicone":0.723,"ball_slime":0.658,"drop_slime":0.677,"bear_slime":0.674,"heart_slime":0.677,"cube_slime":0.661,"star_slime":0.678};
+(function(){const keys=Object.keys(IMLUM);let left=keys.length;
+  keys.forEach(k=>{const im=new Image();const done=()=>{if(--left===0){IMREADY=1;try{renderPreview();refreshViews()}catch(e){}}};im.onload=()=>{IMSRC[k]=im;done()};
+    im.onerror=done;im.src='/malang/img/'+k+'.webp?v=4'})})();
+function imgRender(s,waxOn){
+  if(!IMREADY)return null;
+  const k=s.shape+'_'+s.base,src=IMSRC[k];if(!src)return null;
+  const key=[k,s.color,waxOn?1:0].join('|');if(key in IMCACHE)return IMCACHE[key];
+  try{
+    const N=src.naturalWidth,cv=document.createElement('canvas');cv.width=cv.height=N;const ctx=cv.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(src,0,0);const img=ctx.getImageData(0,0,N,N),d=img.data;
+    const col=by(COLORS,s.color),rainbow=col.c==='rainbow',clear=s.color==='clear';
+    const m=IMLUM[k];
+    const tgt=hex=>hex.match(/\w\w/g).map(h=>parseInt(h,16));
+    const one=waxOn?tgt(mix(rainbow?'#ffd0e2':col.c,.7,'#fff3df')):clear?[236,242,248]:rainbow?null:tgt(col.c);
+    const RB=['#ff9aa8','#ffc98a','#ffef8a','#9fe8b8','#8fd0ff','#c3a6ff'].map(tgt);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=(y*N+x)*4;if(!d[i+3])continue;
+      const L=(.2126*d[i]+.7152*d[i+1]+.0722*d[i+2])/255;let t=one;
+      if(!t){const u=Math.max(0,Math.min(.999,(x+y)/(2*N)*1.25-.1))*5,j=u|0,f=u-j;t=RB[j].map((v,c)=>v+(RB[j+1][c]-v)*f)}
+      const r=L/m;
+      for(let c=0;c<3;c++){const tc=t[c];d[i+c]=r<=1?tc*Math.pow(r,1.15):tc+(255-tc)*Math.min(1,(r-1)/(1/m-1))}
+      if(clear)d[i+3]=d[i+3]*.8;
+    }
+    ctx.putImageData(img,0,0);
+    const u=cv.toDataURL('image/webp',.9);
+    return IMCACHE[key]={body:u,mask:'/malang/img/m_'+k+'.webp?v=4',inside:s.base==='water'||s.base==='slime'};
+  }catch(e){return IMCACHE[key]=null}
+}
+function drawImg(s,o,R){
+  const id='m'+(uid++);PG=id+'p';
+  const crack=o.crack||0,broken=o.broken,waxed=(s.coat==='wax'||s.coat==='wax2');
+  const col=by(COLORS,s.color),c=col.c==='rainbow'?'#ffb3d1':col.c;
+  let parts='';const slots=[[72,98],[130,94],[100,140],[76,142],[128,138],[102,76]];
+  let si=0;const regular=s.parts.filter(p=>p!=='glitter'&&p!=='ribbon');
+  regular.forEach((p,k)=>{for(let j=0;j<2;j++){const [x,y]=slots[si++%slots.length];parts+=partSVG(p,x,y,1.15,k*2+j+1)}});
+  if(s.parts.includes('glitter')){const rg=rnd(11),gc=['#ffd43b','#fff','#ffb3e0','#a8e3ff'];for(let i=0;i<34;i++){const x=30+rg()*140,y=40+rg()*140;parts+=`<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="3" height="3" fill="${gc[i%4]}" transform="rotate(${(rg()*90).toFixed(0)} ${x.toFixed(0)} ${y.toFixed(0)})"/>`}}
+  const r=rnd(7);let extra='';const cov=waxed&&!broken;
+  if(s.texture==='crunchy'&&!cov){const cs=['#fff','#ffe08a','#ffc2d6','#bfe6ff'];for(let i=0;i<40;i++){const x=30+r()*140,y=40+r()*140,rr=1.5+r()*1.8;extra+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${rr.toFixed(1)}" fill="${cs[i%4]}" opacity=".9"/><circle cx="${(x-.6).toFixed(1)}" cy="${(y-.7).toFixed(1)}" r="${(rr*.35).toFixed(1)}" fill="#fff"/>`}}
+  if(s.texture==='fluffy'&&!cov){for(let i=0;i<20;i++){const x=30+r()*140,y=40+r()*140,rr=2+r()*4;extra+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${rr.toFixed(1)}" fill="#fff" opacity=".25"/><circle cx="${(x-rr*.3).toFixed(1)}" cy="${(y-rr*.3).toFixed(1)}" r="${(rr*.3).toFixed(1)}" fill="#fff" opacity=".7"/>`}}
+  if(s.texture==='chewy'&&!cov)extra+=`<path d="M60 120 C 80 100, 120 140, 140 114" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".22"/>`;
+  let coat='';
+  if(waxed){const cracks=['M70 60 L84 86 L76 104 L92 122','M140 70 L124 96 L136 118 L120 140','M60 140 L84 132 L100 150 L126 148','M100 50 L104 76 L94 92','M150 120 L134 128 L140 152'];
+    for(let i=0;i<Math.min(crack,cracks.length);i++)coat+=`<path d="${cracks[i]}" stroke="#a88f6c" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${cracks[i]}" stroke="#fff" stroke-width="1" fill="none" opacity=".6" transform="translate(-1 -1)"/>`;
+    if(broken){const rw=rnd(5);for(let i=0;i<18;i++)coat+=`<path d="M${(30+rw()*140).toFixed(0)} ${(40+rw()*140).toFixed(0)} l${(4+rw()*6).toFixed(0)} ${(rw()*5-2).toFixed(0)} l${(-2-rw()*4).toFixed(0)} ${(3+rw()*4).toFixed(0)}Z" fill="#fff8ea" opacity=".85"/>`}}
+  if(s.coat==='sugar'){const rs=rnd(13);for(let i=0;i<70;i++){const x=30+rs()*140,y=40+rs()*140;coat+=`<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="2.8" height="2.8" fill="#fff" opacity=".95"/><rect x="${(x+1).toFixed(0)}" y="${(y+1.6).toFixed(0)}" width="2.6" height="1.2" fill="#000" opacity=".08"/>`}}
+  if(s.coat==='shine'){const rs=rnd(17);for(let i=0;i<16;i++){const x=34+rs()*132,y=44+rs()*130;coat+=`<polygon points="${starPts(x,y,4.5,1.6,4)}" fill="url(#${PG}Star)"/>`}}
+  const img=(u,op=1)=>`<image href="${u}" x="0" y="0" width="200" height="200" opacity="${op}"/>`;
+  const veil=cov?.75:R.inside?.42:s.base==='silicone'?.18:0;
+  const inner=img(R.body)+parts+(veil?img(R.body,veil):'')+extra+coat;
+  let face='';const fy={drop:128,heart:106,star:112,bear:116,cube:114,ball:112}[s.shape]||114;
+  if(s.face!=='none'){const e1=82,e2=118;
+    if(s.face==='smile'||s.face==='wow')face+=[e1,e2].map(e=>`<ellipse cx="${e}" cy="${fy+1}" rx="5.6" ry="7" fill="#000" opacity=".14"/><ellipse cx="${e}" cy="${fy}" rx="5" ry="6.5" fill="#3d2b38"/><circle cx="${e+1.6}" cy="${fy-2.4}" r="2" fill="#fff"/><circle cx="${e-1.8}" cy="${fy+2.6}" r=".9" fill="#fff" opacity=".8"/>`).join('');
+    if(s.face==='wink')face+=`<ellipse cx="${e1}" cy="${fy}" rx="5" ry="6.5" fill="#3d2b38"/><circle cx="${e1+1.6}" cy="${fy-2.4}" r="1.8" fill="#fff"/><path d="M${e2-7} ${fy} q7 -7 14 0" stroke="#3d2b38" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    if(s.face==='sleep')face+=`<path d="M${e1-7} ${fy-1} q7 7 14 0 M${e2-7} ${fy-1} q7 7 14 0" stroke="#3d2b38" stroke-width="3" fill="none" stroke-linecap="round"/><text x="140" y="${fy-26}" font-family="Jua" font-size="16" fill="#8a7486">z z</text>`;
+    face+=`<ellipse cx="${e1-12}" cy="${fy+12}" rx="11" ry="6.5" fill="url(#${PG}Cheek)"/><ellipse cx="${e2+12}" cy="${fy+12}" rx="11" ry="6.5" fill="url(#${PG}Cheek)"/>`;
+    if(s.face==='wow')face+=`<ellipse cx="100" cy="${fy+14}" rx="5" ry="6" fill="#3d2b38"/>`;else face+=`<path d="M93 ${fy+11} q7 7 14 0" stroke="#3d2b38" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;}
+  let ribbon='';
+  if(s.parts.includes('ribbon')){const ry={bear:46,drop:34,heart:60,star:30,cube:56,ball:46}[s.shape],rx={bear:100,drop:100,star:100}[s.shape]||128;
+    ribbon=`<g transform="translate(${rx} ${ry})"><path d="M0 0 C -14 -14,-26 -6,-24 4 C -22 14,-10 10,0 0Z M0 0 C 14 -14,26 -6,24 4 C 22 14,10 10,0 0Z" fill="url(#${PG}Heart)" stroke="#d63a68" stroke-width="1.2"/><circle r="5" fill="url(#${PG}Heart)" stroke="#d63a68" stroke-width="1.2"/><ellipse cx="-13" cy="-3" rx="4" ry="2" fill="#fff" opacity=".6" transform="rotate(-20 -13 -3)"/></g>`}
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><mask id="${id}k" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200"><image href="${R.mask}" x="0" y="0" width="200" height="200"/></mask>${pgDefs(PG,deepOf(c))}</defs>
+  <ellipse cx="102" cy="182" rx="62" ry="9" fill="url(#${PG}Shadow)"/>
+  <g mask="url(#${id}k)">${inner}</g>${face}${ribbon}</svg>`;
+}
+
 /* ---------- 말랑이 그리기 ---------- */
 let uid=0;
 function draw(s,o={}){
-  {const wx=(s.coat==='wax'||s.coat==='wax2')&&!o.broken,R=render3D(s,wx);if(R)return draw3D(s,o,R)}
+  {const wx=(s.coat==='wax'||s.coat==='wax2')&&!o.broken;const I=imgRender(s,wx);if(I)return drawImg(s,o,I);const R=render3D(s,wx);if(R)return draw3D(s,o,R)}
   const id='m'+(uid++);PG=id+'p';
   const base=by(BASES,s.base),col=by(COLORS,s.color);
   const rainbow=col.c==='rainbow';
