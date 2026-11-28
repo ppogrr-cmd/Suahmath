@@ -339,9 +339,136 @@ function partSVG(id,x,y,s=1,seed=1){
   return '';
 }
 
+/* ---------- 3D 렌더러: 모양을 볼록한 표면으로 만들고 픽셀마다 빛 계산 ---------- */
+const R3C={};
+function shapePath(ctx,sh){
+  ctx.beginPath();
+  if(sh==='ball')ctx.arc(100,108,68,0,Math.PI*2);
+  else if(sh==='bear'){ctx.arc(54,58,24,0,Math.PI*2);ctx.moveTo(170,58);ctx.arc(146,58,24,0,Math.PI*2);ctx.moveTo(164,114);ctx.arc(100,114,64,0,Math.PI*2)}
+  else if(sh==='cube'){const x=38,y=46,w=124,h=124,r=30;ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+  else if(sh==='star'){starPts(100,112,78,40).split(' ').forEach((p,i)=>{const [x,y]=p.split(',').map(Number);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath()}
+  else{const d={heart:'M100 172 C 34 128, 22 72, 56 50 C 78 36, 96 48, 100 66 C 104 48, 122 36, 144 50 C 178 72, 166 128, 100 172Z',drop:'M100 26 C 122 62, 166 96, 166 128 C 166 162, 136 178, 100 178 C 64 178, 34 162, 34 128 C 34 96, 78 62, 100 26Z'}[sh];return new Path2D(d)}
+  return null;
+}
+function noiseField(kind,N,R){
+  const h=new Float32Array(N*N),sc=N/200;
+  const vn=(cell,amp)=>{cell*=sc;const g=Math.ceil(N/cell)+2,v=[];for(let i=0;i<g*g;i++)v.push(R());
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){const gx=x/cell,gy=y/cell,ix=gx|0,iy=gy|0,fx=gx-ix,fy=gy-iy,sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+      const a=v[iy*g+ix],b=v[iy*g+ix+1],c=v[(iy+1)*g+ix],d=v[(iy+1)*g+ix+1];h[y*N+x]+=amp*(a+(b-a)*sx+(c-a)*sy+(a-b-c+d)*sx*sy)}};
+  const bl=(n,r0,r1,amp)=>{for(let i=0;i<n;i++){const cx=R()*N,cy=R()*N,r=(r0+R()*(r1-r0))*sc;
+    for(let y=Math.max(0,cy-r|0);y<Math.min(N,cy+r+1);y++)for(let x=Math.max(0,cx-r|0);x<Math.min(N,cx+r+1);x++){const dd=((x-cx)**2+(y-cy)**2)/(r*r);if(dd<1)h[y*N+x]+=amp*Math.sqrt(1-dd)}}};
+  if(kind==='soft'){vn(28,1.2);vn(10,.4)}
+  else if(kind==='chewy'){vn(48,2.6);vn(18,.5)}
+  else if(kind==='fluffy'){bl(240,3,8,1.6)}
+  else if(kind==='crunchy'){bl(420,1.2,3,1.1)}
+  else if(kind==='wax'){vn(12,1.4);vn(4,.5)}
+  else if(kind==='bouncy'){vn(60,.6)}
+  return h;
+}
+function render3D(s,waxOn){
+  const key=[s.shape,s.color,s.base,s.texture,waxOn?1:0].join('|');
+  if(key in R3C)return R3C[key];
+  try{
+  const N=360,k=N/200,cv=document.createElement('canvas');cv.width=cv.height=N;const ctx=cv.getContext('2d',{willReadFrequently:true});if(!ctx)return R3C[key]=null;
+  ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#000';const p2=shapePath(ctx,s.shape);p2?ctx.fill(p2):ctx.fill();
+  const M=ctx.getImageData(0,0,N,N).data,A=new Float32Array(N*N);for(let i=0;i<N*N;i++)A[i]=M[i*4+3]/255;
+  // 풍선처럼 부풀리기: ∇²p = -1 (경계 0)을 작은 격자에서 풀고 √p 로 반구 단면
+  const G=96,f=N/G,P=new Float32Array(G*G),MK=new Uint8Array(G*G);
+  for(let gy=0;gy<G;gy++)for(let gx=0;gx<G;gx++){const x=Math.min(N-1,(gx+.5)*f|0),y=Math.min(N-1,(gy+.5)*f|0);MK[gy*G+gx]=A[y*N+x]>.5?1:0}
+  for(let it=0;it<420;it++)for(let gy=1;gy<G-1;gy++)for(let gx=1;gx<G-1;gx++){const i=gy*G+gx;if(!MK[i])continue;
+    const nb=(MK[i-1]?P[i-1]:0)+(MK[i+1]?P[i+1]:0)+(MK[i-G]?P[i-G]:0)+(MK[i+G]?P[i+G]:0);P[i]+=1.88*((nb+1)/4-P[i])}
+  let H=new Float32Array(N*N);const D=new Float32Array(N*N);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(A[i]<=0)continue;
+    const gx=Math.max(0,Math.min(G-1.001,x/f-.5)),gy=Math.max(0,Math.min(G-1.001,y/f-.5)),ix=gx|0,iy=gy|0,fx=gx-ix,fy=gy-iy;
+    const v=P[iy*G+ix]*(1-fx)*(1-fy)+P[iy*G+ix+1]*fx*(1-fy)+P[(iy+1)*G+ix]*(1-fx)*fy+P[(iy+1)*G+ix+1]*fx*fy;
+    H[i]=2*Math.sqrt(Math.max(0,v))*f*.9;D[i]=H[i]}
+  const blur=(src,r)=>{const t=new Float32Array(N*N),o=new Float32Array(N*N);
+    for(let y=0;y<N;y++){let acc=0;for(let x=-r;x<N+r;x++){const xa=x+r,xs=x-r-1;if(xa<N&&xa>=0)acc+=src[y*N+xa];if(xs>=0&&xs<N)acc-=src[y*N+xs];if(x>=0&&x<N)t[y*N+x]=acc/(2*r+1)}}
+    for(let x=0;x<N;x++){let acc=0;for(let y=-r;y<N+r;y++){const ya=y+r,ys=y-r-1;if(ya<N&&ya>=0)acc+=t[ya*N+x];if(ys>=0&&ys<N)acc-=t[ys*N+x];if(y>=0&&y<N)o[y*N+x]=acc/(2*r+1)}}return o};
+  H=blur(H,1);
+  const tex=waxOn?'wax':s.texture,nz=noiseField(tex,N,rnd({soft:3,chewy:5,fluffy:7,crunchy:9,wax:11,bouncy:15}[tex]||1));
+  const matte={clay:1,silicone:.7,slime:.5,water:.4}[s.base]||.7;
+  for(let i=0;i<N*N;i++)H[i]+=nz[i]*matte*Math.min(1,D[i]/6);
+  // 재질
+  const base=by(BASES,s.base),col=by(COLORS,s.color),rainbow=col.c==='rainbow';
+  let op=s.color==='clear'?Math.min(base.op,.45):base.op;
+  const hex=rainbow?'#ffb3d1':(waxOn?mix(col.c,.72,'#fff6e6'):col.c);
+  const rgb=hex.match(/\w\w/g).map(h=>parseInt(h,16));
+  const gloss=waxOn?.12:base.gloss,shin={clay:10,silicone:36,slime:70,water:90}[s.base]||30;
+  const trans=waxOn?0:1-op;if(waxOn)op=.84;
+  const L=[-.48,-.58,.66],Ln=Math.hypot(...L);L[0]/=Ln;L[1]/=Ln;L[2]/=Ln;
+  const Hv=[L[0],L[1],L[2]+1],Hn=Math.hypot(...Hv);Hv[0]/=Hn;Hv[1]/=Hn;Hv[2]/=Hn;
+  const body=ctx.createImageData(N,N),spec=ctx.createImageData(N,N),B=body.data,S=spec.data;
+  const hsl=(hh,ss,ll)=>{const f=n=>{const kk=(n+hh*12)%12,a=ss*Math.min(ll,1-ll);return 255*(ll-a*Math.max(-1,Math.min(kk-3,9-kk,1)))};return[f(0),f(8),f(4)]};
+  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++){
+    const i=y*N+x;if(A[i]<=0)continue;
+    const gx=(H[i+1]-H[i-1])*.5,gy=(H[i+N]-H[i-N])*.5;let nx=-gx,ny=-gy,nz2=1;const nl=Math.hypot(nx,ny,nz2);nx/=nl;ny/=nl;nz2/=nl;
+    const ndl=nx*L[0]+ny*L[1]+nz2*L[2];
+    const lit=Math.max(0,Math.min(1,(ndl+.3)/1.3));
+    const fres=Math.pow(1-nz2,2.4);
+    const bounce=Math.max(0,ny*.8+nz2*.2)*.22;
+    const al=rainbow?hsl(((x+y)/(2*N)*.85+.95)%1,.9,.8):rgb;
+    const o=i*4;
+    for(let c=0;c<3;c++){
+      const a=al[c]/255,dark=Math.pow(a,2.3)*.72;
+      let v=dark+(a-dark)*Math.pow(lit,1.1);
+      v+=a*bounce;
+      v+= (1-v)*Math.max(0,lit-.82)*1.2*(s.base==='clay'?.6:.9);
+      v+= (1-v)*fres*(trans>.1?.55:.18);
+      B[o+c]=Math.max(0,Math.min(255,v*255));
+    }
+    B[o+3]=255*A[i]*Math.min(1,op+trans*fres*.9);
+    const ndh=nx*Hv[0]+ny*Hv[1]+nz2*Hv[2];
+    let sp=Math.pow(Math.max(0,ndh),shin)*(.35+gloss*1.1);
+    sp+=Math.pow(Math.max(0,ndh),shin/5)*gloss*.18;
+    if(trans>.1)sp+=fres*.25*Math.max(0,-ny);
+    S[o]=S[o+1]=S[o+2]=255;S[o+3]=255*A[i]*Math.min(1,sp);
+  }
+  const url=(img)=>{ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,N,N);ctx.putImageData(img,0,0);const u=cv.toDataURL('image/png'),b=atob(u.split(',')[1]),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return URL.createObjectURL(new Blob([a],{type:'image/png'}))};
+  return R3C[key]={body:url(body),spec:url(spec),inside:op<.6};
+  }catch(e){return R3C[key]=null}
+}
+function draw3D(s,o,R){
+  const id='m'+(uid++);PG=id+'p';
+  const shape=SHAPE_SVG[s.shape],crack=o.crack||0,broken=o.broken,waxed=(s.coat==='wax'||s.coat==='wax2');
+  const col=by(COLORS,s.color),c=col.c==='rainbow'?'#ffb3d1':col.c;
+  let parts='';
+  const slots=[[72,98],[130,94],[100,140],[76,142],[128,138],[102,76]];
+  let si=0;const regular=s.parts.filter(p=>p!=='glitter'&&p!=='ribbon');
+  regular.forEach((p,k)=>{for(let j=0;j<2;j++){const [x,y]=slots[si++%slots.length];parts+=partSVG(p,x,y,1.15,k*2+j+1)}});
+  if(s.parts.includes('glitter')){const rg=rnd(11),gc=['#ffd43b','#fff','#ffb3e0','#a8e3ff'];for(let i=0;i<34;i++){const x=30+rg()*140,y=40+rg()*140;parts+=`<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="3" height="3" fill="${gc[i%4]}" transform="rotate(${(rg()*90).toFixed(0)} ${x.toFixed(0)} ${y.toFixed(0)})"/>`}}
+  const r=rnd(7);let extra='';
+  if(s.texture==='crunchy'&&!(waxed&&!broken)){const cs=['#fff','#ffe08a','#ffc2d6','#bfe6ff'];for(let i=0;i<34;i++){const x=30+r()*140,y=40+r()*140;extra+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(1.5+r()*1.8).toFixed(1)}" fill="${cs[i%4]}" opacity=".85"/>`}}
+  if(s.texture==='fluffy'&&!(waxed&&!broken)){for(let i=0;i<16;i++)extra+=`<circle cx="${(30+r()*140).toFixed(0)}" cy="${(40+r()*140).toFixed(0)}" r="${(2+r()*4).toFixed(1)}" fill="#fff" opacity="${(.15+r()*.15).toFixed(2)}"/>`}
+  let coat='';
+  if(waxed){const cracks=['M70 60 L84 86 L76 104 L92 122','M140 70 L124 96 L136 118 L120 140','M60 140 L84 132 L100 150 L126 148','M100 50 L104 76 L94 92','M150 120 L134 128 L140 152'];
+    for(let i=0;i<Math.min(crack,cracks.length);i++)coat+=`<path d="${cracks[i]}" stroke="#b8a283" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${cracks[i]}" stroke="#fff" stroke-width="1" fill="none" opacity=".6" transform="translate(-1 -1)"/>`;
+    if(broken){const rw=rnd(5);for(let i=0;i<18;i++)coat+=`<path d="M${(30+rw()*140).toFixed(0)} ${(40+rw()*140).toFixed(0)} l${(4+rw()*6).toFixed(0)} ${(rw()*5-2).toFixed(0)} l${(-2-rw()*4).toFixed(0)} ${(3+rw()*4).toFixed(0)}Z" fill="#fff8ea" opacity=".85"/>`}}
+  if(s.coat==='sugar'){const rs=rnd(13);for(let i=0;i<70;i++){const x=30+rs()*140,y=40+rs()*140;coat+=`<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="2.8" height="2.8" fill="#fff" opacity=".95"/><rect x="${(x+1).toFixed(0)}" y="${(y+1.6).toFixed(0)}" width="2.6" height="1.2" fill="#000" opacity=".08"/>`}}
+  if(s.coat==='shine'){const rs=rnd(17);for(let i=0;i<16;i++){const x=34+rs()*132,y=44+rs()*130;coat+=`<polygon points="${starPts(x,y,4.5,1.6,4)}" fill="url(#${PG}Star)"/>`}}
+  const img=u=>`<image href="${u}" x="0" y="0" width="200" height="200"/>`;
+  const inside=R.inside||(waxed&&!broken);
+  const inner=(inside?parts+img(R.body):img(R.body)+parts)+extra+coat+img(R.spec);
+  // face & ribbon (기존과 동일)
+  let face='';const fy=s.shape==='drop'?132:s.shape==='heart'?100:s.shape==='star'?116:114;
+  if(s.face!=='none'){const e1=82,e2=118;
+    if(s.face==='smile'||s.face==='wow')face+=[e1,e2].map(e=>`<ellipse cx="${e}" cy="${fy+1}" rx="5.6" ry="7" fill="#000" opacity=".14"/><ellipse cx="${e}" cy="${fy}" rx="5" ry="6.5" fill="#3d2b38"/><circle cx="${e+1.6}" cy="${fy-2.4}" r="2" fill="#fff"/><circle cx="${e-1.8}" cy="${fy+2.6}" r=".9" fill="#fff" opacity=".8"/>`).join('');
+    if(s.face==='wink')face+=`<ellipse cx="${e1}" cy="${fy}" rx="5" ry="6.5" fill="#3d2b38"/><circle cx="${e1+1.6}" cy="${fy-2.4}" r="1.8" fill="#fff"/><path d="M${e2-7} ${fy} q7 -7 14 0" stroke="#3d2b38" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    if(s.face==='sleep')face+=`<path d="M${e1-7} ${fy-1} q7 7 14 0 M${e2-7} ${fy-1} q7 7 14 0" stroke="#3d2b38" stroke-width="3" fill="none" stroke-linecap="round"/><text x="140" y="${fy-26}" font-family="Jua" font-size="16" fill="#8a7486">z z</text>`;
+    face+=`<ellipse cx="${e1-12}" cy="${fy+12}" rx="11" ry="6.5" fill="url(#${PG}Cheek)"/><ellipse cx="${e2+12}" cy="${fy+12}" rx="11" ry="6.5" fill="url(#${PG}Cheek)"/>`;
+    if(s.face==='wow')face+=`<ellipse cx="100" cy="${fy+14}" rx="5" ry="6" fill="#3d2b38"/>`;else face+=`<path d="M93 ${fy+11} q7 7 14 0" stroke="#3d2b38" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;}
+  let ribbon='';
+  if(s.parts.includes('ribbon')){const ry=s.shape==='bear'?44:s.shape==='drop'?40:s.shape==='heart'?50:s.shape==='star'?40:44,rx=s.shape==='bear'?122:s.shape==='drop'?100:128;
+    ribbon=`<g transform="translate(${rx} ${ry})"><path d="M0 0 C -14 -14,-26 -6,-24 4 C -22 14,-10 10,0 0Z M0 0 C 14 -14,26 -6,24 4 C 22 14,10 10,0 0Z" fill="url(#${PG}Heart)" stroke="#d63a68" stroke-width="1.2"/><circle r="5" fill="url(#${PG}Heart)" stroke="#d63a68" stroke-width="1.2"/><ellipse cx="-13" cy="-3" rx="4" ry="2" fill="#fff" opacity=".6" transform="rotate(-20 -13 -3)"/></g>`}
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="${id}c">${shape}</clipPath>${pgDefs(PG,deepOf(c))}</defs>
+  <ellipse cx="104" cy="186" rx="72" ry="12" fill="url(#${PG}Shadow)"/><ellipse cx="104" cy="182" rx="46" ry="6" fill="#5e3550" opacity=".4"/>
+  <g clip-path="url(#${id}c)">${inner}</g>${face}${ribbon}</svg>`;
+}
+
 /* ---------- 말랑이 그리기 ---------- */
 let uid=0;
 function draw(s,o={}){
+  {const wx=(s.coat==='wax'||s.coat==='wax2')&&!o.broken,R=render3D(s,wx);if(R)return draw3D(s,o,R)}
   const id='m'+(uid++);PG=id+'p';
   const base=by(BASES,s.base),col=by(COLORS,s.color);
   const rainbow=col.c==='rainbow';
