@@ -259,6 +259,13 @@ function mix(hex,t,to='#ffffff'){
   const a=hex.match(/\w\w/g).map(h=>parseInt(h,16)),b=to.match(/\w\w/g).map(h=>parseInt(h,16));
   return '#'+a.map((v,i)=>Math.round(v+(b[i]-v)*t).toString(16).padStart(2,'0')).join('');
 }
+function deepOf(hex){
+  let [r,g,b]=hex.match(/\w\w/g).map(h=>parseInt(h,16)/255);const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,sa=0,l=(mx+mn)/2;
+  if(mx!==mn){const d=mx-mn;sa=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h/=6}
+  sa=Math.min(1,sa*1.15+.18);l=Math.max(.16,l*.42);
+  const f=(n)=>{const k=(n+h*12)%12,a=sa*Math.min(l,1-l);return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1)))).toString(16).padStart(2,'0')};
+  return '#'+f(0)+f(8)+f(4);
+}
 function rnd(seed){let x=seed;return()=>{x=(x*9301+49297)%233280;return x/233280}}
 
 
@@ -294,16 +301,17 @@ function bumpURL(kind){
   return TEXMAP[kind];
 }
 let PG='pg';
-function pgDefs(P){return `
+function pgDefs(P,dp='#3d1f35'){return `
 <radialGradient id="${P}Pearl" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#f7efe4"/><stop offset="1" stop-color="#d9c6ae"/></radialGradient>
 <radialGradient id="${P}Star" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#fff3a8"/><stop offset=".5" stop-color="#ffd43b"/><stop offset="1" stop-color="#e8a10c"/></radialGradient>
 <radialGradient id="${P}Heart" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#ffa3bf"/><stop offset=".55" stop-color="#ff5c8a"/><stop offset="1" stop-color="#c9305e"/></radialGradient>
 <radialGradient id="${P}Cherry" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff7d8e"/><stop offset=".55" stop-color="#e8384f"/><stop offset="1" stop-color="#9e1a2e"/></radialGradient>
-<radialGradient id="${P}Shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#b07e96" stop-opacity=".55"/><stop offset=".6" stop-color="#c99db1" stop-opacity=".25"/><stop offset="1" stop-color="#e9cfdb" stop-opacity="0"/></radialGradient>
+<radialGradient id="${P}Shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#8a5a72" stop-opacity=".7"/><stop offset=".55" stop-color="#b98aa0" stop-opacity=".3"/><stop offset="1" stop-color="#e9cfdb" stop-opacity="0"/></radialGradient>
 <radialGradient id="${P}Cheek" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff6f9c" stop-opacity=".6"/><stop offset="1" stop-color="#ff6f9c" stop-opacity="0"/></radialGradient>
 <radialGradient id="${P}Spec" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".35" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-<radialGradient id="${P}Shade" cx=".72" cy=".82" r=".75"><stop offset="0" stop-color="#3d1f35" stop-opacity=".24"/><stop offset=".55" stop-color="#3d1f35" stop-opacity=".07"/><stop offset="1" stop-color="#3d1f35" stop-opacity="0"/></radialGradient>
-<linearGradient id="${P}Rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset=".8" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></linearGradient>
+<radialGradient id="${P}Shade" cx=".74" cy=".86" r=".8"><stop offset="0" stop-color="${dp}" stop-opacity=".55"/><stop offset=".55" stop-color="${dp}" stop-opacity=".2"/><stop offset="1" stop-color="${dp}" stop-opacity="0"/></radialGradient>
+<radialGradient id="${P}Lit" cx=".33" cy=".27" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".6" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<linearGradient id="${P}Rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".8" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></linearGradient>
 `}
 
 /* ---------- 모양 ---------- */
@@ -341,11 +349,12 @@ function draw(s,o={}){
   const shape=SHAPE_SVG[s.shape];
   const crack=o.crack||0,broken=o.broken;
   const waxed=(s.coat==='wax'||s.coat==='wax2');
-  let defs=`<clipPath id="${id}c">${shape}</clipPath>`+pgDefs(PG);
+  const dp=rainbow?'#5b3a8a':deepOf(c);
+  let defs=`<clipPath id="${id}c">${shape}</clipPath>`+pgDefs(PG,dp);
   if(rainbow){
     defs+=`<linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1">${['#ff9aa8','#ffc98a','#ffef8a','#9fe8b8','#8fd0ff','#c3a6ff'].map((k,i)=>`<stop offset="${i/5}" stop-color="${k}"/>`).join('')}</linearGradient>`;
   }else{
-    defs+=`<radialGradient id="${id}g" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="${mix(c,.62)}"/><stop offset=".38" stop-color="${mix(c,.18)}"/><stop offset=".72" stop-color="${c}"/><stop offset="1" stop-color="${mix(c,.24,'#5a3a50')}"/></radialGradient>`;
+    defs+=`<radialGradient id="${id}g" cx=".34" cy=".28" r=".9"><stop offset="0" stop-color="${mix(c,.78)}"/><stop offset=".28" stop-color="${mix(c,.3)}"/><stop offset=".58" stop-color="${c}"/><stop offset=".84" stop-color="${mix(c,.35,dp)}"/><stop offset="1" stop-color="${mix(c,.6,dp)}"/></radialGradient>`;
   }
   defs+=`<radialGradient id="${id}h" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
   let inner='';
@@ -378,12 +387,13 @@ function draw(s,o={}){
   if(s.coat==='shine'){const rs=rnd(17);for(let i=0;i<16;i++){const x=34+rs()*132,y=44+rs()*130;inner+=`<polygon points="${starPts(x,y,4.5,1.6,4)}" fill="#ffd43b"/>`}}
   // 입체 음영: 아래쪽 그림자 + 바닥 반사광 + 가장자리 빛
   inner+=`<rect x="0" y="0" width="200" height="200" fill="url(#${PG}Shade)"/>`;
+  inner+=`<rect x="0" y="0" width="200" height="200" fill="url(#${PG}Lit)"/>`;
   inner+=`<ellipse cx="108" cy="190" rx="70" ry="22" fill="${rainbow?'#fff':mix(c,.6)}" opacity="${s.base==='clay'?.25:.4}"/>`;
   inner+=`<g fill="none" stroke="url(#${PG}Rim)" stroke-width="9">${shape}</g>`;
   // highlight
   const gl=waxed&&!broken?.18:base.gloss;
   inner+=`<ellipse cx="72" cy="74" rx="30" ry="17" fill="url(#${id}h)" opacity="${(gl*.9).toFixed(2)}" transform="rotate(-32 72 74)"/>`;
-  inner+=`<ellipse cx="70" cy="72" rx="13" ry="6.5" fill="url(#${PG}Spec)" opacity="${Math.min(1,gl*1.15).toFixed(2)}" transform="rotate(-32 70 72)"/>`;
+  inner+=`<ellipse cx="70" cy="72" rx="14" ry="7" fill="url(#${PG}Spec)" opacity="${Math.min(1,.35+gl).toFixed(2)}" transform="rotate(-32 70 72)"/>`;
   inner+=`<circle cx="58" cy="94" r="3.6" fill="#fff" opacity="${(gl*.85).toFixed(2)}"/>`;
   if(gl>.5)inner+=`<path d="M134 64 q14 10 18 28" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity="${((gl-.4)*.6).toFixed(2)}"/>`;
   // face
@@ -405,9 +415,9 @@ function draw(s,o={}){
     const rx=s.shape==='bear'?122:s.shape==='drop'?100:128;
     ribbon=`<g transform="translate(${rx} ${ry})"><path d="M0 0 C -14 -14,-26 -6,-24 4 C -22 14,-10 10,0 0Z M0 0 C 14 -14,26 -6,24 4 C 22 14,10 10,0 0Z" fill="#ff5c8a" stroke="#e0416f" stroke-width="1.5"/><circle r="5" fill="#ff7fa1" stroke="#e0416f" stroke-width="1.5"/></g>`;
   }
-  const outline=`<g fill="none" stroke="${rainbow?'#d79abb':mix(c,.35,'#6a4a60')}" stroke-width="5" opacity="${s.base==='water'?.45:.35}">${shape}</g>`;
+  const outline=`<g fill="none" stroke="${rainbow?'#b98ac0':mix(c,.45,dp)}" stroke-width="5" opacity="${s.base==='water'?.55:.5}">${shape}</g>`;
   return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>
-  <ellipse cx="102" cy="185" rx="70" ry="12" fill="url(#${PG}Shadow)"/><ellipse cx="102" cy="182" rx="40" ry="5" fill="#a87a90" opacity=".22"/>
+  <ellipse cx="102" cy="185" rx="70" ry="12" fill="url(#${PG}Shadow)"/><ellipse cx="104" cy="181" rx="44" ry="5.5" fill="#6e4258" opacity=".38"/>
   ${outline}<g fill="#fff">${shape}</g><g clip-path="url(#${id}c)">${inner}</g>${face}${ribbon}</svg>`;
 }
 
