@@ -492,7 +492,8 @@ function imgRender(s,waxOn){
     }
     ctx.putImageData(img,0,0);
     const u=cv.toDataURL('image/webp',.9);
-    return IMCACHE[key]={body:u,mask:'/malang/img/m_'+k+'.webp?v=4',inside:s.base==='water'||s.base==='slime'};
+    for(let i=0;i<d.length;i+=4){d[i]=d[i+1]=d[i+2]=255}ctx.putImageData(img,0,0);const mk=cv.toDataURL('image/webp',.8);
+    return IMCACHE[key]={body:u,mask:mk,inside:s.base==='water'||s.base==='slime'};
   }catch(e){return IMCACHE[key]=null}
 }
 function drawImg(s,o,R){
@@ -527,7 +528,7 @@ function drawImg(s,o,R){
   if(s.parts.includes('ribbon')){const ry={bear:46,drop:34,heart:60,star:30,cube:56,ball:46}[s.shape],rx={bear:100,drop:100,star:100}[s.shape]||128;
     ribbon=`<g transform="translate(${rx} ${ry})"><path d="M0 0 C -14 -14,-26 -6,-24 4 C -22 14,-10 10,0 0Z M0 0 C 14 -14,26 -6,24 4 C 22 14,10 10,0 0Z" fill="url(#${PG}Heart)" stroke="#d63a68" stroke-width="1.2"/><circle r="5" fill="url(#${PG}Heart)" stroke="#d63a68" stroke-width="1.2"/><ellipse cx="-13" cy="-3" rx="4" ry="2" fill="#fff" opacity=".6" transform="rotate(-20 -13 -3)"/></g>`}
   return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><mask id="${id}k" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200"><image href="${R.mask}" x="0" y="0" width="200" height="200"/></mask>${pgDefs(PG,deepOf(c))}</defs>
-  <ellipse cx="102" cy="182" rx="62" ry="9" fill="url(#${PG}Shadow)"/>
+  ${o.noShadow?'':`<ellipse cx="102" cy="182" rx="62" ry="9" fill="url(#${PG}Shadow)"/>`}
   <g mask="url(#${id}k)">${inner}</g>${face}${ribbon}</svg>`;
 }
 
@@ -718,14 +719,89 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AC&&AC.st
 function out(){return MASTER||AC.destination}
 function when(fn){const a=ac();if(!a||!soundOn)return;if(a.state==='running'){fn(a);return}let done=false;a.resume().then(()=>{if(!done){done=true;fn(a)}}).catch(()=>{});setTimeout(()=>{done=true},150)}
 function blip(f){when(a=>{const t=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='triangle';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.6,t+.09);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.16);o.connect(g).connect(out());o.start(t);o.stop(t+.18)})}
-function noise(dur,freq,q,vol){when(a=>{const len=Math.floor(a.sampleRate*dur),buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.5);const src=a.createBufferSource();src.buffer=buf;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=q;const g=a.createGain();g.gain.value=vol;src.connect(f).connect(g).connect(out());src.start()})}
-function squishTone(t){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='sine';const f0=t==='bouncy'?380:t==='chewy'?140:220;o.frequency.setValueAtTime(f0,now);o.frequency.exponentialRampToValueAtTime(t==='bouncy'?760:f0*.6,now+(t==='chewy'?.45:.2));g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.5,now+.02);g.gain.exponentialRampToValueAtTime(.001,now+(t==='chewy'?.5:.25));o.connect(g).connect(out());o.start(now);o.stop(now+.55)})}
-function squishSound(t){if(t==='crunchy'){for(let i=0;i<5;i++)setTimeout(()=>noise(.05,2500+Math.random()*2500,1.2,3),i*45)}else{squishTone(t);noise(.22,t==='fluffy'?900:450,.8,2.2)}}
-function crackSound(){noise(.08,2200,1,4);setTimeout(()=>noise(.06,3400,1.4,3),45);setTimeout(()=>noise(.05,1600,1,2.5),95)}
-function stretchSound(sv,t){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain(),f=a.createBiquadFilter();o.type=t==='crunchy'?'square':'sawtooth';const base=t==='chewy'?120:t==='bouncy'?260:180;o.frequency.setValueAtTime(base*sv,now);o.frequency.linearRampToValueAtTime(base*sv*1.25,now+.12);f.type='lowpass';f.frequency.value=t==='crunchy'?2400:900;g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.18,now+.02);g.gain.exponentialRampToValueAtTime(.001,now+.15);o.connect(f).connect(g).connect(out());o.start(now);o.stop(now+.17)});if(t==='crunchy')noise(.05,3000,1.2,2)}
-function boing(sv,t){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain(),dur=t==='chewy'?.7:.4;o.type='sine';const f0=sv>1?520:200,f1=sv>1?160:420;o.frequency.setValueAtTime(f0,now);o.frequency.exponentialRampToValueAtTime(f1,now+dur);const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=t==='bouncy'?18:9;lg.gain.value=t==='bouncy'?60:25;lfo.connect(lg).connect(o.frequency);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.45,now+.02);g.gain.exponentialRampToValueAtTime(.001,now+dur);o.connect(g).connect(out());o.start(now);lfo.start(now);o.stop(now+dur+.05);lfo.stop(now+dur+.05)})}
-function twistSound(){when(a=>{const now=a.currentTime;for(let i=0;i<3;i++){const o=a.createOscillator(),g=a.createGain(),t=now+i*.04;o.type='triangle';o.frequency.setValueAtTime(900+i*180,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+.05);o.connect(g).connect(out());o.start(t);o.stop(t+.06)}})}
-function thud(v){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.setValueAtTime(140,now);o.frequency.exponentialRampToValueAtTime(60,now+.15);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.min(.6,Math.abs(v)/1500),now+.01);g.gain.exponentialRampToValueAtTime(.001,now+.18);o.connect(g).connect(out());o.start(now);o.stop(now+.2)})}
+/* ---------- ASMR 소리 (노이즈 조각으로 만드는 끈적·찰박 소리) ---------- */
+let NBUF=null,BBUF=null,REV=null;
+function nbufs(a){
+  if(NBUF)return;
+  const L=a.sampleRate*2;NBUF=a.createBuffer(1,L,a.sampleRate);BBUF=a.createBuffer(1,L,a.sampleRate);
+  const w=NBUF.getChannelData(0),b=BBUF.getChannelData(0);let last=0;
+  for(let i=0;i<L;i++){w[i]=Math.random()*2-1;last=(last+.02*w[i])/1.02;b[i]=last*3.5}
+}
+function asmrOut(a){
+  if(!REV){try{
+    const L=Math.floor(a.sampleRate*.35),ir=a.createBuffer(2,L,a.sampleRate);
+    for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<L;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/L,4)}
+    const cv=a.createConvolver();cv.buffer=ir;const wg=a.createGain();wg.gain.value=.22;const dry=a.createGain();dry.gain.value=1;
+    const inp=a.createGain();inp.connect(dry).connect(out());inp.connect(cv).connect(wg).connect(out());REV=inp;
+  }catch(e){REV=out()}}
+  return REV;
+}
+// 아주 짧은 젖은 '틱' (끈적하게 떨어지는 소리의 알갱이)
+function wetClick(a,t,freq,vol,dur,q){
+  nbufs(a);const s=a.createBufferSource();s.buffer=NBUF;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=q||4;
+  const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.0015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(f).connect(g).connect(asmrOut(a));s.start(t,Math.random()*1.5);s.stop(t+dur+.01);
+}
+// 묵직한 '쑤욱' 노이즈 (필터가 내려가며 닫힘)
+function squelch(a,t,dur,f0,f1,vol,brown){
+  nbufs(a);const s=a.createBufferSource();s.buffer=brown?BBUF:NBUF;const f=a.createBiquadFilter();f.type='lowpass';f.Q.value=2.5;
+  f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(f).connect(g).connect(asmrOut(a));s.start(t,Math.random()*1.5);s.stop(t+dur+.02);
+}
+const SKIN={ // 재질별 소리 성격
+  soft:   {pops:7, pf:[700,1800], sq:[1800,260], v:.9},
+  chewy:  {pops:12,pf:[450,1300], sq:[1200,180], v:1},
+  bouncy: {pops:5, pf:[1200,2600],sq:[2600,400], v:.8},
+  fluffy: {pops:4, pf:[2500,5000],sq:[4000,900], v:.6},
+  crunchy:{pops:0, pf:[3000,8000],sq:[3000,600], v:.7},
+};
+let CUR_BASE='clay';
+function wetness(){return {water:1.5,slime:1.7,silicone:1,clay:.6}[CUR_BASE]||1}
+function noise(dur,freq,q,vol){when(a=>{wetClick(a,a.currentTime,freq,vol*.08,dur,q)})}
+function squishSound(t){when(a=>{
+  const now=a.currentTime,K=SKIN[t]||SKIN.soft,wt=wetness();
+  if(t==='crunchy'){ // 사각사각 알갱이 부서지는 소리
+    for(let i=0;i<26;i++)wetClick(a,now+Math.random()*.28,K.pf[0]+Math.random()*(K.pf[1]-K.pf[0]),.25+Math.random()*.35,.008+Math.random()*.012,1.5);
+    squelch(a,now,.2,2400,500,.25,true);return}
+  squelch(a,now,.32,K.sq[0],K.sq[1],.55*K.v,true);
+  if(t==='fluffy')squelch(a,now+.02,.25,6000,1500,.12,false);
+  const n=Math.round(K.pops*wt);
+  for(let i=0;i<n;i++){const tt=now+.02+Math.pow(Math.random(),1.6)*.3;wetClick(a,tt,K.pf[0]+Math.random()*(K.pf[1]-K.pf[0]),(.18+Math.random()*.3)*K.v*wt,.012+Math.random()*.02,3+Math.random()*4)}
+})}
+function crackSound(){when(a=>{const now=a.currentTime;
+  wetClick(a,now,4500,1.1,.02,1);wetClick(a,now+.004,2200,.8,.05,2);
+  for(let i=0;i<10;i++)wetClick(a,now+.01+Math.random()*.16,2500+Math.random()*5000,.2+Math.random()*.4,.01+Math.random()*.015,2);
+  squelch(a,now,.12,3500,800,.25,false)})}
+function stretchSound(){} // 연속 소리는 stretchTick 이 담당
+// 늘어나는 동안 계속: 끈적하게 떨어지는 틱(속도에 비례) + 부드러운 '스으윽'
+function makeStretchVoice(tex){
+  let src=null,g=null,f=null,acc=0;
+  return{
+    tick(speed,amt,dt){when(a=>{
+      nbufs(a);
+      if(!src){src=a.createBufferSource();src.buffer=BBUF;src.loop=true;f=a.createBiquadFilter();f.type='bandpass';f.Q.value=1.2;g=a.createGain();g.gain.value=0;src.connect(f).connect(g).connect(asmrOut(a));src.start()}
+      const now=a.currentTime,K=SKIN[tex]||SKIN.soft,wt=wetness();
+      const sp=Math.min(1,speed);
+      g.gain.setTargetAtTime(sp*.5*K.v,now,.04);
+      f.frequency.setTargetAtTime((tex==='crunchy'?2500:500)+amt*900+sp*600,now,.05);
+      acc+=dt*(tex==='crunchy'?140:55)*sp*(.4+amt)*wt;
+      while(acc>1){acc-=1;const t=now+Math.random()*.03;
+        if(tex==='crunchy')wetClick(a,t,3000+Math.random()*5000,.2+Math.random()*.35,.006+Math.random()*.01,1.5);
+        else wetClick(a,t,K.pf[0]*(1+amt*.5)+Math.random()*(K.pf[1]-K.pf[0]),(.08+Math.random()*.22)*K.v*wt,.01+Math.random()*.025,4+Math.random()*5)}
+    })},
+    quiet(){if(g&&AC)g.gain.setTargetAtTime(0,AC.currentTime,.05)},
+    stop(){try{if(src){g.gain.setTargetAtTime(0,AC.currentTime,.03);const s=src;setTimeout(()=>{try{s.stop()}catch(e){}},300)}}catch(e){}src=null}
+  }
+}
+// 놓을 때: 탁 돌아가는 찰박 소리 (얼마나 늘였는지에 비례)
+function boing(sv,t){when(a=>{const now=a.currentTime,K=SKIN[t]||SKIN.soft,amt=Math.min(1.5,Math.abs(sv-1)),wt=wetness();
+  squelch(a,now,.18+amt*.15,K.sq[0]*1.4,K.sq[1],(.35+amt*.4)*K.v,true);
+  const o=a.createOscillator(),og=a.createGain();o.type='sine';o.frequency.setValueAtTime(110,now);o.frequency.exponentialRampToValueAtTime(55,now+.12);
+  og.gain.setValueAtTime(.0001,now);og.gain.exponentialRampToValueAtTime(.25+amt*.25,now+.006);og.gain.exponentialRampToValueAtTime(.0001,now+.16);o.connect(og).connect(asmrOut(a));o.start(now);o.stop(now+.18);
+  const n=Math.round((4+amt*8)*wt);for(let i=0;i<n;i++)wetClick(a,now+.01+Math.random()*.2,K.pf[0]+Math.random()*(K.pf[1]-K.pf[0]),(.12+Math.random()*.25)*K.v*wt,.01+Math.random()*.02,4)})}
+function twistSound(){when(a=>{const now=a.currentTime;for(let i=0;i<7;i++)wetClick(a,now+i*.028+Math.random()*.008,1100+i*60,.22,.018,9)})}
+function thud(v){when(a=>{const now=a.currentTime,o=a.createOscillator(),g=a.createGain(),vol=Math.min(.7,Math.abs(v)/1400);o.type='sine';o.frequency.setValueAtTime(120,now);o.frequency.exponentialRampToValueAtTime(48,now+.14);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(vol,now+.006);g.gain.exponentialRampToValueAtTime(.0001,now+.2);o.connect(g).connect(asmrOut(a));o.start(now);o.stop(now+.22);squelch(a,now,.15,1800,300,vol*.6,true)})}
 function setSound(on){soundOn=on;try{localStorage.setItem(KEY+'-snd',on?'on':'off')}catch(e){}document.getElementById('snd').textContent=on?'🔊':'🔇';if(on)blip(660)}
 
 /* ---------- 완성 결과 ---------- */
@@ -783,7 +859,75 @@ function attachPlay(box,item){
   box.innerHTML='<div class="jelly"></div>';
   const jelly=box.firstChild;
   let crack=item.crack||0,broken=!!item.broken;
-  const paint=()=>{jelly.innerHTML=draw(s,{crack,broken})};paint();
+  CUR_BASE=s.base;const voice=makeStretchVoice(tex);
+  // ----- 그물망(메시) 렌더링: 잡은 곳만 당겨지고 가운데는 가늘어짐 -----
+  const NG=12,NV=(NG+1)*(NG+1),RX=new Float32Array(NV),RY=new Float32Array(NV),DX=new Float32Array(NV),DY=new Float32Array(NV),VX=new Float32Array(NV),VY=new Float32Array(NV),JIT=new Float32Array(NV);
+  for(let j=0;j<=NG;j++)for(let i=0;i<=NG;i++){const n=j*(NG+1)+i;RX[n]=i/NG;RY[n]=j/NG;JIT[n]=.75+Math.random()*.5}
+  const grabs=new Map();let TX=null,mesh=false,cv=null,cx=null,W=0,H=0,S=0,ox=0,oy=0,dpr=1,dirty=true,fspd=0;
+  function layout(){W=box.clientWidth;H=box.clientHeight;S=Math.min(W,H);ox=(W-S)/2;oy=(H-S)/2;dpr=Math.min(2,window.devicePixelRatio||1);
+    if(cv){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px'}dirty=true}
+  const paint=()=>{
+    const svg=draw(s,{crack,broken,noShadow:true}),svgFull=()=>draw(s,{crack,broken});
+    if(!/href="(blob:|\/)/.test(svg)){
+      const im=new Image();
+      im.onload=()=>{const T=document.createElement('canvas'),ts=Math.min(1024,Math.round(Math.max(box.clientWidth,box.clientHeight)*Math.min(2,window.devicePixelRatio||1)));T.width=T.height=ts;
+        try{T.getContext('2d').drawImage(im,0,0,ts,ts)}catch(e){jelly.innerHTML=svgFull();mesh=false;return}
+        TX=T;if(!mesh){jelly.innerHTML='';cv=document.createElement('canvas');cv.style.display='block';jelly.appendChild(cv);cx=cv.getContext('2d');mesh=true;layout()}dirty=true};
+      im.onerror=()=>{jelly.innerHTML=svgFull();mesh=false};
+      im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      if(!mesh)jelly.innerHTML=svgFull();
+    }else{jelly.innerHTML=svgFull();mesh=false}
+  };paint();
+  window.addEventListener('resize',layout);
+  const sq=p=>({x:(p.x-ox)/S,y:(p.y-oy)/S});
+  function meshTargets(held,out){
+    out.fill(0);
+    const arr=[...grabs.values()],sig=.3,sig2=2*sig*sig,LM=Math.max(.12,(maxS-1)*.5);
+    const clampL=(x,y)=>{const L=Math.hypot(x,y);if(L<1e-6)return[0,0,0];const L2=LM*Math.tanh(L/LM);return[x/L*L2,y/L*L2,L2]};
+    let axis=null;
+    if(arr.length>=2){const[a,b]=arr;const d0=Math.hypot(a.x0-b.x0,a.y0-b.y0),d1=Math.hypot(a.x-b.x,a.y-b.y);const ux=(a.x-b.x)/(d1||1),uy=(a.y-b.y)/(d1||1);
+      axis={cx:(a.x0+b.x0)/2,cy:(a.y0+b.y0)/2,ux,uy,amt:Math.max(-.5,Math.min(.9,(d1-d0)*1.3)),len:Math.max(.15,d0/2)}}
+    else if(arr.length===1){const a=arr[0],[mx,my,L]=clampL(a.x-a.x0,a.y-a.y0);if(L>.01)axis={cx:.5,cy:.56,ux:mx/L,uy:my/L,amt:L*1.4,len:.32,one:a}}
+    for(let n=0;n<NV;n++){let tx=0,ty=0;const rx=RX[n],ry=RY[n];
+      for(const a of arr){const d2=(rx-a.x0)**2+(ry-a.y0)**2,w=Math.exp(-d2/sig2);const[mx,my]=clampL(a.x-a.x0,a.y-a.y0);tx+=mx*w;ty+=my*w;
+        if(a.press&&!a.moved){const dd=Math.sqrt(d2)+1e-4,pw=Math.exp(-d2/(2*.16*.16))*.035;tx+=(rx-a.x0)/dd*pw;ty+=(ry-a.y0)/dd*pw}}
+      if(axis){const px=rx-axis.cx,py=ry-axis.cy,al=px*axis.ux+py*axis.uy,perx=px-axis.ux*al,pery=py-axis.uy*al;
+        const mid=axis.one?Math.exp(-((al-(-.05))**2)/(2*axis.len*axis.len))*Math.max(0,1-Math.exp(-((rx-axis.one.x0)**2+(ry-axis.one.y0)**2)/sig2)*1.2):Math.exp(-(al*al)/(2*axis.len*axis.len));
+        const th=Math.max(-.35,Math.min(.42,axis.amt*.55))*mid;tx-=perx*th;ty-=pery*th}
+      out[n*2]=tx*S;out[n*2+1]=ty*S}
+  }
+  const TG=new Float32Array(NV*2);
+  function meshStep(held,dt){
+    if(!mesh)return;
+    meshTargets(held,TG);
+    const k0=held?P.fk:P.k,c0=held?P.fc:P.c;let e=0;
+    for(let sub=0;sub<2;sub++){const h=dt/2;
+      for(let n=0;n<NV;n++){const k=k0*JIT[n],c=c0;
+        VX[n]+=(k*(TG[n*2]-DX[n])-c*VX[n])*h;VY[n]+=(k*(TG[n*2+1]-DY[n])-c*VY[n])*h;DX[n]+=VX[n]*h;DY[n]+=VY[n]*h}}
+    for(let n=0;n<NV;n++)e=Math.max(e,Math.abs(DX[n])+Math.abs(DY[n])+Math.abs(VX[n])*.02+Math.abs(VY[n])*.02);
+    if(e<.12){if(e>0||dirty){DX.fill(0);DY.fill(0);VX.fill(0);VY.fill(0);drawFlat()}return}
+    drawMesh();
+  }
+  function shade(){const x=ox+S*.51,y=oy+S*.91,sx=S*.32,sy=S*.05;cx.save();cx.setTransform(dpr,0,0,dpr,0,0);cx.translate(x,y);cx.scale(1,sy/sx);const gr=cx.createRadialGradient(0,0,0,0,0,sx);gr.addColorStop(0,'rgba(110,66,88,.42)');gr.addColorStop(.6,'rgba(150,100,125,.16)');gr.addColorStop(1,'rgba(200,160,180,0)');cx.fillStyle=gr;cx.beginPath();cx.arc(0,0,sx,0,Math.PI*2);cx.fill();cx.restore()}
+  function drawFlat(){if(!cx||!TX)return;cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,W,H);shade();cx.drawImage(TX,ox,oy,S,S);dirty=false}
+  function drawMesh(){
+    if(!cx||!TX)return;cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,cv.width,cv.height);shade();
+    const ts=TX.width,u=ts,X_=n=>ox+RX[n]*S+DX[n],Y_=n=>oy+RY[n]*S+DY[n];
+    const tri=(a,b,c)=>{
+      const x0=X_(a),y0=Y_(a),x1=X_(b),y1=Y_(b),x2=X_(c),y2=Y_(c),u0=RX[a]*u,v0=RY[a]*u,u1=RX[b]*u,v1=RY[b]*u,u2=RX[c]*u,v2=RY[c]*u;
+      const s00=u1-u0,s01=u2-u0,s10=v1-v0,s11=v2-v0,det=s00*s11-s01*s10;if(Math.abs(det)<1e-6)return;
+      const i00=s11/det,i01=-s01/det,i10=-s10/det,i11=s00/det;
+      const d00=x1-x0,d01=x2-x0,d10=y1-y0,d11=y2-y0;
+      const m00=d00*i00+d01*i10,m01=d00*i01+d01*i11,m10=d10*i00+d11*i10,m11=d10*i01+d11*i11;
+      const e_=x0-(m00*u0+m01*v0),f_=y0-(m10*u0+m11*v0);
+      const gx=(x0+x1+x2)/3,gy=(y0+y1+y2)/3,ex=p=>p+(p===p?0:0);
+      cx.save();cx.setTransform(dpr,0,0,dpr,0,0);cx.beginPath();
+      const g=.55;[[x0,y0],[x1,y1],[x2,y2]].forEach(([x,y],i)=>{const dx=x-gx,dy=y-gy,l=Math.hypot(dx,dy)||1;const X2=x+dx/l*g,Y2=y+dy/l*g;i?cx.lineTo(X2,Y2):cx.moveTo(X2,Y2)});
+      cx.closePath();cx.clip();cx.setTransform(dpr*m00,dpr*m10,dpr*m01,dpr*m11,dpr*e_,dpr*f_);cx.drawImage(TX,0,0);cx.restore()};
+    for(let j=0;j<NG;j++)for(let i=0;i<NG;i++){const a=j*(NG+1)+i,b=a+1,c=a+NG+1,d=c+1;
+      if((i+j)%2){tri(a,b,d);tri(a,d,c)}else{tri(a,b,c);tri(b,d,c)}}
+    dirty=false;
+  }
   // 상태
   const X={s:1,rot:0,tx:0,ty:0,q:0},V={s:0,rot:0,tx:0,ty:0,q:0},T={s:1,rot:0,tx:0,ty:0,q:0};
   let th=0,jy=0,vjy=0,airborne=false;
@@ -812,6 +956,7 @@ function attachPlay(box,item){
     e.preventDefault();unlock();
     try{box.setPointerCapture(e.pointerId)}catch(_){}
     ptrs.set(e.pointerId,pos(e));
+    {const q=sq(pos(e));grabs.set(e.pointerId,{x0:q.x,y0:q.y,x:q.x,y:q.y,press:true,moved:false})}
     startGesture();
     if(ptrs.size===1){
       T.q=tex==='crunchy'?.18:.3;
@@ -822,6 +967,7 @@ function attachPlay(box,item){
     if(!ptrs.has(e.pointerId))return;
     e.preventDefault();
     ptrs.set(e.pointerId,pos(e));
+    {const gb=grabs.get(e.pointerId);if(gb){const q=sq(pos(e));fspd+=Math.hypot(q.x-gb.x,q.y-gb.y);gb.x=q.x;gb.y=q.y;if(Math.hypot(q.x-gb.x0,q.y-gb.y0)>.03)gb.moved=true}}
     if(!g)return;
     const arr=[...ptrs.values()];
     if(g.type==='pinch'&&arr.length>=2){
@@ -840,7 +986,7 @@ function attachPlay(box,item){
         const w=box.clientWidth;
         T.s=Math.max(1,Math.min(maxS,1+len/(w*.55)*(maxS-1)));
         th=Math.atan2(dy,dx);
-        T.tx=dx*.42;T.ty=dy*.42;
+        T.tx=dx*(mesh?.1:.42);T.ty=dy*(mesh?.1:.42);
         checkThresholds();
       }
     }
@@ -853,7 +999,7 @@ function attachPlay(box,item){
   }
   function onUp(e){
     if(!ptrs.has(e.pointerId))return;
-    ptrs.delete(e.pointerId);
+    ptrs.delete(e.pointerId);grabs.delete(e.pointerId);
     try{box.releasePointerCapture(e.pointerId)}catch(_){}
     if(ptrs.size===0){
       const wasOne=g&&g.type==='one'&&!g.moved&&performance.now()-g.t0<280;
@@ -894,16 +1040,17 @@ function attachPlay(box,item){
       }
     }
     // 소리: 늘어날 때 끼익, 돌릴 때 뽀득
-    if(held&&Math.abs(X.s-sndS)>.14){stretchSound(X.s,tex);sndS=X.s}
+    {const sp=Math.abs(V.s)*.9+fspd/dt*.9;fspd=0;if(held&&(g&&(g.type==='pinch'||g.moved)))voice.tick(sp,Math.abs(X.s-1),dt);else voice.quiet()}
     if(held&&Math.abs(X.rot-sndRot)>22){twistSound();sndRot=X.rot}
     if(!held){sndS=X.s;sndRot=X.rot}
-    const ss=X.s,inv=1/Math.sqrt(ss),H=box.clientHeight;
+    meshStep(held,dt);
+    const ss=mesh?1+(X.s-1)*.3:X.s,inv=1/Math.sqrt(ss),H=box.clientHeight;
     jelly.style.transform=`translate(${X.tx}px,${X.ty+jy+X.q*H*.18}px) rotate(${th}rad) scale(${ss},${inv}) rotate(${-th}rad) rotate(${X.rot}deg) scale(${1+X.q*.7},${1-X.q})`;
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
   return{
-    destroy(){alive=false},
+    destroy(){alive=false;voice.stop();window.removeEventListener('resize',layout)},
     rewax(){crack=0;broken=false;item.crack=0;item.broken=false;item.u=Date.now();save();paint();blip(400);say('왁스 코팅 완료!')},
     isBroken:()=>broken
   };
